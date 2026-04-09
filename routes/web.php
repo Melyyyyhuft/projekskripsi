@@ -1,10 +1,47 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Models\Jurusan;
 
-// Halaman utama → Beranda
 Route::get('/', function () {
-    return view('beranda');
+    $jurusans = Jurusan::all();
+    return view('landing', compact('jurusans'));
+});
+
+// Authentication Routes
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Admin Routes
+Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/pendaftaran', [\App\Http\Controllers\Admin\PendaftaranController::class, 'index'])->name('admin.pendaftaran.index');
+    Route::post('/pendaftaran/{id}/verifikasi', [\App\Http\Controllers\Admin\PendaftaranController::class, 'verifikasi'])->name('admin.pendaftaran.verifikasi');
+    
+    // Rute Ujian & Seleksi
+    Route::resource('ujian', \App\Http\Controllers\Admin\UjianController::class)->names('admin.ujian');
+    Route::post('ujian/{ujian}/soal', [\App\Http\Controllers\Admin\UjianController::class, 'storeSoal'])->name('admin.ujian.soal.store');
+    
+    Route::get('/seleksi', [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])->name('admin.seleksi.index');
+    Route::post('/seleksi/jalankan', [\App\Http\Controllers\Admin\SeleksiController::class, 'jalankanSeleksi'])->name('admin.seleksi.run');
+});
+
+// Siswa Routes
+Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
+    Route::get('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'create'])->name('siswa.pendaftaran');
+    Route::post('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'store']);
+    
+    // Rute CBT
+    Route::get('/ujian', [\App\Http\Controllers\Siswa\UjianController::class, 'index'])->name('siswa.ujian');
+    Route::post('/ujian/submit', [\App\Http\Controllers\Siswa\UjianController::class, 'submit'])->name('siswa.ujian.submit');
+    
+    // Hasil
+    Route::get('/hasil', [\App\Http\Controllers\Siswa\HasilController::class, 'index'])->name('siswa.hasil');
 });
 
 // Halaman Tentang Kami
