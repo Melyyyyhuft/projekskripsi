@@ -20,4 +20,8 @@ class Pendaftaran extends Model
     public function jurusan() {
         return $this->belongsTo(Jurusan::class);
     }
+
+    public function berkas() {
+        return $this->hasMany(Berkas::class);
+    }
 }

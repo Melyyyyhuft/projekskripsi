@@ -19,4 +19,10 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact('totalPendaftar', 'menungguVerifikasi', 'totalDiterima', 'pendaftarTerbaru'));
     }
+
+    public function checkNewPendaftar()
+    {
+        $count = \Illuminate\Support\Facades\Auth::user()->unreadNotifications->count();
+        return response()->json(['count' => $count]);
+    }
 }

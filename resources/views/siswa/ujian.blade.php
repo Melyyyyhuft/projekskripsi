@@ -21,18 +21,12 @@
         <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">{{ $index + 1 }}. {{ $soal->teks_soal }}</h3>
         
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="jawaban[{{ $soal->id }}]" value="A"> A. {{ $soal->opsi_a }}
+            @foreach($soal->shuffled_opsi as $key => $value)
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;">
+                <input type="radio" name="jawaban[{{ $soal->id }}]" value="{{ $key }}" style="transform: scale(1.2);"> 
+                <span>{{ $value }}</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="jawaban[{{ $soal->id }}]" value="B"> B. {{ $soal->opsi_b }}
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="jawaban[{{ $soal->id }}]" value="C"> C. {{ $soal->opsi_c }}
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="radio" name="jawaban[{{ $soal->id }}]" value="D"> D. {{ $soal->opsi_d }}
-            </label>
+            @endforeach
         </div>
     </div>
     @endforeach

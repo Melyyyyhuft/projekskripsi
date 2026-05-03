@@ -19,12 +19,24 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Admin Routes
 Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/api/cek-notifikasi', [\App\Http\Controllers\Admin\DashboardController::class, 'checkNewPendaftar']);
+    
+    // Notifikasi
+    Route::get('/notifikasi', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('admin.notifikasi.index');
+    Route::get('/notifikasi/{id}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('admin.notifikasi.read');
+    Route::post('/notifikasi/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('admin.notifikasi.read_all');
+
     Route::get('/pendaftaran', [\App\Http\Controllers\Admin\PendaftaranController::class, 'index'])->name('admin.pendaftaran.index');
+    Route::get('/pendaftaran/{id}', [\App\Http\Controllers\Admin\PendaftaranController::class, 'show'])->name('admin.pendaftaran.show');
     Route::post('/pendaftaran/{id}/verifikasi', [\App\Http\Controllers\Admin\PendaftaranController::class, 'verifikasi'])->name('admin.pendaftaran.verifikasi');
     
     // Rute Ujian & Seleksi
     Route::resource('ujian', \App\Http\Controllers\Admin\UjianController::class)->names('admin.ujian');
     Route::post('ujian/{ujian}/soal', [\App\Http\Controllers\Admin\UjianController::class, 'storeSoal'])->name('admin.ujian.soal.store');
+    
+    Route::get('bank_soal/template', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplate'])->name('admin.bank_soal.template');
+    Route::post('bank_soal/import', [\App\Http\Controllers\Admin\BankSoalController::class, 'import'])->name('admin.bank_soal.import');
+    Route::resource('bank_soal', \App\Http\Controllers\Admin\BankSoalController::class)->names('admin.bank_soal')->except(['show', 'edit', 'update']);
     
     Route::get('/seleksi', [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])->name('admin.seleksi.index');
     Route::post('/seleksi/jalankan', [\App\Http\Controllers\Admin\SeleksiController::class, 'jalankanSeleksi'])->name('admin.seleksi.run');

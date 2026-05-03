@@ -9,19 +9,41 @@ use App\Models\Pendaftaran;
 
 class PendaftaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pendaftarans = Pendaftaran::with(['user', 'jurusan'])->latest()->get();
-        return view('admin.pendaftaran.index', compact('pendaftarans'));
+        $tab = $request->query('tab', 'baru'); // 'baru' atau 'arsip'
+        $filterStatus = $request->query('status');
+
+        $query = Pendaftaran::with(['user', 'jurusan'])->latest();
+
+        if ($tab == 'baru') {
+            $query->whereIn('status', ['menunggu_verifikasi', 'revisi']);
+        } else {
+            $query->whereNotIn('status', ['menunggu_verifikasi', 'revisi']);
+        }
+
+        if ($filterStatus) {
+            $query->where('status', $filterStatus);
+        }
+
+        $pendaftarans = $query->get();
+
+        return view('admin.pendaftaran.index', compact('pendaftarans', 'tab', 'filterStatus'));
+    }
+
+    public function show($id)
+    {
+        $pendaftaran = Pendaftaran::with(['user', 'jurusan', 'berkas'])->findOrFail($id);
+        return view('admin.pendaftaran.show', compact('pendaftaran'));
     }
 
     public function verifikasi(Request $request, $id)
     {
         $pendaftaran = Pendaftaran::findOrFail($id);
-        $request->validate(['status' => 'required|in:lolos_admin,ditolak_admin']);
+        $request->validate(['status' => 'required|in:revisi,lolos_admin,ditolak_admin']);
         
         $pendaftaran->update(['status' => $request->status]);
         
-        return back()->with('success', 'Status pendaftaran berhasil diperbarui.');
+        return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', 'Status pendaftaran berhasil diperbarui.');
     }
 }

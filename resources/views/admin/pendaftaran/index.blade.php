@@ -3,7 +3,30 @@
 
 @section('content')
 <div class="glass-card">
-    <h3 style="margin-bottom: 1.5rem; color: var(--primary);">Daftar Calon Siswa Baru (Menunggu Verifikasi)</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="color: var(--primary); margin: 0;">Daftar Pendaftar</h3>
+        
+        <form action="{{ route('admin.pendaftaran.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: center;">
+            <input type="hidden" name="tab" value="{{ $tab }}">
+            <select name="status" class="form-control" style="padding: 0.4rem 0.8rem; height: auto;" onchange="this.form.submit()">
+                <option value="">Semua Status</option>
+                <option value="menunggu_verifikasi" {{ $filterStatus == 'menunggu_verifikasi' ? 'selected' : '' }}>Belum Diverifikasi</option>
+                <option value="revisi" {{ $filterStatus == 'revisi' ? 'selected' : '' }}>Revisi</option>
+                <option value="lolos_admin" {{ $filterStatus == 'lolos_admin' ? 'selected' : '' }}>Lulus (Verifikasi)</option>
+                <option value="ditolak_admin" {{ $filterStatus == 'ditolak_admin' ? 'selected' : '' }}>Tidak Lulus</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 0.5rem;">
+        <a href="{{ route('admin.pendaftaran.index', ['tab' => 'baru', 'status' => $filterStatus]) }}" style="font-weight: 600; padding: 0.5rem 1rem; border-radius: var(--radius-sm); {{ $tab == 'baru' ? 'background: var(--primary); color: white;' : 'color: var(--gray-text); text-decoration: none;' }}">
+            Baru Mendaftar
+        </a>
+        <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip', 'status' => $filterStatus]) }}" style="font-weight: 600; padding: 0.5rem 1rem; border-radius: var(--radius-sm); {{ $tab == 'arsip' ? 'background: var(--primary); color: white;' : 'color: var(--gray-text); text-decoration: none;' }}">
+            Arsip / Sudah Diproses
+        </a>
+    </div>
     
     @if(session('success'))
         <div style="background: #d1fae5; color: #059669; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; font-weight: 500;">
@@ -44,24 +67,10 @@
                         @endif
                     </td>
                     <td>
-                        @if($p->status == 'menunggu_verifikasi')
-                        <div style="display: flex; gap: 0.5rem;">
-                            <!-- Lolos -->
-                            <form action="{{ route('admin.pendaftaran.verifikasi', $p->id) }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="status" value="lolos_admin">
-                                <button type="submit" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #10b981;">Luluskan</button>
-                            </form>
-                            
-                            <!-- Tolak -->
-                            <form action="{{ route('admin.pendaftaran.verifikasi', $p->id) }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="status" value="ditolak_admin">
-                                <button type="submit" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #ef4444;" onclick="return confirm('Yakin ingin menolak siswa ini?');">Tolak</button>
-                            </form>
-                        </div>
+                        @if($p->status == 'menunggu_verifikasi' || $p->status == 'revisi')
+                            <a href="{{ route('admin.pendaftaran.show', $p->id) }}" class="btn-primary" style="background: #3b82f6; padding: 0.4rem 0.8rem; font-size: 0.8rem; text-decoration: none;">Lihat Detail</a>
                         @else
-                            <span style="font-size: 0.875rem; color: var(--gray-text);">Selesai Tinjauan</span>
+                            <a href="{{ route('admin.pendaftaran.show', $p->id) }}" class="btn-primary" style="background: var(--gray-text); padding: 0.4rem 0.8rem; font-size: 0.8rem; text-decoration: none;">Lihat Arsip</a>
                         @endif
                     </td>
                 </tr>

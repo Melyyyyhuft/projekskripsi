@@ -34,7 +34,27 @@ class UjianController extends Controller
             return redirect()->route('siswa.dashboard')->with('error', 'Ujian belum tersedia.');
         }
 
-        $soals = Soal::where('ujian_id', $ujian->id)->inRandomOrder()->get();
+        $activeTahun = \App\Models\Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';
+        $soals = Soal::where('tahun_ajaran', $activeTahun)->inRandomOrder()->get();
+        
+        foreach ($soals as $soal) {
+            $opsi = [
+                'A' => $soal->opsi_a,
+                'B' => $soal->opsi_b,
+                'C' => $soal->opsi_c,
+                'D' => $soal->opsi_d,
+            ];
+            
+            $keys = array_keys($opsi);
+            shuffle($keys);
+            
+            $shuffledOpsi = [];
+            foreach ($keys as $key) {
+                $shuffledOpsi[$key] = $opsi[$key];
+            }
+            $soal->shuffled_opsi = $shuffledOpsi;
+        }
+
         return view('siswa.ujian', compact('ujian', 'soals'));
     }
 
@@ -45,7 +65,8 @@ class UjianController extends Controller
         $jawabanSiswa = $request->jawaban; // array: soal_id => opsi
 
         $skor = 0;
-        $totalSoal = Soal::where('ujian_id', $ujian_id)->count();
+        $activeTahun = \App\Models\Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';
+        $totalSoal = Soal::where('tahun_ajaran', $activeTahun)->count();
 
         if ($totalSoal == 0) return back()->with('error', 'Soal Kosong.');
 

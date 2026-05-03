@@ -43,25 +43,82 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label" for="jurusan_id">Pilih Jurusan</label>
-                <select name="jurusan_id" id="jurusan_id" class="form-control" required>
-                    <option value="">-- Pilih Jurusan --</option>
-                    @foreach($jurusans as $jurusan)
-                        <option value="{{ $jurusan->id }}" {{ (isset($pendaftaran) && $pendaftaran->jurusan_id == $jurusan->id) ? 'selected' : '' }}>
-                            {{ $jurusan->nama }} (Kuota: {{ $jurusan->kuota }})
-                        </option>
-                    @endforeach
-                </select>
+                <label class="form-label" for="no_hp">Nomor HP / WhatsApp</label>
+                <input type="text" name="no_hp" id="no_hp" class="form-control" value="{{ $pendaftaran->no_hp ?? old('no_hp') }}" required placeholder="Contoh: 081234567890">
             </div>
         </div>
 
-        <div class="form-group" style="margin-top: 1rem; padding: 1.5rem; border: 2px dashed #cbd5e1; border-radius: var(--radius-md); text-align: center;">
-            <label class="form-label" for="berkas" style="font-size: 1.125rem;">Unggah Berkas (Rapor & Sertifikat Pendukung)</label>
-            <p style="color: var(--gray-text); font-size: 0.875rem; margin-bottom: 1rem;">Format: PDF/JPG/PNG. Maks: 2MB per file. Anda dapat memilih lebih dari satu file (Multiple)</p>
-            <input type="file" name="berkas[]" id="berkas" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple style="border: none; padding: 0;">
+        <div class="form-group">
+            <label class="form-label" for="jurusan_id">Pilih Jurusan</label>
+            <select name="jurusan_id" id="jurusan_id" class="form-control" required>
+                <option value="">-- Pilih Jurusan --</option>
+                @foreach($jurusans as $jurusan)
+                    <option value="{{ $jurusan->id }}" {{ (isset($pendaftaran) && $pendaftaran->jurusan_id == $jurusan->id) ? 'selected' : '' }}>
+                        {{ $jurusan->nama }} (Kuota: {{ $jurusan->kuota }})
+                    </option>
+                @endforeach
+            </select>
         </div>
 
-        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem; font-size: 1.125rem; padding: 1rem;">Kirim Pendaftaran</button>
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary);">Upload Berkas Pendukung</h3>
+        <div style="background: #fff8f1; padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #f59e0b; margin-bottom: 1.5rem; font-size: 0.9rem;">
+            <strong>Perhatian:</strong> Berkas wajib harus diisi agar pendaftaran dapat dikirim. Maksimal 2MB per file.
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="skl">1. Scan SKL / Ijazah (Wajib)</label>
+            <input type="file" name="skl" id="file_skl" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+            <small style="color: var(--gray-text);">Format: PDF, JPG, PNG.</small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="rapor">2. Scan Rapor Terakhir (Wajib)</label>
+            <input type="file" name="rapor" id="file_rapor" class="form-control" accept=".pdf" required>
+            <small style="color: var(--gray-text);">Format: PDF.</small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="pasfoto">3. Pas Foto Terkini (Wajib)</label>
+            <input type="file" name="pasfoto" id="file_pasfoto" class="form-control" accept=".jpg,.jpeg,.png" required>
+            <small style="color: var(--gray-text);">Format: JPG, PNG.</small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="sertifikat">4. Sertifikat Pendukung (Opsional)</label>
+            <input type="file" name="sertifikat[]" id="file_sertifikat" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple>
+            <small style="color: var(--gray-text);">Boleh pilih lebih dari satu file.</small>
+        </div>
+
+        <button type="submit" id="btn_submit" class="btn-primary" style="width: 100%; margin-top: 1rem; font-size: 1.125rem; padding: 1rem;" disabled>Kirim Pendaftaran</button>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const skl = document.getElementById('file_skl');
+        const rapor = document.getElementById('file_rapor');
+        const pasfoto = document.getElementById('file_pasfoto');
+        const btnSubmit = document.getElementById('btn_submit');
+
+        function checkFiles() {
+            // Cek apakah ketiganya memiliki setidaknya 1 file
+            if (skl.files.length > 0 && rapor.files.length > 0 && pasfoto.files.length > 0) {
+                btnSubmit.disabled = false;
+                btnSubmit.style.opacity = '1';
+                btnSubmit.style.cursor = 'pointer';
+            } else {
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = '0.5';
+                btnSubmit.style.cursor = 'not-allowed';
+            }
+        }
+
+        skl.addEventListener('change', checkFiles);
+        rapor.addEventListener('change', checkFiles);
+        pasfoto.addEventListener('change', checkFiles);
+        
+        // Panggil sekali saat load
+        checkFiles();
+    });
+</script>
 @endsection
