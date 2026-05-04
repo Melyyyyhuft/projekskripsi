@@ -2,31 +2,133 @@
 @section('title', 'Beranda')
 
 @section('content')
+<!-- HERO SECTION -->
 <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    
     <div class="hero-content">
-        <h1 class="hero-title">Selamat Datang di PPDB Sekolah</h1>
-        <p class="hero-subtitle">Mari wujudkan masa depan yang gemilang bersama kami. Pendaftaran Cepat, Transparan, dan Modern.</p>
-        <a href="{{ url('/login') }}" class="btn-primary" style="font-size: 1.125rem; padding: 1rem 2.5rem;">Daftar Sekarang</a>
-    </div>
-</section>
-
-<section id="tentang" style="padding: 6rem 4rem; text-align: center; background: #fff;">
-    <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: var(--primary);">Profil Sekolah</h2>
-    <div class="glass-card" style="max-width: 800px; margin: 0 auto; box-shadow: none; border: 1px solid #e2e8f0;">
-        <p style="font-size: 1.125rem; color: var(--gray-text);">Kami merupakan institusi pendidikan vokasi terdepan yang berkomitmen menghasilkan lulusan terbaik di bidang teknologi dan kreatif. Didukung dengan fasilitas yang super lengkap dan tenaga pendidik profesional.</p>
-    </div>
-</section>
-
-<section id="jurusan" style="padding: 6rem 4rem; text-align: center; background: var(--light-bg);">
-    <h2 style="font-size: 2.5rem; margin-bottom: 3rem; color: var(--primary);">Pilihan Jurusan</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto;">
-        @foreach($jurusans as $jurusan)
-        <div class="glass-card" style="box-shadow: var(--shadow-sm); border: 1px solid #e2e8f0; transition: var(--transition);">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">{{ $jurusan->nama }}</h3>
-            <p style="color: var(--gray-text); margin-bottom: 1.5rem;">Kuota: <strong>{{ $jurusan->kuota }} Siswa</strong></p>
-            <span style="display: inline-block; padding: 0.5rem 1rem; background: #e0e7ff; color: var(--primary); border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600;">Program Unggulan</span>
+        <div class="badge">
+            <i class="fa-solid fa-star"></i> Pendaftaran Tahun Ajaran Baru Telah Dibuka
         </div>
-        @endforeach
+        <h1 class="hero-title">Wujudkan Masa Depan Gemilang Bersama <span class="text-gradient">Kami</span></h1>
+        <p class="hero-subtitle">Sistem Penerimaan Peserta Didik Baru yang dirancang khusus untuk memberikan pengalaman pendaftaran yang Cepat, Transparan, dan Modern.</p>
+        <div class="hero-actions">
+            <a href="{{ url('/login') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
+                Daftar Sekarang <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="#tentang" class="btn-outline" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
+                Pelajari Lebih Lanjut
+            </a>
+        </div>
     </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section style="padding: 6rem 2rem; background: var(--white); position: relative; z-index: 10;">
+    <div class="section-title">
+        <h2>Kenapa Memilih Kami?</h2>
+        <p>Kami menawarkan sistem dan lingkungan pendidikan terbaik untuk mendukung perkembangan akademik dan karakter siswa.</p>
+    </div>
+    
+    <div class="features-grid">
+        <div class="feature-card glass-card">
+            <div class="feature-icon">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h3>Pendaftaran Cepat</h3>
+            <p>Proses registrasi yang mudah dan cepat dari mana saja tanpa perlu antre di sekolah.</p>
+        </div>
+        <div class="feature-card glass-card">
+            <div class="feature-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3>Sistem Transparan</h3>
+            <p>Hasil seleksi dapat dipantau secara real-time dan dijamin objektivitasnya.</p>
+        </div>
+        <div class="feature-card glass-card">
+            <div class="feature-icon">
+                <i class="fa-solid fa-laptop-code"></i>
+            </div>
+            <h3>Ujian Berbasis CBT</h3>
+            <p>Tes kemampuan akademik menggunakan Computer Based Test yang canggih dan akurat.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT SECTION -->
+<section id="tentang" style="padding: 6rem 2rem; background: var(--light-bg);">
+    <div class="section-title">
+        <h2>Profil Sekolah</h2>
+        <p>Mengenal lebih dekat institusi pendidikan kami.</p>
+    </div>
+    
+    <div class="glass-card" style="max-width: 900px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 3rem; align-items: center;">
+        <div style="flex: 1; min-width: 300px;">
+            <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Sekolah" style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+        </div>
+        <div style="flex: 1; min-width: 300px;">
+            <h3 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--dark);">Membangun Generasi Emas</h3>
+            <p style="font-size: 1.1rem; color: var(--gray-text); margin-bottom: 1.5rem;">
+                Kami merupakan institusi pendidikan vokasi terdepan yang berkomitmen menghasilkan lulusan terbaik di bidang teknologi dan kreatif. 
+            </p>
+            <p style="font-size: 1.1rem; color: var(--gray-text); margin-bottom: 2rem;">
+                Didukung dengan fasilitas yang super lengkap, laboratorium modern, dan tenaga pendidik profesional yang berpengalaman di bidangnya.
+            </p>
+            <div style="display: flex; gap: 2rem;">
+                <div>
+                    <h4 style="font-size: 2rem; color: var(--primary);">15+</h4>
+                    <span style="color: var(--gray-text);">Tahun Pengalaman</span>
+                </div>
+                <div>
+                    <h4 style="font-size: 2rem; color: var(--primary);">5000+</h4>
+                    <span style="color: var(--gray-text);">Alumni Sukses</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JURUSAN SECTION -->
+<section id="jurusan" style="padding: 8rem 2rem; background: var(--white);">
+    <div class="section-title">
+        <h2>Program Keahlian</h2>
+        <p>Pilih jurusan yang sesuai dengan minat dan bakat Anda untuk masa depan yang lebih cerah.</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; max-width: 1200px; margin: 0 auto;">
+        @forelse($jurusans as $jurusan)
+        <div class="glass-card" style="position: relative; overflow: hidden; padding: 0;">
+            <div style="height: 150px; background: linear-gradient(135deg, rgba(59,130,246,0.8), rgba(139,92,246,0.8)); display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-graduation-cap" style="font-size: 4rem; color: rgba(255,255,255,0.5);"></i>
+            </div>
+            <div style="padding: 2.5rem;">
+                <span style="position: absolute; top: 1.5rem; right: 1.5rem; background: var(--white); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: bold; box-shadow: var(--shadow-sm);">
+                    Unggulan
+                </span>
+                <h3 style="font-size: 1.75rem; margin-bottom: 0.5rem;">{{ $jurusan->nama }}</h3>
+                <p style="color: var(--gray-text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-users"></i> Kuota: <strong>{{ $jurusan->kuota }} Siswa</strong>
+                </p>
+                <div style="height: 4px; width: 50px; background: var(--primary); border-radius: 2px;"></div>
+            </div>
+        </div>
+        @empty
+        <div class="text-center" style="grid-column: 1 / -1; padding: 3rem;">
+            <p style="color: var(--gray-text); font-size: 1.2rem;">Belum ada data jurusan yang ditambahkan.</p>
+        </div>
+        @endforelse
+    </div>
+</section>
+
+<!-- CALL TO ACTION -->
+<section style="padding: 6rem 2rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: var(--white); text-align: center;">
+    <h2 style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--white);">Siap Bergabung Bersama Kami?</h2>
+    <p style="font-size: 1.25rem; margin-bottom: 3rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Jangan lewatkan kesempatan untuk menjadi bagian dari komunitas belajar terbaik.
+    </p>
+    <a href="{{ url('/login') }}" class="btn-outline" style="border-color: var(--white); color: var(--white); padding: 1rem 3rem; font-size: 1.125rem;">
+        Mulai Pendaftaran
+    </a>
 </section>
 @endsection

@@ -61,8 +61,11 @@
         </div>
 
         <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary);">Upload Berkas Pendukung</h3>
-        <div style="background: #fff8f1; padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #f59e0b; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        <div style="background: #fff8f1; padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #f59e0b; margin-bottom: 1rem; font-size: 0.9rem;">
             <strong>Perhatian:</strong> Berkas wajib harus diisi agar pendaftaran dapat dikirim. Maksimal 2MB per file.
+        </div>
+        <div style="background: #f0fdf4; padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #22c55e; margin-bottom: 1.5rem; font-size: 0.9rem;">
+            <i class="fa-solid fa-shield-halved"></i> <strong>Privasi:</strong> Dokumen hanya digunakan untuk keperluan verifikasi dan tidak disebarluaskan.
         </div>
 
         <div class="form-group">

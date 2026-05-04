@@ -2,7 +2,69 @@
 @section('title', 'Pengumuman Hasil Seleksi')
 
 @section('content')
-<div style="max-width: 700px; margin: 0 auto; text-align: center;">
+<style>
+    /* Styling for the surat kelulusan - hidden by default */
+    #surat-kelulusan-container {
+        display: none;
+    }
+    
+    /* When viewing the modal */
+    .modal-surat {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.8);
+        padding-top: 50px;
+    }
+    
+    .modal-content-surat {
+        background-color: #fff;
+        margin: auto;
+        padding: 40px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 800px;
+        color: black;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    }
+
+    .close-modal {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close-modal:hover {
+        color: #000;
+    }
+
+    /* Print styling */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #surat-kelulusan-template, #surat-kelulusan-template * {
+            visibility: visible;
+        }
+        #surat-kelulusan-template {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+    }
+</style>
+
+<div style="max-width: 700px; margin: 0 auto; text-align: center;" id="main-content-hasil">
 
     @if(!$hasil)
         <div class="glass-card" style="padding: 4rem 2rem;">
@@ -24,9 +86,85 @@
                     <p>Posisi Ranking Peringkat: <strong>#{{ $hasil->ranking }}</strong></p>
                 </div>
             </div>
-            <div style="margin-top: 2rem;">
-                <button class="btn-primary" onclick="window.print()" style="font-size: 1.125rem;">🖨️ Cetak Bukti Kelulusan</button>
+            
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn-outline" onclick="openModal()" style="font-size: 1.125rem;">📄 Lihat Surat Kelulusan</button>
+                <button class="btn-primary" onclick="downloadPDF()" style="font-size: 1.125rem;">⬇️ Download PDF</button>
             </div>
+            
+            <!-- TEMPLATE SURAT KELULUSAN -->
+            <div id="surat-kelulusan-container">
+                <div id="surat-kelulusan-template" style="background: white; padding: 40px; font-family: 'Times New Roman', Times, serif; color: black; text-align: left; line-height: 1.6;">
+                    <div style="text-align: center; border-bottom: 3px solid black; padding-bottom: 20px; margin-bottom: 30px;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">🎓</div>
+                        <h2 style="margin: 0; font-size: 24px; text-transform: uppercase; font-family: 'Times New Roman', Times, serif;">PANITIA PENERIMAAN PESERTA DIDIK BARU</h2>
+                        <h1 style="margin: 5px 0; font-size: 28px; text-transform: uppercase; font-family: 'Times New Roman', Times, serif;">SEKOLAH MASA DEPAN GEMILANG</h1>
+                        <p style="margin: 0; font-size: 14px;">Jl. Pendidikan No. 123, Jakarta, Indonesia | Telp: (021) 1234567 | Email: info@sekolah.sch.id</p>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h3 style="margin: 0; text-decoration: underline; font-family: 'Times New Roman', Times, serif;">SURAT KEPUTUSAN KELULUSAN</h3>
+                        <p style="margin: 5px 0;">Nomor: {{ sprintf('%03d', $pendaftaran->id) }}/PPDB/{{ date('Y') }}</p>
+                    </div>
+
+                    <p>Berdasarkan hasil seleksi administrasi dan ujian masuk PPDB Tahun Ajaran {{ date('Y') }}/{{ date('Y', strtotime('+1 year')) }}, maka Panitia Penerimaan Peserta Didik Baru menyatakan bahwa:</p>
+
+                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 30%; padding: 5px 0;">Nama Lengkap</td>
+                            <td style="width: 5%; padding: 5px 0;">:</td>
+                            <td style="width: 65%; padding: 5px 0; font-weight: bold;">{{ Auth::user()->name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;">Nomor Pendaftaran</td>
+                            <td style="padding: 5px 0;">:</td>
+                            <td style="padding: 5px 0; font-weight: bold;">{{ $pendaftaran->nisn }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;">Dinyatakan</td>
+                            <td style="padding: 5px 0;">:</td>
+                            <td style="padding: 5px 0; font-weight: bold; font-size: 18px;">LULUS</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;">Pada Jurusan</td>
+                            <td style="padding: 5px 0;">:</td>
+                            <td style="padding: 5px 0; font-weight: bold;">{{ $pendaftaran->jurusan->nama }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px 0;">Kelas</td>
+                            <td style="padding: 5px 0;">:</td>
+                            <td style="padding: 5px 0; font-weight: bold;">Reguler</td>
+                        </tr>
+                    </table>
+
+                    <p>Dimohon hadir untuk daftar ulang pada tanggal <strong>{{ date('d F Y', strtotime('+7 days')) }}</strong> dengan membawa berkas asli.</p>
+                    <p>Demikian surat keputusan ini dibuat untuk dapat dipergunakan sebagaimana mestinya.</p>
+
+                    <div style="margin-top: 50px; text-align: right; display: flex; justify-content: flex-end;">
+                        <div style="text-align: center; width: 300px;">
+                            <p style="margin-bottom: 5px;">Jakarta, {{ date('d F Y') }}</p>
+                            <p style="margin-bottom: 80px;">Kepala Sekolah</p>
+                            <p style="font-weight: bold; text-decoration: underline; margin-bottom: 0;">Dr. H. Pendidikan, M.Pd.</p>
+                            <p style="margin-top: 0;">NIP. 19800101 200501 1 001</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div id="modalSurat" class="modal-surat">
+                <div class="modal-content-surat">
+                    <span class="close-modal" onclick="closeModal()">&times;</span>
+                    <div id="modal-body-surat" style="margin-bottom: 20px; border: 1px solid #ccc;">
+                        <!-- Template akan di-clone ke sini oleh JS -->
+                    </div>
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn-primary" onclick="downloadPDF()" style="padding: 10px 20px; margin-right: 10px;">Download PDF</button>
+                        <button class="btn-outline" onclick="closeModal()" style="padding: 10px 20px;">Tutup</button>
+                    </div>
+                </div>
+            </div>
+
         @else
             <!-- TIDAK DITERIMA -->
             <div class="glass-card" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 4rem 2rem;">
@@ -44,4 +182,45 @@
     @endif
 
 </div>
+
+<!-- Include html2pdf.js for Client-Side PDF Generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    function openModal() {
+        var modal = document.getElementById("modalSurat");
+        var template = document.getElementById("surat-kelulusan-template").cloneNode(true);
+        template.id = "cloned-template";
+        
+        var modalBody = document.getElementById("modal-body-surat");
+        modalBody.innerHTML = '';
+        modalBody.appendChild(template);
+        
+        modal.style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("modalSurat").style.display = "none";
+    }
+
+    function downloadPDF() {
+        var element = document.getElementById("surat-kelulusan-template");
+        
+        var opt = {
+            margin:       [10, 10, 10, 10],
+            filename:     'Surat_Kelulusan_{{ Auth::user()->name }}.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        var tempDiv = document.createElement('div');
+        tempDiv.appendChild(element.cloneNode(true));
+        tempDiv.style.display = 'block';
+        tempDiv.style.width = '800px';
+        tempDiv.style.padding = '40px';
+        tempDiv.style.background = 'white';
+        
+        html2pdf().set(opt).from(tempDiv).save();
+    }
+</script>
 @endsection
