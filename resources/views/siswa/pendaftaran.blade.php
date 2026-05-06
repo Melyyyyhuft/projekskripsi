@@ -53,8 +53,12 @@
             <select name="jurusan_id" id="jurusan_id" class="form-control" required>
                 <option value="">-- Pilih Jurusan --</option>
                 @foreach($jurusans as $jurusan)
-                    <option value="{{ $jurusan->id }}" {{ (isset($pendaftaran) && $pendaftaran->jurusan_id == $jurusan->id) ? 'selected' : '' }}>
-                        {{ $jurusan->nama }} (Kuota: {{ $jurusan->kuota }})
+                    @php $sisa = $jurusan->sisa_kuota; @endphp
+                    <option value="{{ $jurusan->id }}" 
+                        {{ (isset($pendaftaran) && $pendaftaran->jurusan_id == $jurusan->id) ? 'selected' : '' }}
+                        {{ $sisa <= 0 ? 'disabled' : '' }}
+                        style="{{ $sisa <= 0 ? 'color: red; font-weight: bold;' : '' }}">
+                        {{ $jurusan->nama }} &ndash; {{ $sisa <= 0 ? 'Kuota Penuh' : 'Sisa ' . $sisa . ' Kursi' }}
                     </option>
                 @endforeach
             </select>

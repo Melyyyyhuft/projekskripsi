@@ -17,11 +17,8 @@
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->is('admin/dashboard') ? 'active' : '' }}">
                 <span>🏠 Dashboard</span>
             </a>
-            <a href="#" class="sidebar-item">
-                <span>📅 Pengaturan</span>
-            </a>
-            <a href="#" class="sidebar-item">
-                <span>🎓 Jurusan</span>
+            <a href="{{ route('admin.pengaturan.index') }}" class="sidebar-item {{ request()->is('admin/pengaturan') ? 'active' : '' }}">
+                <span>⚙️ Pengaturan Sistem</span>
             </a>
             <a href="{{ route('admin.pendaftaran.index') }}" class="sidebar-item {{ request()->is('admin/pendaftaran') ? 'active' : '' }}">
                 <span>📝 Pendaftaran</span>

@@ -95,25 +95,29 @@
             <!-- TEMPLATE SURAT KELULUSAN -->
             <div id="surat-kelulusan-container">
                 <div id="surat-kelulusan-template" style="background: white; padding: 40px; font-family: 'Times New Roman', Times, serif; color: black; text-align: left; line-height: 1.6;">
-                    <div style="text-align: center; border-bottom: 3px solid black; padding-bottom: 20px; margin-bottom: 30px;">
-                        <div style="font-size: 40px; margin-bottom: 10px;">🎓</div>
-                        <h2 style="margin: 0; font-size: 24px; text-transform: uppercase; font-family: 'Times New Roman', Times, serif;">PANITIA PENERIMAAN PESERTA DIDIK BARU</h2>
-                        <h1 style="margin: 5px 0; font-size: 28px; text-transform: uppercase; font-family: 'Times New Roman', Times, serif;">SEKOLAH MASA DEPAN GEMILANG</h1>
-                        <p style="margin: 0; font-size: 14px;">Jl. Pendidikan No. 123, Jakarta, Indonesia | Telp: (021) 1234567 | Email: info@sekolah.sch.id</p>
+                    <!-- Logo dan Nama Sekolah -->
+                    <div style="text-align: center; border-bottom: 3px solid black; padding-bottom: 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 20px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Tut_Wuri_Handayani.svg/120px-Tut_Wuri_Handayani.svg.png" alt="Logo Sekolah" style="width: 80px; height: 80px; object-fit: contain;">
+                        <div>
+                            <h2 style="margin: 0; font-size: 24px; text-transform: uppercase; font-family: 'Times New Roman', Times, serif; font-weight: bold;">PANITIA PENERIMAAN PESERTA DIDIK BARU</h2>
+                            <h1 style="margin: 5px 0; font-size: 28px; text-transform: uppercase; font-family: 'Times New Roman', Times, serif; font-weight: bold;">SEKOLAH MASA DEPAN GEMILANG</h1>
+                            <p style="margin: 0; font-size: 14px;">Jl. Pendidikan No. 123, Jakarta, Indonesia | Telp: (021) 1234567 | Email: info@sekolah.sch.id</p>
+                        </div>
                     </div>
 
                     <div style="text-align: center; margin-bottom: 30px;">
                         <h3 style="margin: 0; text-decoration: underline; font-family: 'Times New Roman', Times, serif;">SURAT KEPUTUSAN KELULUSAN</h3>
+                        <!-- Nomor Surat Otomatis dan Unik: ID siswa + Tahun -->
                         <p style="margin: 5px 0;">Nomor: {{ sprintf('%03d', $pendaftaran->id) }}/PPDB/{{ date('Y') }}</p>
                     </div>
 
-                    <p>Berdasarkan hasil seleksi administrasi dan ujian masuk PPDB Tahun Ajaran {{ date('Y') }}/{{ date('Y', strtotime('+1 year')) }}, maka Panitia Penerimaan Peserta Didik Baru menyatakan bahwa:</p>
+                    <p>Berdasarkan hasil seleksi administrasi dan ujian masuk PPDB Tahun Ajaran {{ date('Y') }}, maka:</p>
 
-                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+                    <table style="width: 100%; margin: 20px 0; border-collapse: collapse; margin-left: 20px;">
                         <tr>
-                            <td style="width: 30%; padding: 5px 0;">Nama Lengkap</td>
+                            <td style="width: 25%; padding: 5px 0;">Nama Lengkap</td>
                             <td style="width: 5%; padding: 5px 0;">:</td>
-                            <td style="width: 65%; padding: 5px 0; font-weight: bold;">{{ Auth::user()->name }}</td>
+                            <td style="width: 70%; padding: 5px 0; font-weight: bold;">{{ Auth::user()->name }}</td>
                         </tr>
                         <tr>
                             <td style="padding: 5px 0;">Nomor Pendaftaran</td>
@@ -123,7 +127,7 @@
                         <tr>
                             <td style="padding: 5px 0;">Dinyatakan</td>
                             <td style="padding: 5px 0;">:</td>
-                            <td style="padding: 5px 0; font-weight: bold; font-size: 18px;">LULUS</td>
+                            <td style="padding: 5px 0; font-weight: bold; font-size: 18px; color: #059669;">LULUS</td>
                         </tr>
                         <tr>
                             <td style="padding: 5px 0;">Pada Jurusan</td>
@@ -138,12 +142,16 @@
                     </table>
 
                     <p>Dimohon hadir untuk daftar ulang pada tanggal <strong>{{ date('d F Y', strtotime('+7 days')) }}</strong> dengan membawa berkas asli.</p>
-                    <p>Demikian surat keputusan ini dibuat untuk dapat dipergunakan sebagaimana mestinya.</p>
 
-                    <div style="margin-top: 50px; text-align: right; display: flex; justify-content: flex-end;">
+                    <div style="margin-top: 50px; display: flex; justify-content: flex-end;">
                         <div style="text-align: center; width: 300px;">
+                            <!-- Tanggal cetak otomatis -->
                             <p style="margin-bottom: 5px;">Jakarta, {{ date('d F Y') }}</p>
-                            <p style="margin-bottom: 80px;">Kepala Sekolah</p>
+                            <p style="margin-bottom: 10px;">Kepala Sekolah</p>
+                            <!-- Tanda tangan digital -->
+                            <div style="font-family: 'Brush Script MT', 'Cedarville Cursive', cursive; font-size: 32px; color: #1a365d; transform: rotate(-5deg); margin: 15px 0;">
+                                Dr. H. Pendidikan
+                            </div>
                             <p style="font-weight: bold; text-decoration: underline; margin-bottom: 0;">Dr. H. Pendidikan, M.Pd.</p>
                             <p style="margin-top: 0;">NIP. 19800101 200501 1 001</p>
                         </div>

@@ -14,7 +14,11 @@ class PendaftaranController extends Controller
 {
     public function create()
     {
-        $jurusans = Jurusan::all();
+        // Menghitung jumlah diterima secara efisien
+        $jurusans = Jurusan::withCount(['pendaftarans as diterima_count' => function ($query) {
+            $query->where('status', 'diterima');
+        }])->get();
+        
         $pendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
         return view('siswa.pendaftaran', compact('jurusans', 'pendaftaran'));
     }
@@ -33,6 +37,23 @@ class PendaftaranController extends Controller
             'pasfoto' => 'required|mimes:jpg,jpeg,png|max:2048',
             'sertifikat.*' => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048'
         ]);
+
+        $existingPendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
+
+        // Validasi double submit (mencegah edit jika status sudah diproses)
+        if ($existingPendaftaran && in_array($existingPendaftaran->status, ['lolos_admin', 'sudah_ujian', 'diterima', 'tidak_diterima'])) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Data pendaftaran Anda sudah diproses dan tidak dapat diubah lagi.');
+        }
+
+        $jurusan = Jurusan::findOrFail($request->jurusan_id);
+
+        // Pengecekan sisa kuota
+        if ($jurusan->sisa_kuota <= 0) {
+            // Boleh update data jika jurusan_id yang dipilih sama dengan yang sebelumnya (tidak pindah jurusan)
+            if (!$existingPendaftaran || $existingPendaftaran->jurusan_id != $request->jurusan_id) {
+                return back()->with('error', 'Mohon maaf, kuota jurusan ' . $jurusan->nama . ' sudah penuh.')->withInput();
+            }
+        }
 
         $pendaftaran = Pendaftaran::updateOrCreate(
             ['user_id' => Auth::id()],

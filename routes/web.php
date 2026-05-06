@@ -40,6 +40,14 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     
     Route::get('/seleksi', [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])->name('admin.seleksi.index');
     Route::post('/seleksi/jalankan', [\App\Http\Controllers\Admin\SeleksiController::class, 'jalankanSeleksi'])->name('admin.seleksi.run');
+    
+    // Pengaturan & Jurusan
+    Route::get('/pengaturan', [\App\Http\Controllers\Admin\PengaturanController::class, 'index'])->name('admin.pengaturan.index');
+    Route::post('/pengaturan/umum', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateUmum'])->name('admin.pengaturan.umum');
+    Route::post('/pengaturan/periode', [\App\Http\Controllers\Admin\PengaturanController::class, 'updatePeriode'])->name('admin.pengaturan.periode');
+    Route::post('/pengaturan/bobot', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateBobot'])->name('admin.pengaturan.bobot');
+    
+    Route::resource('jurusan-setting', \App\Http\Controllers\Admin\JurusanController::class)->names('admin.jurusan-setting');
 });
 
 // Siswa Routes

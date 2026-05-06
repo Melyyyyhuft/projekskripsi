@@ -20,6 +20,42 @@
     </div>
 </div>
 
+<div class="glass-card" style="margin-bottom: 2rem;">
+    <h3 style="margin-top: 0; margin-bottom: 1.5rem;">Statistik Kuota Jurusan</h3>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nama Jurusan</th>
+                    <th style="text-align: center;">Kuota Total</th>
+                    <th style="text-align: center;">Jumlah Diterima</th>
+                    <th style="text-align: center;">Sisa Kuota</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($jurusans as $jurusan)
+                <tr>
+                    <td><strong>{{ $jurusan->nama }}</strong></td>
+                    <td style="text-align: center;">{{ $jurusan->kuota }}</td>
+                    <td style="text-align: center;">
+                        <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 999px; font-weight: 600;">
+                            {{ $jurusan->diterima_count }}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        @if($jurusan->sisa_kuota <= 0)
+                            <span style="color: #ef4444; font-weight: 700;">Penuh (0)</span>
+                        @else
+                            <span style="color: var(--primary); font-weight: 700;">{{ $jurusan->sisa_kuota }}</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <div class="glass-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h3 style="margin: 0;">Pendaftar Terbaru</h3>
