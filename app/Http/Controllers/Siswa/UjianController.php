@@ -20,18 +20,34 @@ class UjianController extends Controller
         $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
 
         if (!$pendaftaran || $pendaftaran->status != 'lolos_admin') {
-            return redirect()->route('siswa.dashboard')->with('error', 'Anda belum diverifikasi atau pendaftaran belum lengkap untuk mengikuti ujian.');
+            return redirect()->route('siswa.dashboard')->with('error', 'Anda belum diverifikasi atau tidak memenuhi syarat untuk mengikuti ujian.');
+        }
+
+        // Ambil ujian aktif
+        $ujian = Ujian::where('is_active', true)->first();
+
+        if (!$ujian) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Ujian belum tersedia. Silakan tunggu informasi dari panitia.');
+        }
+
+        // Cek apakah ujian sudah ditutup
+        if ($ujian->is_tutup) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Periode ujian telah ditutup. Anda tidak dapat mengikuti ujian.');
+        }
+
+        // Cek periode jadwal jika diset
+        $now = now();
+        if ($ujian->jadwal_mulai && $now->lt(\Carbon\Carbon::parse($ujian->jadwal_mulai))) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Ujian belum dimulai. Jadwal mulai: ' . \Carbon\Carbon::parse($ujian->jadwal_mulai)->format('d M Y H:i'));
+        }
+        if ($ujian->jadwal_selesai && $now->gt(\Carbon\Carbon::parse($ujian->jadwal_selesai))) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Periode ujian telah berakhir pada ' . \Carbon\Carbon::parse($ujian->jadwal_selesai)->format('d M Y H:i') . '.');
         }
 
         // Cek apakah sudah ujian
         $hasil = HasilUjian::where('user_id', $user_id)->first();
         if ($hasil) {
             return redirect()->route('siswa.dashboard')->with('success', 'Anda sudah mengikuti ujian. Silakan tunggu pengumuman hasil seleksi.');
-        }
-
-        $ujian = Ujian::where('is_active', true)->first();
-        if (!$ujian) {
-            return redirect()->route('siswa.dashboard')->with('error', 'Ujian belum tersedia.');
         }
 
         $activeTahun = \App\Models\Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';

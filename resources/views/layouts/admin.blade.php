@@ -29,8 +29,8 @@
             <a href="{{ route('admin.ujian.index') }}" class="sidebar-item {{ request()->is('admin/ujian*') ? 'active' : '' }}">
                 <span>📝 Modul Ujian</span>
             </a>
-            <a href="{{ route('admin.seleksi.index') }}" class="sidebar-item {{ request()->is('admin/seleksi') ? 'active' : '' }}">
-                <span>🏆 Hasil Seleksi</span>
+            <a href="{{ route('admin.seleksi.index') }}" class="sidebar-item {{ request()->is('admin/seleksi*') ? 'active' : '' }}">
+                <span>⚡ Proses Seleksi</span>
             </a>
 
             <div style="flex-grow: 1;"></div>

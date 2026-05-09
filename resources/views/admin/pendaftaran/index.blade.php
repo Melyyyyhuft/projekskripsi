@@ -10,10 +10,9 @@
             <input type="hidden" name="tab" value="{{ $tab }}">
             <select name="status" class="form-control" style="padding: 0.4rem 0.8rem; height: auto;" onchange="this.form.submit()">
                 <option value="">Semua Status</option>
-                <option value="menunggu_verifikasi" {{ $filterStatus == 'menunggu_verifikasi' ? 'selected' : '' }}>Belum Diverifikasi</option>
+                <option value="menunggu_verifikasi" {{ $filterStatus == 'menunggu_verifikasi' ? 'selected' : '' }}>Pending</option>
                 <option value="revisi" {{ $filterStatus == 'revisi' ? 'selected' : '' }}>Revisi</option>
-                <option value="lolos_admin" {{ $filterStatus == 'lolos_admin' ? 'selected' : '' }}>Lulus (Verifikasi)</option>
-                <option value="ditolak_admin" {{ $filterStatus == 'ditolak_admin' ? 'selected' : '' }}>Tidak Lulus</option>
+                <option value="lolos_admin" {{ $filterStatus == 'lolos_admin' ? 'selected' : '' }}>Lolos Administrasi</option>
             </select>
         </form>
     </div>
@@ -56,14 +55,14 @@
                     <td><span style="background: #e0f2fe; color: var(--primary); padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600;">{{ $p->nilai_rapor }}</span></td>
                     <td>{{ $p->jurusan->nama }}</td>
                     <td>
-                        @if($p->status == 'menunggu_verifikasi')
-                            <span style="color: #d97706; font-weight: 600;">Menunggu</span>
-                        @elseif($p->status == 'lolos_admin')
-                            <span style="color: #059669; font-weight: 600;">Lolos Verifikasi</span>
-                        @elseif($p->status == 'ditolak_admin')
-                            <span style="color: #dc2626; font-weight: 600;">Ditolak</span>
+                        @if($p->status == 'menunggu_verifikasi' || $p->status == 'pending')
+                            <span style="background: #e0f2fe; color: #0284c7; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem;">PENDING</span>
+                        @elseif($p->status == 'revisi')
+                            <span style="background: #fef3c7; color: #d97706; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem;">REVISI</span>
+                        @elseif($p->status == 'lolos_admin' || $p->status == 'lolos_administrasi')
+                            <span style="background: #d1fae5; color: #059669; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem;">LOLOS ADMINISTRASI</span>
                         @else
-                            <span style="color: var(--gray-text); font-weight: 600; text-transform: uppercase;">{{ $p->status }}</span>
+                            <span style="color: var(--gray-text); font-weight: 600; text-transform: uppercase;">{{ str_replace('_', ' ', $p->status) }}</span>
                         @endif
                     </td>
                     <td>

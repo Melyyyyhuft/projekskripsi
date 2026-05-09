@@ -22,8 +22,27 @@
                 <tr>
                     <td style="font-weight: 600;">Status</td>
                     <td>
-                        <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; background: #e0f2fe; color: #0284c7;">
-                            {{ str_replace('_', ' ', strtoupper($pendaftaran->status)) }}
+                        @php
+                            $bg = '#e0f2fe';
+                            $text = '#0284c7';
+                            $label = str_replace('_', ' ', strtoupper($pendaftaran->status));
+                            
+                            if ($pendaftaran->status == 'menunggu_verifikasi' || $pendaftaran->status == 'pending') {
+                                $bg = '#e0f2fe'; // Blue
+                                $text = '#0284c7';
+                                $label = 'PENDING';
+                            } elseif ($pendaftaran->status == 'revisi') {
+                                $bg = '#fef3c7'; // Yellow
+                                $text = '#d97706';
+                                $label = 'REVISI';
+                            } elseif ($pendaftaran->status == 'lolos_admin' || $pendaftaran->status == 'lolos_administrasi') {
+                                $bg = '#d1fae5'; // Green
+                                $text = '#059669';
+                                $label = 'LOLOS ADMINISTRASI';
+                            }
+                        @endphp
+                        <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.8rem; background: {{ $bg }}; color: {{ $text }};">
+                            {{ $label }}
                         </span>
                     </td>
                 </tr>
@@ -37,20 +56,14 @@
                 <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST" style="flex: 1;">
                     @csrf
                     <input type="hidden" name="status" value="lolos_admin">
-                    <button type="submit" class="btn-primary" style="width: 100%; background: #10b981;" onclick="return confirm('Apakah Anda yakin meluluskan (verifikasi) siswa ini?');">Luluskan</button>
+                    <button type="submit" class="btn-primary" style="width: 100%; background: #10b981;" onclick="return confirm('Apakah Anda yakin ingin mengubah status verifikasi?');">Loloskan</button>
                 </form>
                 <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST" style="flex: 1;">
                     @csrf
-                    <input type="hidden" name="status" value="ditolak_admin">
-                    <button type="submit" class="btn-primary" style="width: 100%; background: #ef4444;" onclick="return confirm('Apakah Anda yakin menolak siswa ini?');">Tolak</button>
+                    <input type="hidden" name="status" value="revisi">
+                    <button type="submit" class="btn-primary" style="width: 100%; background: #f59e0b;" onclick="return confirm('Apakah Anda yakin ingin mengubah status verifikasi?');">Minta Revisi</button>
                 </form>
             </div>
-            
-            <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST" style="margin-top: 1rem;">
-                @csrf
-                <input type="hidden" name="status" value="revisi">
-                <button type="submit" class="btn-primary" style="width: 100%; background: #f59e0b;" onclick="return confirm('Minta siswa untuk memperbaiki berkasnya?');">Minta Revisi Berkas</button>
-            </form>
         </div>
         @endif
     </div>

@@ -40,10 +40,10 @@ class PendaftaranController extends Controller
     public function verifikasi(Request $request, $id)
     {
         $pendaftaran = Pendaftaran::findOrFail($id);
-        $request->validate(['status' => 'required|in:revisi,lolos_admin,ditolak_admin']);
+        $request->validate(['status' => 'required|in:revisi,lolos_admin']);
         
         $pendaftaran->update(['status' => $request->status]);
         
-        return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', 'Status pendaftaran berhasil diperbarui.');
+        return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', 'Status verifikasi berhasil diperbarui.');
     }
 }

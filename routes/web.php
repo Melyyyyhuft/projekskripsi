@@ -33,6 +33,8 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     // Rute Ujian & Seleksi
     Route::resource('ujian', \App\Http\Controllers\Admin\UjianController::class)->names('admin.ujian');
     Route::post('ujian/{ujian}/soal', [\App\Http\Controllers\Admin\UjianController::class, 'storeSoal'])->name('admin.ujian.soal.store');
+    Route::post('ujian/{ujian}/tutup', [\App\Http\Controllers\Admin\UjianController::class, 'tutupUjian'])->name('admin.ujian.tutup');
+
     
     Route::get('bank_soal/template', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplate'])->name('admin.bank_soal.template');
     Route::post('bank_soal/import', [\App\Http\Controllers\Admin\BankSoalController::class, 'import'])->name('admin.bank_soal.import');
@@ -40,6 +42,8 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     
     Route::get('/seleksi', [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])->name('admin.seleksi.index');
     Route::post('/seleksi/jalankan', [\App\Http\Controllers\Admin\SeleksiController::class, 'jalankanSeleksi'])->name('admin.seleksi.run');
+    Route::post('/seleksi/finalisasi', [\App\Http\Controllers\Admin\SeleksiController::class, 'finalisasi'])->name('admin.seleksi.finalisasi');
+
     
     // Pengaturan & Jurusan
     Route::get('/pengaturan', [\App\Http\Controllers\Admin\PengaturanController::class, 'index'])->name('admin.pengaturan.index');
