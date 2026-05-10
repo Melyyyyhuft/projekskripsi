@@ -11,19 +11,8 @@ use App\Models\HasilSeleksi;
 
 class SeleksiController extends Controller
 {
-    /**
-     * Bobot tetap: 60% Ujian, 40% Rapor
-     */
-    const BOBOT_UJIAN = 0.6;
-    const BOBOT_RAPOR = 0.4;
-
-    /**
-     * Ambang batas kategori kelulusan:
-     * ≥ 85 = Lulus Jalur Unggulan
-     * < 85 = Lulus Jalur Reguler
-     * Tidak Mengikuti Ujian = Gugur
-     */
-    const AMBANG_UNGGULAN = 85;
+    // Ambang batas kategori kelulusan (bisa diatur lewat DB nantinya)
+    const AMBANG_UNGGULAN = 80;
 
     // ──────────────────────────────────────────
     // INDEX — tampilkan halaman seleksi lengkap
@@ -43,6 +32,7 @@ class SeleksiController extends Controller
                 'siap_finalisasi',
                 'siap_diumumkan',
                 'gugur',
+                'revisi'
             ])
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -86,21 +76,29 @@ class SeleksiController extends Controller
             ->orderBy('skor_akhir', 'desc')
             ->get();
 
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+
         return view('admin.seleksi.index', compact(
             'semua',
             'statusSummary',
             'adaYangBisaSeleksi',
             'adaHasilSeleksi',
             'sudahDifinalisasi',
-            'hasil'
+            'hasil',
+            'settings'
         ));
     }
 
     // ──────────────────────────────────────────
-    // JALANKAN SELEKSI (Fleksibel)
+    // JALANKAN SELEKSI (Per Jurusan + Bonus Sertifikat)
     // ──────────────────────────────────────────
     public function jalankanSeleksi(Request $request)
     {
+        // Ambil Bobot dari Pengaturan
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        $bobotUjian = ($settings['bobot_ujian'] ?? 60) / 100;
+        $bobotRapor = ($settings['bobot_rapor'] ?? 40) / 100;
+
         // Blokir jika sudah difinalisasi
         if (HasilSeleksi::where('is_finalisasi', true)->exists()) {
             return redirect()->route('admin.seleksi.index')
@@ -111,98 +109,92 @@ class SeleksiController extends Controller
         $terpilihIds = $request->input('pendaftaran_ids', []);
 
         // ── Tentukan target siswa yang akan diproses ──
+        $query = Pendaftaran::with(['user', 'jurusan', 'berkas'])
+            ->where('status', 'sudah_ujian')
+            ->where('ditunda_seleksi', false);
+
         if ($mode === 'terpilih' && !empty($terpilihIds)) {
-            // Hanya proses siswa yang dipilih + sudah ujian + tidak ditunda
-            $pendaftarans = Pendaftaran::with('user')
-                ->whereIn('id', $terpilihIds)
-                ->where('status', 'sudah_ujian')
-                ->where('ditunda_seleksi', false)
-                ->get();
-
-            if ($pendaftarans->isEmpty()) {
-                return redirect()->route('admin.seleksi.index')
-                    ->with('error', 'Tidak ada siswa terpilih yang memenuhi syarat (sudah ujian & tidak ditunda).');
-            }
-        } else {
-            // Proses semua yang sudah ujian & tidak ditunda
-            $pendaftarans = Pendaftaran::with('user')
-                ->where('status', 'sudah_ujian')
-                ->where('ditunda_seleksi', false)
-                ->get();
-
-            if ($pendaftarans->isEmpty()) {
-                return redirect()->route('admin.seleksi.index')
-                    ->with('error', 'Tidak ada siswa yang memenuhi syarat untuk diseleksi (sudah ujian & tidak ditunda).');
-            }
+            $query->whereIn('id', $terpilihIds);
         }
 
-        // ── Validasi nilai rapor ──
-        $missingRapor = $pendaftarans->filter(fn($p) => $p->nilai_rapor === null);
-        if ($missingRapor->isNotEmpty()) {
-            $nama = $missingRapor->pluck('user.name')->implode(', ');
+        $pendaftarans = $query->get();
+
+        if ($pendaftarans->isEmpty()) {
             return redirect()->route('admin.seleksi.index')
-                ->with('error', "Siswa berikut belum memiliki nilai rapor: {$nama}");
+                ->with('error', 'Tidak ada siswa yang memenuhi syarat untuk diseleksi (sudah ujian & tidak ditunda).');
         }
 
-        // ── Hitung skor & simpan hasil ──
-        $hasilList = [];
+        // ── Mapping Bonus Sertifikat ──
+        $bonusMapping = [
+            'Sekolah'         => 2,
+            'Kecamatan'       => 3,
+            'Kabupaten/Kota'  => 5,
+            'Provinsi'        => 10,
+            'Nasional'        => 15,
+            'Internasional'   => 15,
+        ];
+
+        // ── Hitung skor & Kelompokkan per Jurusan ──
+        $dataPerJurusan = [];
         foreach ($pendaftarans as $p) {
             $ujian     = HasilUjian::where('user_id', $p->user_id)->first();
             $skorUjian = $ujian ? $ujian->skor : 0;
-            $skorAkhir = round((self::BOBOT_UJIAN * $skorUjian) + (self::BOBOT_RAPOR * $p->nilai_rapor), 2);
+            
+            // Hitung Bonus Sertifikat (hanya yang valid)
+            $bonusSertifikat = 0;
+            $sertifikats = $p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid');
+            foreach ($sertifikats as $sert) {
+                $bonusSertifikat += $bonusMapping[$sert->tingkat_prestasi] ?? 0;
+            }
 
-            $hasilList[] = [
+            // Rumus: (Ujian * Bobot) + (Rapor * Bobot) + Bonus
+            $skorAkhir = round(($bobotUjian * $skorUjian) + ($bobotRapor * $p->nilai_rapor) + $bonusSertifikat, 2);
+
+            $dataPerJurusan[$p->jurusan_id][] = [
                 'pendaftaran_id' => $p->id,
                 'skor_akhir'     => $skorAkhir,
+                'jurusan_id'     => $p->jurusan_id
             ];
         }
 
-        // Urutkan dari skor tertinggi
-        usort($hasilList, fn($a, $b) => $b['skor_akhir'] <=> $a['skor_akhir']);
+        // ── Proses Ranking per Jurusan ──
+        $jumlahProses = 0;
+        foreach ($dataPerJurusan as $jurusanId => $siswas) {
+            // Urutkan dari skor tertinggi
+            usort($siswas, fn($a, $b) => $b['skor_akhir'] <=> $a['skor_akhir']);
 
-        $rank = 1;
-        foreach ($hasilList as $item) {
-            // Kategori: ≥85 Unggulan, <85 Reguler
-            if ($item['skor_akhir'] >= self::AMBANG_UNGGULAN) {
-                $kategori        = 'Unggulan';
-                $statusKelulusan = true;
-            } else {
-                $kategori        = 'Reguler';
-                $statusKelulusan = true;
+            $rank = 1;
+            foreach ($siswas as $item) {
+                // Kategori berdasarkan skor akhir
+                $kategori = $item['skor_akhir'] >= self::AMBANG_UNGGULAN ? 'Unggulan' : 'Reguler';
+
+                HasilSeleksi::updateOrCreate(
+                    ['pendaftaran_id' => $item['pendaftaran_id']],
+                    [
+                        'skor_akhir'         => $item['skor_akhir'],
+                        'ranking'            => $rank,
+                        'status_kelulusan'   => true, // Default lulus karena sudah masuk kuota pendaftaran
+                        'kategori_kelulusan' => $kategori,
+                        'is_finalisasi'      => false,
+                    ]
+                );
+
+                Pendaftaran::where('id', $item['pendaftaran_id'])
+                    ->update(['status' => 'siap_finalisasi']);
+
+                $rank++;
+                $jumlahProses++;
             }
-
-            // Upsert: perbarui jika sudah ada (draft), buat baru jika belum
-            HasilSeleksi::updateOrCreate(
-                ['pendaftaran_id' => $item['pendaftaran_id']],
-                [
-                    'skor_akhir'         => $item['skor_akhir'],
-                    'ranking'            => $rank,
-                    'status_kelulusan'   => $statusKelulusan,
-                    'kategori_kelulusan' => $kategori,
-                    'is_finalisasi'      => false,
-                ]
-            );
-
-            Pendaftaran::where('id', $item['pendaftaran_id'])
-                ->update(['status' => 'siap_finalisasi']);
-
-            $rank++;
         }
 
-        $jumlah = count($hasilList);
         return redirect()->route('admin.seleksi.index')
-            ->with('success', "Proses seleksi berhasil! {$jumlah} siswa telah dikelompokkan. Hasil masih dapat diubah sebelum finalisasi.");
+            ->with('success', "Proses seleksi berhasil! {$jumlahProses} siswa telah dikalkulasi (Nilai + Bonus Sertifikat) dan diranking per jurusan.");
     }
 
-    // ──────────────────────────────────────────
-    // TUNDA / AKTIFKAN KEMBALI SELEKSI SISWA
-    // ──────────────────────────────────────────
     public function tundaSeleksi(Request $request)
     {
-        // Blokir jika sudah difinalisasi
         if (HasilSeleksi::where('is_finalisasi', true)->exists()) {
-            return redirect()->route('admin.seleksi.index')
-                ->with('error', 'Hasil seleksi sudah difinalisasi. Tidak dapat mengubah status.');
+            return redirect()->route('admin.seleksi.index')->with('error', 'Hasil seleksi sudah difinalisasi.');
         }
 
         $request->validate([
@@ -211,79 +203,39 @@ class SeleksiController extends Controller
         ]);
 
         $p = Pendaftaran::findOrFail($request->pendaftaran_id);
+        $p->update(['ditunda_seleksi' => ($request->aksi === 'tunda')]);
 
-        // Tidak bisa tunda siswa yang sudah difinalisasi
-        if ($p->hasilSeleksi && $p->hasilSeleksi->is_finalisasi) {
-            return redirect()->route('admin.seleksi.index')
-                ->with('error', 'Siswa ini sudah difinalisasi dan tidak bisa ditunda.');
-        }
-
-        $ditunda = $request->aksi === 'tunda';
-        $p->update(['ditunda_seleksi' => $ditunda]);
-
-        $pesan = $ditunda
-            ? "Siswa {$p->user->name} ditandai sebagai 'Ditunda Seleksi'."
-            : "Siswa {$p->user->name} diaktifkan kembali untuk seleksi.";
-
-        return redirect()->route('admin.seleksi.index')->with('success', $pesan);
+        return redirect()->route('admin.seleksi.index')->with('success', 'Status tunda berhasil diperbarui.');
     }
 
-    // ──────────────────────────────────────────
-    // TANDAI "TIDAK MENGIKUTI UJIAN" (tanpa tutup ujian)
-    // ──────────────────────────────────────────
     public function tandaTidakIkutUjian(Request $request)
     {
-        // Blokir jika sudah difinalisasi
         if (HasilSeleksi::where('is_finalisasi', true)->exists()) {
-            return redirect()->route('admin.seleksi.index')
-                ->with('error', 'Hasil seleksi sudah difinalisasi. Tidak dapat mengubah status ujian.');
+            return redirect()->route('admin.seleksi.index')->with('error', 'Hasil seleksi sudah difinalisasi.');
         }
 
-        $request->validate([
-            'pendaftaran_id' => 'required|exists:pendaftarans,id',
-        ]);
-
+        $request->validate(['pendaftaran_id' => 'required|exists:pendaftarans,id']);
         $p = Pendaftaran::findOrFail($request->pendaftaran_id);
-
-        // Hanya bisa ditandai jika masih lolos_admin (belum ujian)
-        if ($p->status !== 'lolos_admin') {
-            return redirect()->route('admin.seleksi.index')
-                ->with('error', "Siswa {$p->user->name} tidak bisa ditandai (status saat ini: {$p->status}).");
-        }
-
         $p->update(['status' => 'tidak_mengikuti_ujian']);
 
-        return redirect()->route('admin.seleksi.index')
-            ->with('success', "Siswa {$p->user->name} ditandai sebagai 'Tidak Mengikuti Ujian'. Akan dinyatakan Gugur saat seleksi dijalankan.");
+        return redirect()->route('admin.seleksi.index')->with('success', 'Siswa ditandai tidak mengikuti ujian.');
     }
 
-    // ──────────────────────────────────────────
-    // FINALISASI — kunci semua hasil draft
-    // ──────────────────────────────────────────
     public function finalisasi()
     {
-        $hasilList = HasilSeleksi::with('pendaftaran')
-            ->where('is_finalisasi', false)
-            ->get();
+        $hasilList = HasilSeleksi::where('is_finalisasi', false)->get();
 
         if ($hasilList->isEmpty()) {
-            return redirect()->route('admin.seleksi.index')
-                ->with('error', 'Tidak ada hasil seleksi yang siap difinalisasi. Jalankan Proses Seleksi terlebih dahulu.');
+            return redirect()->route('admin.seleksi.index')->with('error', 'Tidak ada hasil draft untuk difinalisasi.');
         }
 
-        // Kunci semua hasil draft
         foreach ($hasilList as $hasil) {
             $hasil->update(['is_finalisasi' => true]);
-            if ($hasil->pendaftaran) {
-                $hasil->pendaftaran->update(['status' => 'siap_diumumkan']);
-            }
+            $hasil->pendaftaran->update(['status' => 'siap_diumumkan']);
         }
 
-        // Siswa tidak_mengikuti_ujian → gugur (sudah final)
-        Pendaftaran::where('status', 'tidak_mengikuti_ujian')
-            ->update(['status' => 'gugur']);
+        Pendaftaran::where('status', 'tidak_mengikuti_ujian')->update(['status' => 'gugur']);
 
-        return redirect()->route('admin.seleksi.index')
-            ->with('success', 'Finalisasi berhasil! Hasil seleksi telah dikunci permanen dan siswa sudah dapat melihat pengumuman.');
+        return redirect()->route('admin.seleksi.index')->with('success', 'Finalisasi berhasil! Hasil telah diumumkan.');
     }
 }

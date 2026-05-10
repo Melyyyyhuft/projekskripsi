@@ -5,8 +5,9 @@ use App\Http\Controllers\AuthController;
 use App\Models\Jurusan;
 
 Route::get('/', function () {
-    $jurusans = Jurusan::all();
-    return view('landing', compact('jurusans'));
+    $jurusans = \App\Models\Jurusan::all();
+    $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    return view('landing', compact('jurusans', 'settings'));
 });
 
 // Authentication Routes
@@ -15,6 +16,11 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Lupa Password (Statis)
+Route::get('/lupa-password', function () {
+    return view('auth.lupa-password');
+});
 
 // Admin Routes
 Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {

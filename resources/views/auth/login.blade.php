@@ -31,6 +31,9 @@
                     <i class="fa-solid fa-lock" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--gray-text);"></i>
                     <input type="password" name="password" id="password" class="form-control" style="padding-left: 2.75rem;" required placeholder="Masukkan password">
                 </div>
+                <div style="text-align: right; margin-top: 0.5rem;">
+                    <a href="{{ url('/lupa-password') }}" style="color: var(--primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Lupa Password?</a>
+                </div>
             </div>
             
             <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem; font-size: 1.125rem;">
@@ -39,7 +42,13 @@
         </form>
         
         <div style="text-align: center; margin-top: 2rem; color: var(--gray-text);">
-            Belum punya akun? <a href="{{ url('/register') }}" style="color: var(--primary); font-weight: 600;">Daftar Sekarang</a>
+            @if(($statusPPDB ?? 'tutup') == 'buka')
+                Belum punya akun? <a href="{{ url('/register') }}" style="color: var(--primary); font-weight: 600;">Daftar Sekarang</a>
+            @else
+                <span style="background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #64748b; border: 1px dashed #cbd5e1;">
+                    <i class="fa-solid fa-lock"></i> Pendaftaran telah ditutup
+                </span>
+            @endif
         </div>
     </div>
 </div>

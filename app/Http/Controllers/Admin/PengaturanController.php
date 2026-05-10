@@ -43,10 +43,14 @@ class PengaturanController extends Controller
         $request->validate([
             'tgl_buka' => 'required|date',
             'tgl_tutup' => 'required|date|after_or_equal:tgl_buka',
+            'tgl_mulai_cbt' => 'required|date',
+            'durasi_cbt' => 'required|numeric|min:1',
         ]);
 
         Pengaturan::updateOrCreate(['key' => 'tgl_buka'], ['value' => $request->tgl_buka]);
         Pengaturan::updateOrCreate(['key' => 'tgl_tutup'], ['value' => $request->tgl_tutup]);
+        Pengaturan::updateOrCreate(['key' => 'tgl_mulai_cbt'], ['value' => $request->tgl_mulai_cbt]);
+        Pengaturan::updateOrCreate(['key' => 'durasi_cbt'], ['value' => $request->durasi_cbt]);
 
         // Cek dan update status PPDB secara otomatis
         $today = date('Y-m-d');
@@ -54,7 +58,7 @@ class PengaturanController extends Controller
             Pengaturan::updateOrCreate(['key' => 'status_ppdb'], ['value' => 'tutup']);
         }
 
-        return back()->with('success', 'Pengaturan Periode Pendaftaran berhasil diperbarui!');
+        return back()->with('success', 'Pengaturan Periode Pendaftaran & CBT berhasil diperbarui!');
     }
 
     public function updateBobot(Request $request)

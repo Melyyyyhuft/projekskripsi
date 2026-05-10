@@ -11,12 +11,18 @@
         <div class="badge">
             <i class="fa-solid fa-star"></i> Pendaftaran Tahun Ajaran Baru Telah Dibuka
         </div>
-        <h1 class="hero-title">Wujudkan Masa Depan Gemilang Bersama <span class="text-gradient">Kami</span></h1>
+        <h1 class="hero-title">Wujudkan Masa Depan Gemilang Bersama Kami<span class="text-gradient"></span></h1>
         <p class="hero-subtitle">Sistem Penerimaan Peserta Didik Baru yang dirancang khusus untuk memberikan pengalaman pendaftaran yang Cepat, Transparan, dan Modern.</p>
         <div class="hero-actions">
-            <a href="{{ url('/login') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
-                Daftar Sekarang <i class="fa-solid fa-arrow-right"></i>
-            </a>
+            @if(($settings['status_ppdb'] ?? 'tutup') == 'buka')
+                <a href="{{ url('/login') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
+                    Daftar Sekarang <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            @else
+                <button class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; background: #94a3b8; cursor: not-allowed; border: none;" disabled title="Pendaftaran telah ditutup">
+                    Pendaftaran Ditutup <i class="fa-solid fa-lock"></i>
+                </button>
+            @endif
             <a href="#tentang" class="btn-outline" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
                 Pelajari Lebih Lanjut
             </a>
@@ -127,8 +133,14 @@
     <p style="font-size: 1.25rem; margin-bottom: 3rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
         Jangan lewatkan kesempatan untuk menjadi bagian dari komunitas belajar terbaik.
     </p>
-    <a href="{{ url('/login') }}" class="btn-outline" style="border-color: var(--white); color: var(--white); padding: 1rem 3rem; font-size: 1.125rem;">
-        Mulai Pendaftaran
-    </a>
+    @if(($settings['status_ppdb'] ?? 'tutup') == 'buka')
+        <a href="{{ url('/login') }}" class="btn-outline" style="border-color: var(--white); color: var(--white); padding: 1rem 3rem; font-size: 1.125rem;">
+            Mulai Pendaftaran
+        </a>
+    @else
+        <button class="btn-outline" style="border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.7); padding: 1rem 3rem; font-size: 1.125rem; cursor: not-allowed;" disabled>
+            Pendaftaran Ditutup
+        </button>
+    @endif
 </section>
 @endsection

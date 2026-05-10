@@ -57,8 +57,8 @@
                     <option value="{{ $jurusan->id }}" 
                         {{ (isset($pendaftaran) && $pendaftaran->jurusan_id == $jurusan->id) ? 'selected' : '' }}
                         {{ $sisa <= 0 ? 'disabled' : '' }}
-                        style="{{ $sisa <= 0 ? 'color: red; font-weight: bold;' : '' }}">
-                        {{ $jurusan->nama }} &ndash; {{ $sisa <= 0 ? 'Kuota Penuh' : 'Sisa ' . $sisa . ' Kursi' }}
+                        style="{{ $sisa <= 0 ? 'color: #ef4444; font-weight: bold;' : '' }}">
+                        {{ $jurusan->nama }} &ndash; {{ $sisa <= 0 ? 'Penuh' : 'Tersedia' }}
                     </option>
                 @endforeach
             </select>

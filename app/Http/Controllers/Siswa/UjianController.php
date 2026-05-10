@@ -33,6 +33,26 @@ class UjianController extends Controller
         // Ambil ujian aktif untuk ditampilkan di halaman info
         $ujianAktif = Ujian::where('is_active', true)->where('is_tutup', false)->first();
 
+        // Pengecekan Periode CBT Global dari Pengaturan
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        $tglMulaiGlobal = $settings['tgl_mulai_cbt'] ?? null;
+        $durasiGlobal = $settings['durasi_cbt'] ?? 0;
+        $now = now();
+        
+        if ($tglMulaiGlobal) {
+            $start = \Carbon\Carbon::parse($tglMulaiGlobal);
+            $end = (clone $start)->addDays($durasiGlobal)->endOfDay();
+            
+            if ($now->lt($start)) {
+                $pesan = 'Ujian belum dimulai. Periode ujian CBT: ' . $start->format('d M Y') . ' s/d ' . $end->format('d M Y');
+                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif'));
+            }
+            if ($now->gt($end)) {
+                $pesan = 'Periode ujian CBT telah berakhir pada ' . $end->format('d M Y') . '.';
+                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif'));
+            }
+        }
+
         if (!$pendaftaran || !in_array($pendaftaran->status, $statusBisaUjian)) {
             $pesan = 'Anda belum memenuhi syarat untuk mengikuti ujian.';
             if ($pendaftaran) {

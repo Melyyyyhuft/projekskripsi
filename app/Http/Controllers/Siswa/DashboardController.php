@@ -32,11 +32,14 @@ class DashboardController extends Controller
         // Hasil seleksi (draft atau final)
         $hasilSeleksi = $pendaftaran ? $pendaftaran->hasilSeleksi : null;
 
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+
         return view('siswa.dashboard', compact(
             'pendaftaran',
             'ujian_aktif',
             'hasilUjian',
-            'hasilSeleksi'
+            'hasilSeleksi',
+            'settings'
         ));
     }
 }

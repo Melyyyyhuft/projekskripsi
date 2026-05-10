@@ -16,15 +16,16 @@ class Jurusan extends Model
         return $this->hasMany(Pendaftaran::class);
     }
 
-    // Hitung jumlah pendaftar yang sudah diterima
-    public function getDiterimaCountAttribute()
+    // Hitung jumlah pendaftar (semua pendaftar aktif)
+    public function getPendaftarCountAttribute()
     {
-        return $this->pendaftarans()->where('status', 'diterima')->count();
+        // Menghitung semua pendaftar kecuali yang ditolak/dibatalkan jika ada
+        return $this->pendaftarans()->whereNotIn('status', ['ditolak_admin', 'tidak_diterima'])->count();
     }
 
-    // Hitung sisa kuota: kuota - jumlah diterima
+    // Hitung sisa kuota: kuota - jumlah pendaftar
     public function getSisaKuotaAttribute()
     {
-        return max(0, $this->kuota - $this->diterima_count);
+        return max(0, $this->kuota - $this->pendaftar_count);
     }
 }

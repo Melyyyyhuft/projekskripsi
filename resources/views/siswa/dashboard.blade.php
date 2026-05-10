@@ -232,7 +232,22 @@
         </div>
 
         <div style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;font-size:.9rem;">
-            @if($ujian_aktif)
+            @php
+                $tglMulaiGlobal = $settings['tgl_mulai_cbt'] ?? null;
+                $durasiGlobal = $settings['durasi_cbt'] ?? 0;
+                $tglSelesaiGlobal = $tglMulaiGlobal ? \Carbon\Carbon::parse($tglMulaiGlobal)->addDays($durasiGlobal) : null;
+                $now = now();
+                $isPeriodActive = $tglMulaiGlobal && $now->between(\Carbon\Carbon::parse($tglMulaiGlobal), $tglSelesaiGlobal);
+                $isBeforePeriod = $tglMulaiGlobal && $now->lt(\Carbon\Carbon::parse($tglMulaiGlobal));
+                $isAfterPeriod = $tglSelesaiGlobal && $now->gt($tglSelesaiGlobal);
+            @endphp
+
+            @if($tglMulaiGlobal)
+                <div style="margin-bottom: .75rem; background: #f0f9ff; padding: .75rem; border-radius: 8px; border: 1px solid #bae6fd;">
+                    <p style="margin:0; color:#0369a1; font-weight:700;"><i class="fa-solid fa-calendar-days"></i> Periode Ujian CBT:</p>
+                    <p style="margin:0; font-size:.85rem;">{{ \Carbon\Carbon::parse($tglMulaiGlobal)->format('d M Y') }} s/d {{ $tglSelesaiGlobal->format('d M Y') }}</p>
+                </div>
+            @elseif($ujian_aktif)
                 <div style="margin-bottom: .5rem; background: #f8fafc; padding: .5rem; border-radius: 8px;">
                     <p style="margin:0;"><strong>Tgl:</strong> {{ \Carbon\Carbon::parse($ujian_aktif->jadwal_mulai)->format('d M Y H:i') }}</p>
                     <p style="margin:0;"><strong>Durasi:</strong> {{ $ujian_aktif->durasi_menit }} Menit</p>
@@ -241,12 +256,16 @@
 
             @if($hasilUjian)
                 Anda sudah mengikuti ujian. Nilai CBT: <strong style="color:#059669;font-size:1.1rem;">{{ $hasilUjian->skor }}</strong>.
-            @elseif($bisaUjian)
+            @elseif($isAfterPeriod)
+                <strong style="color:#dc2626;">Periode ujian telah berakhir.</strong>
+            @elseif($isBeforePeriod)
+                <strong style="color:#d97706;">Ujian belum dimulai.</strong>
+            @elseif($bisaUjian && $isPeriodActive)
                 Berkas diverifikasi. Silakan kerjakan ujian sekarang.
             @elseif(in_array($s, $statusGugur))
                 Status: <strong style="color:#dc2626;">Gugur</strong> (Tidak mengikuti ujian).
-            @elseif($s === 'lolos_admin' && !$ujian_aktif)
-                Belum ada jadwal ujian aktif. Pantau dashboard.
+            @elseif($s === 'lolos_admin' && (!$ujian_aktif || !$isPeriodActive))
+                Belum ada jadwal ujian aktif atau periode belum dimulai.
             @elseif($s === 'ditolak_admin')
                 Pendaftaran ditolak.
             @else
@@ -254,16 +273,26 @@
             @endif
         </div>
 
-        @if($bisaUjian)
-            <a href="{{ route('siswa.ujian') }}" class="btn-primary"
-               style="display:block;width:100%;text-align:center;">
-               💻 Mulai Ujian Sekarang
-            </a>
-        @elseif($hasilUjian)
+        @if($hasilUjian)
             <button disabled
                style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#10b981;color:white;border:none;border-radius:999px;font-weight:600;cursor:not-allowed;">
                <i class="fa-solid fa-check"></i> Ujian Selesai
             </button>
+        @elseif($isBeforePeriod)
+            <button disabled
+               style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;border-radius:999px;font-weight:600;cursor:not-allowed;">
+               ⏳ Belum Dimulai
+            </button>
+        @elseif($isAfterPeriod)
+            <button disabled
+               style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#fee2e2;color:#dc2626;border:none;border-radius:999px;font-weight:600;cursor:not-allowed;">
+               🛑 Periode Berakhir
+            </button>
+        @elseif($bisaUjian && $isPeriodActive)
+            <a href="{{ route('siswa.ujian') }}" class="btn-primary"
+               style="display:block;width:100%;text-align:center;">
+               💻 Mulai Ujian Sekarang
+            </a>
         @elseif(in_array($s, $statusGugur))
             <button disabled
                style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#fee2e2;color:#dc2626;border:none;border-radius:999px;font-weight:600;cursor:not-allowed;">

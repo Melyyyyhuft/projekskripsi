@@ -12,11 +12,16 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('auth.login');
+        $statusPPDB = \App\Models\Pengaturan::where('key', 'status_ppdb')->value('value') ?? 'tutup';
+        return view('auth.login', compact('statusPPDB'));
     }
 
     public function showRegister()
     {
+        $statusPPDB = \App\Models\Pengaturan::where('key', 'status_ppdb')->first();
+        if ($statusPPDB && $statusPPDB->value != 'buka') {
+            return redirect('/login')->with('error', 'Pendaftaran PPDB saat ini sedang ditutup.');
+        }
         return view('auth.register');
     }
 
@@ -40,6 +45,11 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $statusPPDB = \App\Models\Pengaturan::where('key', 'status_ppdb')->first();
+        if ($statusPPDB && $statusPPDB->value != 'buka') {
+            return redirect('/login')->with('error', 'Gagal mendaftar! Pendaftaran PPDB telah ditutup.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',

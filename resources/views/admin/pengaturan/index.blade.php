@@ -81,14 +81,25 @@
             <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📅 Periode Pendaftaran</h3>
             <form action="{{ route('admin.pengaturan.periode') }}" method="POST">
                 @csrf
-                <div class="form-group">
-                    <label class="form-label">Tanggal Buka Pendaftaran</label>
-                    <input type="date" name="tgl_buka" class="form-control" value="{{ $settings['tgl_buka'] ?? '' }}" required>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Buka Pendaftaran</label>
+                        <input type="date" name="tgl_buka" class="form-control" value="{{ $settings['tgl_buka'] ?? '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Tutup Pendaftaran</label>
+                        <input type="date" name="tgl_tutup" class="form-control" value="{{ $settings['tgl_tutup'] ?? '' }}" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Tanggal Tutup Pendaftaran</label>
-                    <input type="date" name="tgl_tutup" class="form-control" value="{{ $settings['tgl_tutup'] ?? '' }}" required>
-                    <small style="color:var(--gray-text);font-size:.75rem;">Sistem akan otomatis menutup PPDB jika melewati tanggal ini.</small>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Mulai CBT</label>
+                        <input type="date" name="tgl_mulai_cbt" class="form-control" value="{{ $settings['tgl_mulai_cbt'] ?? '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Durasi Ujian (Hari)</label>
+                        <input type="number" name="durasi_cbt" class="form-control" value="{{ $settings['durasi_cbt'] ?? '' }}" required min="1" placeholder="Contoh: 3">
+                    </div>
                 </div>
                 <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Periode</button>
             </form>

@@ -14,10 +14,15 @@ class PendaftaranController extends Controller
 {
     public function create()
     {
-        // Menghitung jumlah diterima secara efisien
-        $jurusans = Jurusan::withCount(['pendaftarans as diterima_count' => function ($query) {
-            $query->where('status', 'diterima');
-        }])->get();
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        $statusPPDB = $settings['status_ppdb'] ?? 'tutup';
+        
+        if ($statusPPDB != 'buka') {
+            return redirect()->route('siswa.dashboard')->with('error', 'Mohon maaf, pendaftaran PPDB saat ini sedang ditutup.');
+        }
+
+        // Menghitung jumlah pendaftar secara efisien
+        $jurusans = Jurusan::get();
         
         $pendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
         
@@ -50,6 +55,11 @@ class PendaftaranController extends Controller
 
     public function store(Request $request)
     {
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        if (($settings['status_ppdb'] ?? 'tutup') != 'buka') {
+            return redirect()->route('siswa.dashboard')->with('error', 'Pendaftaran gagal! PPDB telah ditutup.');
+        }
+
         $existingPendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
 
         // Validasi Relasional dan File Upload
