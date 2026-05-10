@@ -24,6 +24,8 @@ class UjianController extends Controller
             'durasi_menit'  => 'required|integer',
             'jadwal_mulai'  => 'nullable|date',
             'jadwal_selesai'=> 'nullable|date|after_or_equal:jadwal_mulai',
+            'acak_soal'     => 'nullable|boolean',
+            'acak_jawaban'  => 'nullable|boolean',
         ]);
 
         Ujian::create([
@@ -31,6 +33,8 @@ class UjianController extends Controller
             'durasi_menit'   => $request->durasi_menit,
             'jadwal_mulai'   => $request->jadwal_mulai,
             'jadwal_selesai' => $request->jadwal_selesai,
+            'acak_soal'      => $request->has('acak_soal'),
+            'acak_jawaban'   => $request->has('acak_jawaban'),
             'is_active'      => true,
             'is_tutup'       => false,
         ]);
@@ -38,31 +42,46 @@ class UjianController extends Controller
         return back()->with('success', 'Ujian berhasil dibuat!');
     }
 
-    public function show(Ujian $ujian)
+    public function show(Request $request, Ujian $ujian)
     {
-        $soals = Soal::where('ujian_id', $ujian->id)->get();
+        $soals = $ujian->soals;
+
+        // Ambil soal-soal di Bank Soal yang belum ada di modul ini
+        $bankSoalsQuery = Soal::whereNotIn('id', $soals->pluck('id'));
+        
+        // Filter tahun ajaran jika ada
+        if ($request->filled('tahun_ajaran')) {
+            $bankSoalsQuery->where('tahun_ajaran', $request->tahun_ajaran);
+        }
+        
+        $bankSoals = $bankSoalsQuery->get();
+        $tahunAjarans = Soal::select('tahun_ajaran')->distinct()->pluck('tahun_ajaran');
 
         // Ambil daftar peserta ujian untuk info admin
         $peserta = Pendaftaran::with(['user', 'jurusan'])
             ->whereIn('status', ['lolos_admin', 'sudah_ujian', 'tidak_mengikuti_ujian', 'siap_finalisasi', 'siap_diumumkan'])
             ->get();
 
-        return view('admin.ujian.show', compact('ujian', 'soals', 'peserta'));
+        return view('admin.ujian.show', compact('ujian', 'soals', 'bankSoals', 'tahunAjarans', 'peserta'));
     }
 
-    public function storeSoal(Request $request, Ujian $ujian)
+    public function assignSoal(Request $request, Ujian $ujian)
     {
         $request->validate([
-            'teks_soal'     => 'required|string',
-            'opsi_a'        => 'required|string',
-            'opsi_b'        => 'required|string',
-            'opsi_c'        => 'required|string',
-            'opsi_d'        => 'required|string',
-            'jawaban_benar' => 'required|in:A,B,C,D',
+            'soal_ids' => 'required|array',
+            'soal_ids.*' => 'exists:soals,id'
         ]);
 
-        Soal::create(array_merge($request->all(), ['ujian_id' => $ujian->id]));
-        return back()->with('success', 'Soal berhasil ditambahkan!');
+        // attach tanpa detaching yang sudah ada
+        $ujian->soals()->syncWithoutDetaching($request->soal_ids);
+
+        return back()->with('success', count($request->soal_ids) . ' soal berhasil ditambahkan ke Modul Ujian ini.');
+    }
+
+    public function detachSoal(Request $request, Ujian $ujian, Soal $soal)
+    {
+        $ujian->soals()->detach($soal->id);
+        return back()->with('success', 'Soal berhasil dikeluarkan dari Modul Ujian.');
     }
 
     /**

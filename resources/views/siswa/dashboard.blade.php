@@ -4,186 +4,327 @@
 @section('content')
 
 @if (session('success'))
-    <div style="background-color: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #c3e6cb;" class="animate-fade-in">
-        {{ session('success') }}
+    <div style="background:#d4edda;color:#155724;padding:1rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #c3e6cb;" class="animate-fade-in">
+        ✅ {{ session('success') }}
     </div>
 @endif
-
 @if (session('error'))
-    <div style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #f5c6cb;" class="animate-fade-in">
-        {{ session('error') }}
+    <div style="background:#f8d7da;color:#721c24;padding:1rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #f5c6cb;" class="animate-fade-in">
+        ⚠️ {{ session('error') }}
     </div>
 @endif
 
 @php
-    $bisaUjian = false;
-    $pesan = 'Kerjakan ujian setelah berkas Anda diverifikasi oleh Panitia.';
-    $link = '#';
-    $btnText = 'Mulai Ujian Online';
-    
-    $step1Completed = false;
-    $step2Completed = false;
-    $step3Completed = false;
-    $progressPercent = 0;
+    // ── Status-status baru termasuk dari sistem seleksi fleksibel ──
+    $statusDiterima   = ['siap_diumumkan'];
+    $statusSudahUjian = ['sudah_ujian', 'siap_finalisasi', 'siap_diumumkan'];
+    $statusGugur      = ['gugur', 'tidak_mengikuti_ujian'];
+    $statusDitolak    = ['ditolak_admin'];
 
-    if ($pendaftaran) {
-        $step1Completed = true;
-        $progressPercent = 33;
-        
-        if ($pendaftaran->status == 'lolos_admin') {
-            $step2Completed = true;
-            $progressPercent = 66;
-            
-            if ($ujian_aktif) {
-                $bisaUjian = true;
-                $pesan = 'Berkas Anda telah diverifikasi. Silakan kerjakan ujian seleksi online.';
-                $link = route('siswa.ujian');
-            } else {
-                $pesan = 'Berkas Anda telah diverifikasi, namun belum ada jadwal ujian yang aktif.';
-            }
-        } elseif (in_array($pendaftaran->status, ['sudah_ujian', 'diterima', 'tidak_diterima'])) {
-            $step2Completed = true;
-            $step3Completed = true;
-            $progressPercent = 100;
-            $pesan = 'Anda sudah mengikuti ujian seleksi online.';
-            $btnText = 'Sudah Ujian';
-        } elseif ($pendaftaran->status == 'ditolak_admin') {
-            $pesan = 'Pendaftaran Anda ditolak. Anda tidak dapat mengikuti ujian.';
-        } elseif ($pendaftaran->status == 'menunggu_verifikasi') {
-            $pesan = 'Berkas Anda sedang diverifikasi oleh panitia. Mohon menunggu.';
-            $progressPercent = 50;
-        }
+    $s = $pendaftaran ? $pendaftaran->status : null;
+
+    // Step progress
+    $step1Completed = $pendaftaran !== null;
+    $step2Completed = $step1Completed && !in_array($s, ['draft', 'menunggu_verifikasi', 'ditolak_admin']);
+    $step3Completed = $step2Completed && in_array($s, array_merge($statusSudahUjian, $statusGugur));
+
+    // Progress bar
+    if (!$pendaftaran) {
+        $progressPercent = 0;
+    } elseif ($s === 'menunggu_verifikasi') {
+        $progressPercent = 30;
+    } elseif ($s === 'lolos_admin') {
+        $progressPercent = 55;
+    } elseif ($step3Completed) {
+        $progressPercent = 100;
+    } else {
+        $progressPercent = 10;
     }
+
+    // ── Apakah bisa ujian ──
+    $bisaUjian = $step2Completed
+        && $s === 'lolos_admin'
+        && $ujian_aktif !== null
+        && !$hasilUjian; // belum pernah ujian
+
+    // ── Teks Status Ujian ──
+    if ($hasilUjian) {
+        $statusUjianText = 'Selesai ✓';
+        $statusUjianColor = '#059669';
+    } elseif ($bisaUjian) {
+        $statusUjianText = 'Siap Dikerjakan';
+        $statusUjianColor = 'var(--primary)';
+    } elseif (in_array($s, $statusGugur)) {
+        $statusUjianText = 'Tidak Mengikuti';
+        $statusUjianColor = '#dc2626';
+    } elseif ($s === 'lolos_admin' && !$ujian_aktif) {
+        $statusUjianText = 'Menunggu Jadwal';
+        $statusUjianColor = '#d97706';
+    } else {
+        $statusUjianText = 'Belum Tersedia';
+        $statusUjianColor = '#94a3b8';
+    }
+
+    // ── Label status pendaftaran yang ramah ──
+    $labelStatus = [
+        'draft'                  => 'Draft',
+        'menunggu_verifikasi'    => 'Menunggu Verifikasi',
+        'lolos_admin'            => 'Lolos Administrasi ✓',
+        'ditolak_admin'          => 'Ditolak Admin',
+        'sudah_ujian'            => 'Sudah Ujian ✓',
+        'tidak_mengikuti_ujian'  => 'Tidak Mengikuti Ujian',
+        'siap_finalisasi'        => 'Dalam Proses Seleksi',
+        'siap_diumumkan'         => 'Hasil Telah Diumumkan ✓',
+        'gugur'                  => 'Gugur',
+        'diterima'               => 'Diterima ✓',
+        'tidak_diterima'         => 'Tidak Diterima',
+    ];
+    $statusLabel = $s ? ($labelStatus[$s] ?? ucwords(str_replace('_', ' ', $s))) : 'Belum Mendaftar';
 @endphp
 
-<!-- Top Statistics -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;" class="animate-slide-up">
-    <!-- Stat 1 -->
+{{-- ─── Top Statistics ─── --}}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-bottom:2rem;" class="animate-slide-up">
+
+    {{-- Stat 1: Status Pendaftaran --}}
     <div class="stats-card">
-        <div class="stats-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+        <div class="stats-icon" style="background:rgba(59,130,246,.1);color:var(--primary);">
             <i class="fa-solid fa-clipboard-user"></i>
         </div>
-        <div style="flex: 1;">
-            <p style="margin: 0; font-size: 0.875rem; color: var(--gray-text); font-weight: 600;">Status Pendaftaran</p>
-            <h3 style="margin: 0; font-size: 1.1rem; color: var(--dark);">
-                {{ $pendaftaran ? ucwords(str_replace('_', ' ', $pendaftaran->status)) : 'Belum Mendaftar' }}
-            </h3>
+        <div style="flex:1;">
+            <p style="margin:0;font-size:.875rem;color:var(--gray-text);font-weight:600;">Status Pendaftaran</p>
+            <h3 style="margin:0;font-size:1rem;color:var(--dark);">{{ $statusLabel }}</h3>
         </div>
     </div>
-    
-    <!-- Stat 2 -->
+
+    {{-- Stat 2: Status Ujian --}}
     <div class="stats-card">
-        <div class="stats-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--secondary);">
+        <div class="stats-icon" style="background:rgba(139,92,246,.1);color:var(--secondary);">
             <i class="fa-solid fa-laptop-file"></i>
         </div>
-        <div style="flex: 1;">
-            <p style="margin: 0; font-size: 0.875rem; color: var(--gray-text); font-weight: 600;">Status Ujian</p>
-            <h3 style="margin: 0; font-size: 1.1rem; color: var(--dark);">
-                {{ $bisaUjian ? 'Siap Dikerjakan' : ($step3Completed ? 'Selesai' : 'Belum Tersedia') }}
-            </h3>
+        <div style="flex:1;">
+            <p style="margin:0;font-size:.875rem;color:var(--gray-text);font-weight:600;">Status Ujian</p>
+            <h3 style="margin:0;font-size:1rem;color:{{ $statusUjianColor }};">{{ $statusUjianText }}</h3>
         </div>
     </div>
 
-    <!-- Stat 3 -->
-    <div class="stats-card" style="flex-direction: column; align-items: stretch; justify-content: center; gap: 0.25rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <p style="margin: 0; font-size: 0.875rem; color: var(--gray-text); font-weight: 600;">Kelengkapan Berkas</p>
-            <span style="font-weight: 700; color: var(--primary);">{{ $progressPercent }}%</span>
+    {{-- Stat 3: Nilai Ujian (jika sudah ujian) --}}
+    @if($hasilUjian)
+    <div class="stats-card">
+        <div class="stats-icon" style="background:rgba(16,185,129,.1);color:#059669;">
+            <i class="fa-solid fa-star"></i>
+        </div>
+        <div style="flex:1;">
+            <p style="margin:0;font-size:.875rem;color:var(--gray-text);font-weight:600;">Nilai Ujian CBT</p>
+            <h3 style="margin:0;font-size:1.3rem;color:#059669;font-weight:800;">{{ $hasilUjian->skor }}</h3>
+        </div>
+    </div>
+    @else
+    {{-- Stat 3: Progress --}}
+    <div class="stats-card" style="flex-direction:column;align-items:stretch;justify-content:center;gap:.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <p style="margin:0;font-size:.875rem;color:var(--gray-text);font-weight:600;">Progres Pendaftaran</p>
+            <span style="font-weight:700;color:var(--primary);">{{ $progressPercent }}%</span>
         </div>
         <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width: {{ $progressPercent }}%;"></div>
+            <div class="progress-bar-fill" style="width:{{ $progressPercent }}%;"></div>
         </div>
     </div>
+    @endif
 </div>
 
-<!-- Welcome Card -->
-<div class="glass-card welcome-gradient animate-slide-up" style="margin-bottom: 2.5rem; padding: 2.5rem;">
-    <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--dark);">Selamat Datang, {{ Auth::user()->name }}! 👋</h2>
-    <p style="color: var(--gray-text); font-size: 1.1rem; max-width: 700px; position: relative; z-index: 1;">
-        Ini adalah portal pendaftaran peserta didik baru. Ikuti tahapan di bawah ini dengan berurutan untuk menyelesaikan pendaftaran Anda dengan baik.
+{{-- ─── Welcome Card ─── --}}
+<div class="glass-card welcome-gradient animate-slide-up" style="margin-bottom:2.5rem;padding:2.5rem;">
+    <h2 style="font-size:1.8rem;margin-bottom:.5rem;color:var(--dark);">Selamat Datang, {{ Auth::user()->name }}! 👋</h2>
+    <p style="color:var(--gray-text);font-size:1.1rem;max-width:700px;position:relative;z-index:1;">
+        Portal pendaftaran peserta didik baru SMK. Ikuti tahapan di bawah ini secara berurutan untuk menyelesaikan proses pendaftaran Anda.
     </p>
 </div>
 
-<!-- Progress Steps Horizontal -->
-<div class="glass-card animate-slide-up" style="margin-bottom: 2rem; padding-top: 2.5rem; animation-delay: 0.2s;">
-    <h3 style="text-align: center; margin-bottom: 2.5rem; color: var(--dark);">Alur Pendaftaran Anda</h3>
-    
-    <div class="step-container">
-        <!-- Step 1 -->
-        <div class="step-item {{ $step1Completed ? 'completed' : 'active' }}">
-            <div class="step-circle">
-                @if($step1Completed)
-                    <i class="fa-solid fa-check"></i>
-                @else
-                    1
-                @endif
-            </div>
-            <div class="step-label">Isi Biodata & Berkas</div>
-        </div>
+{{-- ─── Progress Steps ─── --}}
+<div class="glass-card animate-slide-up" style="margin-bottom:2rem;padding:2.5rem;animation-delay:.2s;">
+    <h3 style="text-align:center;margin-bottom:2.5rem;color:var(--dark);">Alur Pendaftaran Anda</h3>
 
-        <!-- Step 2 -->
-        <div class="step-item {{ $step2Completed ? 'completed' : ($step1Completed ? 'active' : '') }}">
-            <div class="step-circle">
-                @if($step2Completed)
-                    <i class="fa-solid fa-check"></i>
-                @else
-                    2
-                @endif
-            </div>
-            <div class="step-label">Verifikasi Panitia</div>
-        </div>
+    @php
+        $step4Completed = in_array($s, $statusDiterima);
+        $steps = [
+            ['label' => 'Isi Biodata & Berkas',  'done' => $step1Completed, 'active' => !$step1Completed],
+            ['label' => 'Verifikasi Panitia',     'done' => $step2Completed, 'active' => $step1Completed && !$step2Completed],
+            ['label' => 'Ujian Online',            'done' => $step3Completed, 'active' => $step2Completed && !$step3Completed],
+            ['label' => 'Hasil Seleksi',           'done' => $step4Completed, 'active' => $step3Completed && !$step4Completed],
+        ];
+    @endphp
 
-        <!-- Step 3 -->
-        <div class="step-item {{ $step3Completed ? 'completed' : ($step2Completed ? 'active' : '') }}">
-            <div class="step-circle">
-                @if($step3Completed)
+    {{-- Wrapper relatif agar garis bisa diposisikan secara absolut --}}
+    <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;padding:0 24px;">
+
+        {{-- Garis abu-abu background: dari pusat step-1 ke pusat step-4 --}}
+        <div style="position:absolute;top:24px;left:calc(24px + 24px);right:calc(24px + 24px);height:3px;background:#e2e8f0;z-index:0;transform:translateY(-50%);"></div>
+
+        @foreach($steps as $i => $step)
+        <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:.5rem;flex:1;min-width:0;">
+
+            {{-- Garis hijau: ditampilkan jika step ini SELESAI dan bukan step pertama --}}
+            @if($step['done'] && $i > 0)
+            <div style="position:absolute;top:24px;left:0;right:50%;height:3px;background:#10b981;z-index:0;transform:translateY(-50%);"></div>
+            @endif
+            {{-- Garis hijau sisi kanan: dari tengah circle ke kanan sampai step berikutnya --}}
+            @if($step['done'] && $i < count($steps) - 1)
+            <div style="position:absolute;top:24px;left:50%;right:0;height:3px;background:#10b981;z-index:0;transform:translateY(-50%);"></div>
+            @endif
+
+            {{-- Circle --}}
+            <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;border:4px solid white;position:relative;z-index:2;box-shadow:0 0 0 3px {{ $step['done'] ? 'rgba(16,185,129,.25)' : ($step['active'] ? 'rgba(59,130,246,.25)' : 'transparent') }};background:{{ $step['done'] ? '#10b981' : ($step['active'] ? 'var(--primary)' : '#e2e8f0') }};color:{{ ($step['done'] || $step['active']) ? 'white' : '#64748b' }};">
+                @if($step['done'])
                     <i class="fa-solid fa-check"></i>
                 @else
-                    3
+                    {{ $i + 1 }}
                 @endif
             </div>
-            <div class="step-label">Ujian Online</div>
+
+            {{-- Label --}}
+            <div style="font-size:.8rem;font-weight:600;text-align:center;color:{{ $step['done'] ? '#10b981' : ($step['active'] ? 'var(--primary)' : 'var(--gray-text)') }};line-height:1.3;padding:0 4px;">
+                {{ $step['label'] }}
+            </div>
         </div>
+        @endforeach
     </div>
 </div>
 
-<!-- Action Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;" class="animate-slide-up">
-    <!-- Card 1: Pendaftaran -->
-    <div class="glass-card hover-scale" style="{{ $step1Completed ? 'border: 2px solid #10b981;' : 'border: 2px solid var(--primary);' }}">
-        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: {{ $step1Completed ? '#10b981' : 'var(--primary)' }}; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+{{-- ─── Action Cards ─── --}}
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;" class="animate-slide-up">
+
+    {{-- Card 1: Pendaftaran --}}
+    <div class="glass-card hover-scale" style="{{ $step1Completed ? 'border:2px solid #10b981;' : 'border:2px solid var(--primary);' }}">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+            <div style="width:48px;height:48px;border-radius:12px;background:{{ $step1Completed?'#10b981':'var(--primary)' }};color:white;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
                 <i class="fa-solid fa-file-signature"></i>
             </div>
-            <h3 style="font-size: 1.25rem; margin: 0;">Biodata & Pendaftaran</h3>
+            <h3 style="font-size:1.15rem;margin:0;">Biodata &amp; Pendaftaran</h3>
         </div>
-        <p style="color: var(--gray-text); margin-bottom: 1.5rem; min-height: 48px;">
+        <p style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;">
             Lengkapi data diri, nilai rapor, dokumen persyaratan, dan pilih jurusan tujuan Anda.
         </p>
-        
         @if($step1Completed)
-            <a href="{{ route('siswa.pendaftaran') }}" class="btn-outline" style="display: block; width: 100%; text-align: center; border-color: #10b981; color: #10b981;">Lihat / Edit Data</a>
+            <a href="{{ route('siswa.pendaftaran') }}" class="btn-outline"
+               style="display:block;width:100%;text-align:center;border-color:#10b981;color:#10b981;">
+               Lihat / Edit Data
+            </a>
         @else
-            <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary" style="display: block; width: 100%; text-align: center;">Mulai Isi Data</a>
+            <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary"
+               style="display:block;width:100%;text-align:center;">
+               Mulai Isi Data
+            </a>
         @endif
     </div>
 
-    <!-- Card 2: Ujian -->
-    <div class="glass-card hover-scale" style="opacity: {{ $bisaUjian || $step3Completed ? '1' : '0.6' }}; {{ $bisaUjian ? 'border: 2px solid var(--primary);' : '' }}">
-        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: {{ $bisaUjian ? 'var(--primary)' : ($step3Completed ? '#10b981' : 'var(--gray-text)') }}; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+    {{-- Card 2: Jadwal & Ujian Online --}}
+    <div class="glass-card hover-scale"
+         style="opacity:{{ ($bisaUjian || $step3Completed || $ujian_aktif) ? '1' : '0.65' }};
+                {{ $bisaUjian ? 'border:2px solid var(--primary);' : ($step3Completed ? 'border:2px solid #10b981;' : '') }}">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+            <div style="width:48px;height:48px;border-radius:12px;
+                        background:{{ $bisaUjian ? 'var(--primary)' : ($hasilUjian ? '#10b981' : (in_array($s,$statusGugur)?'#dc2626':($ujian_aktif ? '#f59e0b' : 'var(--gray-text)'))) }};
+                        color:white;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
                 <i class="fa-solid fa-desktop"></i>
             </div>
-            <h3 style="font-size: 1.25rem; margin: 0;">Ujian Seleksi Online</h3>
+            <h3 style="font-size:1.15rem;margin:0;">Jadwal & Ujian CBT</h3>
         </div>
-        <p style="color: var(--gray-text); margin-bottom: 1.5rem; min-height: 48px;">{{ $pesan }}</p>
-        
-        @if ($bisaUjian)
-            <a href="{{ $link }}" class="btn-primary" style="display: block; width: 100%; text-align: center;">{{ $btnText }}</a>
-        @elseif ($step3Completed)
-            <button disabled style="display: block; width: 100%; text-align: center; padding: 0.875rem 2rem; background-color: #10b981; color: white; border: none; border-radius: 999px; font-weight: 600; cursor: not-allowed;"><i class="fa-solid fa-check"></i> Sudah Ujian</button>
+
+        <div style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;font-size:.9rem;">
+            @if($ujian_aktif)
+                <div style="margin-bottom: .5rem; background: #f8fafc; padding: .5rem; border-radius: 8px;">
+                    <p style="margin:0;"><strong>Tgl:</strong> {{ \Carbon\Carbon::parse($ujian_aktif->jadwal_mulai)->format('d M Y H:i') }}</p>
+                    <p style="margin:0;"><strong>Durasi:</strong> {{ $ujian_aktif->durasi_menit }} Menit</p>
+                </div>
+            @endif
+
+            @if($hasilUjian)
+                Anda sudah mengikuti ujian. Nilai CBT: <strong style="color:#059669;font-size:1.1rem;">{{ $hasilUjian->skor }}</strong>.
+            @elseif($bisaUjian)
+                Berkas diverifikasi. Silakan kerjakan ujian sekarang.
+            @elseif(in_array($s, $statusGugur))
+                Status: <strong style="color:#dc2626;">Gugur</strong> (Tidak mengikuti ujian).
+            @elseif($s === 'lolos_admin' && !$ujian_aktif)
+                Belum ada jadwal ujian aktif. Pantau dashboard.
+            @elseif($s === 'ditolak_admin')
+                Pendaftaran ditolak.
+            @else
+                Tunggu verifikasi panitia untuk akses ujian.
+            @endif
+        </div>
+
+        @if($bisaUjian)
+            <a href="{{ route('siswa.ujian') }}" class="btn-primary"
+               style="display:block;width:100%;text-align:center;">
+               💻 Mulai Ujian Sekarang
+            </a>
+        @elseif($hasilUjian)
+            <button disabled
+               style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#10b981;color:white;border:none;border-radius:999px;font-weight:600;cursor:not-allowed;">
+               <i class="fa-solid fa-check"></i> Ujian Selesai
+            </button>
+        @elseif(in_array($s, $statusGugur))
+            <button disabled
+               style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#fee2e2;color:#dc2626;border:none;border-radius:999px;font-weight:600;cursor:not-allowed;">
+               ❌ Tidak Mengikuti Ujian
+            </button>
         @else
-            <button disabled style="display: block; width: 100%; text-align: center; padding: 0.875rem 2rem; background-color: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; border-radius: 999px; font-weight: 600; cursor: not-allowed;">Belum Tersedia</button>
+            <button disabled
+               style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;border-radius:999px;font-weight:600;cursor:not-allowed;">
+               🔒 Belum Tersedia
+            </button>
+        @endif
+    </div>
+
+    {{-- Card 3: Hasil Seleksi --}}
+    <div class="glass-card hover-scale"
+         style="{{ in_array($s, $statusDiterima) ? 'border:2px solid #f59e0b;' : 'opacity:.65;' }}">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+            <div style="width:48px;height:48px;border-radius:12px;
+                        background:{{ in_array($s,$statusDiterima)?'#f59e0b':'var(--gray-text)' }};
+                        color:white;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h3 style="font-size:1.15rem;margin:0;">Hasil Seleksi</h3>
+        </div>
+
+        <div style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;">
+            @if(in_array($s, $statusDiterima) && $hasilSeleksi)
+                <div style="background: #fdf4ff; padding: .75rem; border-radius: 8px; border: 1px solid #fbcfe8;">
+                    <p style="margin:0 0 .25rem; font-size:.85rem;">Status Kelulusan:</p>
+                    <p style="margin:0 0 .5rem; font-size:1.1rem; font-weight:800; color:#9333ea;">{{ $hasilSeleksi->kategori_kelulusan ?? ($hasilSeleksi->is_lulus ? 'Lulus' : 'Tidak Lulus') }}</p>
+                    <p style="margin:0; font-size:.85rem;">Skor Akhir: <strong style="color:var(--primary);">{{ $hasilSeleksi->skor_akhir }}</strong></p>
+                </div>
+            @elseif(in_array($s, $statusGugur))
+                Anda dinyatakan <strong style="color:#dc2626;">Gugur</strong> karena tidak mengikuti ujian seleksi.
+            @elseif($s === 'siap_finalisasi')
+                Seleksi sedang diproses oleh Admin. Hasil akan diumumkan setelah finalisasi.
+            @else
+                Pengumuman hasil seleksi akan muncul di sini setelah Admin melakukan finalisasi.
+            @endif
+        </div>
+
+        @if(in_array($s, $statusDiterima))
+            <div style="display:flex; gap:.5rem;">
+                <a href="{{ route('siswa.hasil') }}" class="btn-primary"
+                   style="flex:1; text-align:center; background:linear-gradient(135deg,#f59e0b,#d97706); padding:.6rem;">
+                   Lihat Detail
+                </a>
+                <button onclick="window.print()" class="btn-outline" style="flex:1; text-align:center; border-color:#f59e0b; color:#f59e0b; padding:.6rem;">
+                   <i class="fa-solid fa-download"></i> Unduh PDF
+                </button>
+            </div>
+        @elseif(in_array($s, $statusGugur))
+            <a href="{{ route('siswa.hasil') }}" class="btn-outline"
+               style="display:block;width:100%;text-align:center;border-color:#dc2626;color:#dc2626;">
+               Lihat Detail Status
+            </a>
+        @else
+            <button disabled
+               style="display:block;width:100%;text-align:center;padding:.875rem 2rem;background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;border-radius:999px;font-weight:600;cursor:not-allowed;">
+               ⏳ Belum Diumumkan
+            </button>
         @endif
     </div>
 </div>

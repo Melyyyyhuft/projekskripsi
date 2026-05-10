@@ -62,6 +62,22 @@ class BankSoalController extends Controller
         return response()->make($content, 200, $headers);
     }
 
+    public function downloadTemplateExcel()
+    {
+        require_once app_path('Libraries/SimpleXLSXGen.php');
+        
+        $data = [
+            ['Tahun Ajaran', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar'],
+            ['2024/2025', 'Berapakah 1+1?', '1', '2', '3', '4', 'B'],
+            ['2024/2025', 'Siapakah penemu gaya gravitasi?', 'Isaac Newton', 'Albert Einstein', 'Nikola Tesla', 'Thomas Edison', 'A']
+        ];
+        
+        $xlsx = \Shuchkin\SimpleXLSXGen::fromArray($data);
+        return response()->streamDownload(function() use ($xlsx) {
+            echo $xlsx;
+        }, 'template_bank_soal.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+    }
+
     public function import(Request $request)
     {
         $request->validate([

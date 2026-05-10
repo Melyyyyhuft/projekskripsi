@@ -2,7 +2,7 @@
 @section('title', 'Login')
 
 @section('content')
-<div class="auth-wrapper" style="padding-top: 80px;">
+<div class="auth-wrapper">
     <div class="auth-card">
         <div class="text-center mb-4">
             <h2 style="font-size: 2rem; margin-bottom: 0.5rem;" class="text-gradient">Selamat Datang!</h2>

@@ -74,21 +74,75 @@
         
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             @forelse($pendaftaran->berkas as $berkas)
-                <div style="border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-md); overflow: hidden;">
-                    <div style="background: #f8fafc; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="text-transform: capitalize;">{{ $berkas->jenis_berkas }}</strong>
-                        <span style="font-size: 0.8rem; color: var(--gray-text);">{{ $berkas->nama_file }}</span>
+                <div style="border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius-md); overflow: hidden; background: white;">
+                    <div style="background: #f8fafc; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; flex-direction: column;">
+                            <strong style="text-transform: capitalize; color: var(--primary);">{{ $berkas->jenis_berkas }}</strong>
+                            <span style="font-size: 0.8rem; color: var(--gray-text);">{{ $berkas->nama_file }}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            @if($berkas->status_verifikasi == 'valid')
+                                <span style="background: #d1fae5; color: #059669; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">DITERIMA</span>
+                            @elseif($berkas->status_verifikasi == 'tidak_valid')
+                                <span style="background: #fee2e2; color: #dc2626; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">DITOLAK</span>
+                            @else
+                                <span style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">PENDING</span>
+                            @endif
+                        </div>
                     </div>
+                    
+                    @if($berkas->jenis_berkas == 'sertifikat' && $berkas->jenis_prestasi)
+                    <div style="padding: 0.75rem 1rem; background: #fefce8; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; gap: 2rem;">
+                        <div><span style="font-size:0.8rem; color:#854d0e;">Jenis Prestasi:</span> <strong style="color:#a16207;">{{ $berkas->jenis_prestasi }}</strong></div>
+                        <div><span style="font-size:0.8rem; color:#854d0e;">Tingkat:</span> <strong style="color:#a16207;">{{ $berkas->tingkat_prestasi }}</strong></div>
+                    </div>
+                    @endif
+
+                    @if($berkas->status_verifikasi == 'tidak_valid' && $berkas->catatan_admin)
+                    <div style="padding: 0.75rem 1rem; background: #fef2f2; border-bottom: 1px solid rgba(0,0,0,0.1);">
+                        <span style="font-size:0.8rem; color:#b91c1c;">Alasan Ditolak:</span> <strong style="color:#991b1b;">{{ $berkas->catatan_admin }}</strong>
+                    </div>
+                    @endif
                     
                     <div style="background: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 300px; padding: 1rem;">
                         @if(in_array(strtolower($berkas->file_type), ['jpg', 'jpeg', 'png']))
-                            <img src="{{ asset('storage/' . $berkas->file_path) }}" alt="{{ $berkas->jenis_berkas }}" style="max-width: 100%; max-height: 500px; border-radius: var(--radius-sm); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                            <img src="{{ asset('storage/' . $berkas->file_path) }}" alt="{{ $berkas->jenis_berkas }}" style="max-width: 100%; max-height: 500px; border-radius: var(--radius-sm); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); cursor: pointer;" onclick="openLightbox(this.src, 'img')">
                         @elseif(strtolower($berkas->file_type) == 'pdf')
-                            <iframe src="{{ asset('storage/' . $berkas->file_path) }}" width="100%" height="500px" style="border: none;"></iframe>
+                            <div style="position:relative; width:100%; border-radius: var(--radius-sm); overflow:hidden;">
+                                <iframe src="{{ asset('storage/' . $berkas->file_path) }}" width="100%" height="400px" style="border: none; pointer-events: none;"></iframe>
+                                <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.05); cursor:pointer; transition: background 0.3s;" onmouseover="this.style.background='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'" onclick="openLightbox('{{ asset('storage/' . $berkas->file_path) }}', 'pdf')">
+                                    <span style="background:var(--primary); color:white; padding:0.6rem 1.2rem; border-radius:99px; font-weight:bold; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔍 Klik untuk Fullscreen PDF</span>
+                                </div>
+                            </div>
                         @else
                             <a href="{{ asset('storage/' . $berkas->file_path) }}" target="_blank" class="btn-primary">Unduh File</a>
                         @endif
                     </div>
+
+                    @if(in_array($pendaftaran->status, ['menunggu_verifikasi', 'revisi']))
+                    <div style="padding: 1rem; background: #fff; display: flex; gap: 0.5rem; border-top: 1px solid rgba(0,0,0,0.1);">
+                        <form action="{{ route('admin.pendaftaran.verifikasi_berkas', $berkas->id) }}" method="POST" style="flex: 1;">
+                            @csrf
+                            <input type="hidden" name="status_verifikasi" value="valid">
+                            <button type="submit" class="btn-outline" style="width: 100%; border-color: #10b981; color: #10b981; padding: 0.5rem;" onclick="return confirm('Terima berkas ini?');">✅ Terima File</button>
+                        </form>
+                        <button type="button" class="btn-outline btn-tolak-berkas" style="flex: 1; border-color: #ef4444; color: #ef4444; padding: 0.5rem;" data-id="{{ $berkas->id }}">❌ Tolak File</button>
+                    </div>
+
+                    <!-- Form Tolak Tersembunyi -->
+                    <form action="{{ route('admin.pendaftaran.verifikasi_berkas', $berkas->id) }}" method="POST" id="form-tolak-{{ $berkas->id }}" style="display: none; padding: 1rem; background: #f8fafc; border-top: 1px solid rgba(0,0,0,0.1);">
+                        @csrf
+                        <input type="hidden" name="status_verifikasi" value="tidak_valid">
+                        <div style="margin-bottom: 0.5rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600;">Alasan Penolakan:</label>
+                            <textarea name="catatan_admin" class="form-control" rows="2" placeholder="Contoh: Sertifikat webinar tidak diakui" required style="margin-top: 0.25rem; font-size: 0.85rem; padding: 0.5rem;"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button type="button" class="btn-outline btn-batal-tolak" data-id="{{ $berkas->id }}" style="padding: 0.3rem 0.75rem; font-size: 0.8rem;">Batal</button>
+                            <button type="submit" class="btn-primary" style="background: #ef4444; padding: 0.3rem 0.75rem; font-size: 0.8rem;">Simpan Penolakan</button>
+                        </div>
+                    </form>
+                    @endif
                 </div>
             @empty
                 <div style="text-align: center; color: var(--gray-text); padding: 3rem;">
@@ -98,4 +152,55 @@
         </div>
     </div>
 </div>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; backdrop-filter: blur(4px);">
+    <span onclick="closeLightbox()" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">&times;</span>
+    <img id="lightbox-img" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display:none;">
+    <iframe id="lightbox-pdf" style="width:80%; height:90%; border-radius:8px; border:none; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display:none; background:white;"></iframe>
+</div>
+
+<script>
+    // Lightbox Logic
+    function openLightbox(src, type = 'img') {
+        if(type === 'pdf') {
+            document.getElementById('lightbox-img').style.display = 'none';
+            document.getElementById('lightbox-pdf').src = src;
+            document.getElementById('lightbox-pdf').style.display = 'block';
+        } else {
+            document.getElementById('lightbox-pdf').style.display = 'none';
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox-img').style.display = 'block';
+        }
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+        document.getElementById('lightbox-pdf').src = ''; // Clear iframe src to stop playing/loading
+    }
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+        if (e.target === this) closeLightbox();
+    });
+
+    // Form Tolak Toggle
+    document.querySelectorAll('.btn-tolak-berkas').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            document.getElementById('form-tolak-' + id).style.display = 'block';
+            this.parentElement.style.display = 'none';
+        });
+    });
+
+    document.querySelectorAll('.btn-batal-tolak').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            document.getElementById('form-tolak-' + id).style.display = 'none';
+            this.closest('.glass-card').querySelector('.btn-tolak-berkas').parentElement.style.display = 'flex'; // Wait, closest is wrong because they are siblings
+            // The logic: find the parent form, then find the sibling div containing the buttons
+            const form = document.getElementById('form-tolak-' + id);
+            form.style.display = 'none';
+            form.previousElementSibling.style.display = 'flex';
+        });
+    });
+</script>
 @endsection

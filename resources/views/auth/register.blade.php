@@ -2,7 +2,7 @@
 @section('title', 'Daftar Siswa')
 
 @section('content')
-<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover; padding-top: 80px; padding-bottom: 2rem;">
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover; padding: 2rem 1rem;">
     <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(14, 165, 233, 0.9), rgba(79, 70, 229, 0.9)); z-index: 1;"></div>
     
     <div class="glass-card" style="width: 100%; max-width: 500px; z-index: 2; position: relative;">

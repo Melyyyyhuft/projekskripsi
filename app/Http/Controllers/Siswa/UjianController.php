@@ -16,59 +16,79 @@ class UjianController extends Controller
 {
     public function index()
     {
-        $user_id = Auth::id();
+        $user_id     = Auth::id();
         $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
+        $hasilUjian  = $pendaftaran
+            ? HasilUjian::where('user_id', $user_id)->first()
+            : null;
 
-        if (!$pendaftaran || $pendaftaran->status != 'lolos_admin') {
-            return redirect()->route('siswa.dashboard')->with('error', 'Anda belum diverifikasi atau tidak memenuhi syarat untuk mengikuti ujian.');
+        // Jika sudah pernah mengikuti ujian → tampilkan halaman nilai
+        if ($hasilUjian) {
+            $ujian = Ujian::find($hasilUjian->ujian_id);
+            return view('siswa.ujian_selesai', compact('hasilUjian', 'ujian', 'pendaftaran'));
         }
 
-        // Ambil ujian aktif
-        $ujian = Ujian::where('is_active', true)->first();
+        // Jika status tidak lolos_admin (belum verifikasi, ditolak, dll)
+        $statusBisaUjian = ['lolos_admin'];
+        // Ambil ujian aktif untuk ditampilkan di halaman info
+        $ujianAktif = Ujian::where('is_active', true)->where('is_tutup', false)->first();
+
+        if (!$pendaftaran || !in_array($pendaftaran->status, $statusBisaUjian)) {
+            $pesan = 'Anda belum memenuhi syarat untuk mengikuti ujian.';
+            if ($pendaftaran) {
+                $statusPesan = [
+                    'draft'                 => 'Pendaftaran Anda belum disubmit.',
+                    'menunggu_verifikasi'   => 'Berkas Anda sedang diverifikasi oleh panitia.',
+                    'ditolak_admin'         => 'Pendaftaran Anda ditolak oleh admin.',
+                    'sudah_ujian'           => 'Anda sudah menyelesaikan ujian.',
+                    'tidak_mengikuti_ujian' => 'Anda ditandai tidak mengikuti ujian.',
+                    'siap_finalisasi'       => 'Ujian selesai, hasil sedang diproses.',
+                    'siap_diumumkan'        => 'Hasil seleksi sudah diumumkan.',
+                    'gugur'                 => 'Anda dinyatakan gugur.',
+                ];
+                $pesan = $statusPesan[$pendaftaran->status] ?? 'Status pendaftaran: ' . $pendaftaran->status;
+            }
+            $ujian = $ujianAktif;
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
+        }
+
+        // Ambil ujian aktif (belum ditutup)
+        $ujian = $ujianAktif;
 
         if (!$ujian) {
-            return redirect()->route('siswa.dashboard')->with('error', 'Ujian belum tersedia. Silakan tunggu informasi dari panitia.');
-        }
-
-        // Cek apakah ujian sudah ditutup
-        if ($ujian->is_tutup) {
-            return redirect()->route('siswa.dashboard')->with('error', 'Periode ujian telah ditutup. Anda tidak dapat mengikuti ujian.');
+            $pesan = 'Ujian belum tersedia. Silakan tunggu informasi dari panitia.';
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
         }
 
         // Cek periode jadwal jika diset
         $now = now();
         if ($ujian->jadwal_mulai && $now->lt(\Carbon\Carbon::parse($ujian->jadwal_mulai))) {
-            return redirect()->route('siswa.dashboard')->with('error', 'Ujian belum dimulai. Jadwal mulai: ' . \Carbon\Carbon::parse($ujian->jadwal_mulai)->format('d M Y H:i'));
+            $pesan = 'Ujian belum dimulai. Jadwal mulai: ' . \Carbon\Carbon::parse($ujian->jadwal_mulai)->format('d M Y H:i');
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
         }
         if ($ujian->jadwal_selesai && $now->gt(\Carbon\Carbon::parse($ujian->jadwal_selesai))) {
-            return redirect()->route('siswa.dashboard')->with('error', 'Periode ujian telah berakhir pada ' . \Carbon\Carbon::parse($ujian->jadwal_selesai)->format('d M Y H:i') . '.');
+            $pesan = 'Periode ujian telah berakhir pada ' . \Carbon\Carbon::parse($ujian->jadwal_selesai)->format('d M Y H:i') . '.';
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
         }
 
-        // Cek apakah sudah ujian
-        $hasil = HasilUjian::where('user_id', $user_id)->first();
-        if ($hasil) {
-            return redirect()->route('siswa.dashboard')->with('success', 'Anda sudah mengikuti ujian. Silakan tunggu pengumuman hasil seleksi.');
+        // Ambil soal dari relasi ujian
+        $soalsQuery = $ujian->soals();
+        if ($ujian->acak_soal) {
+            $soalsQuery->inRandomOrder();
         }
+        $soals = $soalsQuery->get();
 
-        $activeTahun = \App\Models\Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';
-        $soals = Soal::where('tahun_ajaran', $activeTahun)->inRandomOrder()->get();
-        
         foreach ($soals as $soal) {
-            $opsi = [
-                'A' => $soal->opsi_a,
-                'B' => $soal->opsi_b,
-                'C' => $soal->opsi_c,
-                'D' => $soal->opsi_d,
-            ];
-            
-            $keys = array_keys($opsi);
-            shuffle($keys);
-            
-            $shuffledOpsi = [];
-            foreach ($keys as $key) {
-                $shuffledOpsi[$key] = $opsi[$key];
+            $opsi = ['A' => $soal->opsi_a, 'B' => $soal->opsi_b, 'C' => $soal->opsi_c, 'D' => $soal->opsi_d];
+            if ($ujian->acak_jawaban) {
+                $keys = array_keys($opsi);
+                shuffle($keys);
+                $shuffledOpsi = [];
+                foreach ($keys as $key) { $shuffledOpsi[$key] = $opsi[$key]; }
+                $soal->shuffled_opsi = $shuffledOpsi;
+            } else {
+                $soal->shuffled_opsi = $opsi;
             }
-            $soal->shuffled_opsi = $shuffledOpsi;
         }
 
         return view('siswa.ujian', compact('ujian', 'soals'));
@@ -81,8 +101,8 @@ class UjianController extends Controller
         $jawabanSiswa = $request->jawaban; // array: soal_id => opsi
 
         $skor = 0;
-        $activeTahun = \App\Models\Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';
-        $totalSoal = Soal::where('tahun_ajaran', $activeTahun)->count();
+        $ujian = Ujian::findOrFail($ujian_id);
+        $totalSoal = $ujian->soals()->count();
 
         if ($totalSoal == 0) return back()->with('error', 'Soal Kosong.');
 

@@ -29,19 +29,23 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::get('/pendaftaran', [\App\Http\Controllers\Admin\PendaftaranController::class, 'index'])->name('admin.pendaftaran.index');
     Route::get('/pendaftaran/{id}', [\App\Http\Controllers\Admin\PendaftaranController::class, 'show'])->name('admin.pendaftaran.show');
     Route::post('/pendaftaran/{id}/verifikasi', [\App\Http\Controllers\Admin\PendaftaranController::class, 'verifikasi'])->name('admin.pendaftaran.verifikasi');
-    
+    Route::post('/berkas/{id}/verifikasi', [\App\Http\Controllers\Admin\PendaftaranController::class, 'verifikasiBerkas'])->name('admin.pendaftaran.verifikasi_berkas');
     // Rute Ujian & Seleksi
     Route::resource('ujian', \App\Http\Controllers\Admin\UjianController::class)->names('admin.ujian');
-    Route::post('ujian/{ujian}/soal', [\App\Http\Controllers\Admin\UjianController::class, 'storeSoal'])->name('admin.ujian.soal.store');
+    Route::post('ujian/{ujian}/soal', [\App\Http\Controllers\Admin\UjianController::class, 'assignSoal'])->name('admin.ujian.soal.assign');
+    Route::delete('ujian/{ujian}/soal/{soal}', [\App\Http\Controllers\Admin\UjianController::class, 'detachSoal'])->name('admin.ujian.soal.detach');
     Route::post('ujian/{ujian}/tutup', [\App\Http\Controllers\Admin\UjianController::class, 'tutupUjian'])->name('admin.ujian.tutup');
 
     
     Route::get('bank_soal/template', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplate'])->name('admin.bank_soal.template');
+    Route::get('bank_soal/template-excel', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplateExcel'])->name('admin.bank_soal.template_excel');
     Route::post('bank_soal/import', [\App\Http\Controllers\Admin\BankSoalController::class, 'import'])->name('admin.bank_soal.import');
     Route::resource('bank_soal', \App\Http\Controllers\Admin\BankSoalController::class)->names('admin.bank_soal')->except(['show', 'edit', 'update']);
     
     Route::get('/seleksi', [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])->name('admin.seleksi.index');
     Route::post('/seleksi/jalankan', [\App\Http\Controllers\Admin\SeleksiController::class, 'jalankanSeleksi'])->name('admin.seleksi.run');
+    Route::post('/seleksi/tunda', [\App\Http\Controllers\Admin\SeleksiController::class, 'tundaSeleksi'])->name('admin.seleksi.tunda');
+    Route::post('/seleksi/tanda-tidak-ujian', [\App\Http\Controllers\Admin\SeleksiController::class, 'tandaTidakIkutUjian'])->name('admin.seleksi.tanda-tidak-ujian');
     Route::post('/seleksi/finalisasi', [\App\Http\Controllers\Admin\SeleksiController::class, 'finalisasi'])->name('admin.seleksi.finalisasi');
 
     
@@ -58,7 +62,8 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
 Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
     Route::get('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'create'])->name('siswa.pendaftaran');
-    Route::post('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'store']);
+    Route::post('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'store'])->name('siswa.pendaftaran.store');
+    Route::post('/berkas/reupload', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'reuploadBerkas'])->name('siswa.pendaftaran.reupload');
     
     // Rute CBT
     Route::get('/ujian', [\App\Http\Controllers\Siswa\UjianController::class, 'index'])->name('siswa.ujian');
@@ -66,6 +71,9 @@ Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     
     // Hasil
     Route::get('/hasil', [\App\Http\Controllers\Siswa\HasilController::class, 'index'])->name('siswa.hasil');
+
+    // Profil
+    Route::post('/profil/foto', [\App\Http\Controllers\Siswa\ProfilController::class, 'uploadFoto'])->name('siswa.profil.foto');
 });
 
 // Halaman Tentang Kami

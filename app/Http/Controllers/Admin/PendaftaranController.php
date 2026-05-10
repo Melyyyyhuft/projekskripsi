@@ -46,4 +46,20 @@ class PendaftaranController extends Controller
         
         return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', 'Status verifikasi berhasil diperbarui.');
     }
+
+    public function verifikasiBerkas(Request $request, $id)
+    {
+        $berkas = \App\Models\Berkas::findOrFail($id);
+        $request->validate([
+            'status_verifikasi' => 'required|in:valid,tidak_valid',
+            'catatan_admin' => 'nullable|string'
+        ]);
+        
+        $berkas->update([
+            'status_verifikasi' => $request->status_verifikasi,
+            'catatan_admin' => $request->status_verifikasi == 'tidak_valid' ? $request->catatan_admin : null
+        ]);
+        
+        return back()->with('success', 'Status berkas berhasil diperbarui.');
+    }
 }

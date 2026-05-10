@@ -20,11 +20,38 @@ class PendaftaranController extends Controller
         }])->get();
         
         $pendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
-        return view('siswa.pendaftaran', compact('jurusans', 'pendaftaran'));
+        
+        $berkasAktif = [];
+        $riwayatBerkas = [];
+        if ($pendaftaran) {
+            // Group by jenis_berkas, getting the latest one as active
+            $allBerkas = Berkas::where('pendaftaran_id', $pendaftaran->id)
+                               ->latest()
+                               ->get();
+            
+            // Separate into active and history (except sertifikat which can have multiple active)
+            foreach($allBerkas as $b) {
+                if ($b->jenis_berkas == 'sertifikat') {
+                    // For sertifikat, we consider all of them active for now, unless replaced. 
+                    // To keep it simple, we just put them in berkasAktif
+                    $berkasAktif['sertifikat_' . $b->id] = $b;
+                } else {
+                    if (!isset($berkasAktif[$b->jenis_berkas])) {
+                        $berkasAktif[$b->jenis_berkas] = $b;
+                    } else {
+                        $riwayatBerkas[] = $b;
+                    }
+                }
+            }
+        }
+
+        return view('siswa.pendaftaran', compact('jurusans', 'pendaftaran', 'berkasAktif', 'riwayatBerkas'));
     }
 
     public function store(Request $request)
     {
+        $existingPendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
+
         // Validasi Relasional dan File Upload
         $request->validate([
             'jurusan_id' => 'required|exists:jurusans,id',
@@ -32,13 +59,13 @@ class PendaftaranController extends Controller
             'asal_sekolah' => 'required|string|max:255',
             'no_hp' => 'required|string|max:20',
             'nilai_rapor' => 'required|numeric|min:0|max:100',
-            'skl' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
-            'rapor' => 'required|mimes:pdf|max:2048',
-            'pasfoto' => 'required|mimes:jpg,jpeg,png|max:2048',
-            'sertifikat.*' => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048'
+            'skl' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf,jpg,jpeg,png|max:2048',
+            'rapor' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf|max:2048',
+            'pasfoto' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:jpg,jpeg,png|max:2048',
+            'sertifikat_file.*' => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
+            'sertifikat_jenis.*' => 'nullable|string',
+            'sertifikat_tingkat.*' => 'nullable|string'
         ]);
-
-        $existingPendaftaran = Pendaftaran::where('user_id', Auth::id())->first();
 
         // Validasi double submit (mencegah edit jika status sudah diproses)
         if ($existingPendaftaran && in_array($existingPendaftaran->status, ['lolos_admin', 'sudah_ujian', 'diterima', 'tidak_diterima'])) {
@@ -67,8 +94,8 @@ class PendaftaranController extends Controller
             ]
         );
 
-        // Hapus berkas lama jika upload ulang (opsional, tapi disarankan)
-        Berkas::where('pendaftaran_id', $pendaftaran->id)->delete();
+        // Jangan hapus berkas lama, biarkan tersimpan sebagai riwayat
+        // Berkas::where('pendaftaran_id', $pendaftaran->id)->delete();
 
         // Simpan SKL
         if($request->hasFile('skl')) {
@@ -112,18 +139,26 @@ class PendaftaranController extends Controller
             ]);
         }
 
-        // Simpan Sertifikat
-        if($request->hasFile('sertifikat')) {
-            foreach($request->file('sertifikat') as $file) {
-                $path = $file->store('berkas_pendaftaran/sertifikat', 'public');
-                Berkas::create([
-                    'pendaftaran_id' => $pendaftaran->id,
-                    'jenis_berkas' => 'sertifikat',
-                    'file_path' => $path,
-                    'nama_file' => $file->getClientOriginalName(),
-                    'file_type' => $file->getClientOriginalExtension(),
-                    'status_verifikasi' => 'pending'
-                ]);
+        // Simpan Sertifikat Prestasi (Multiple)
+        if($request->hasFile('sertifikat_file')) {
+            $files = $request->file('sertifikat_file');
+            $jenis = $request->input('sertifikat_jenis');
+            $tingkat = $request->input('sertifikat_tingkat');
+
+            foreach($files as $index => $file) {
+                if ($file) {
+                    $path = $file->store('berkas_pendaftaran/sertifikat', 'public');
+                    Berkas::create([
+                        'pendaftaran_id' => $pendaftaran->id,
+                        'jenis_berkas' => 'sertifikat',
+                        'file_path' => $path,
+                        'nama_file' => $file->getClientOriginalName(),
+                        'file_type' => $file->getClientOriginalExtension(),
+                        'status_verifikasi' => 'pending',
+                        'jenis_prestasi' => $jenis[$index] ?? null,
+                        'tingkat_prestasi' => $tingkat[$index] ?? null
+                    ]);
+                }
             }
         }
 
@@ -131,6 +166,45 @@ class PendaftaranController extends Controller
         $admins = \App\Models\User::where('role', 'admin')->get();
         \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranBaruNotification($pendaftaran));
 
-        return redirect()->route('siswa.dashboard')->with('success', 'Pendaftaran berhasil disubmit dan menunggu verifikasi admin.');
+        return redirect()->route('siswa.dashboard')->with('success', 'Pendaftaran dan berkas berhasil disimpan!');
+    }
+
+    public function reuploadBerkas(Request $request)
+    {
+        $pendaftaran = Pendaftaran::where('user_id', Auth::id())->firstOrFail();
+        
+        if (in_array($pendaftaran->status, ['lolos_admin', 'sudah_ujian', 'siap_finalisasi', 'siap_diumumkan', 'diterima', 'ditolak'])) {
+            return back()->with('error', 'Pendaftaran sudah dikunci, tidak bisa re-upload berkas.');
+        }
+
+        $request->validate([
+            'jenis_berkas' => 'required|string|in:kk,akta,skl,rapor,pasfoto,sertifikat',
+            'file_reupload' => 'required|file|max:2048',
+            'berkas_id_lama' => 'required|exists:berkas,id'
+        ]);
+
+        $file = $request->file('file_reupload');
+        $jenis = $request->jenis_berkas;
+
+        $path = $file->store('berkas_pendaftaran/'.$jenis, 'public');
+
+        // Simpan sebagai baris baru untuk menjaga riwayat
+        $berkasLama = Berkas::find($request->berkas_id_lama);
+
+        Berkas::create([
+            'pendaftaran_id' => $pendaftaran->id,
+            'jenis_berkas' => $jenis,
+            'file_path' => $path,
+            'nama_file' => $file->getClientOriginalName(),
+            'file_type' => $file->getClientOriginalExtension(),
+            'status_verifikasi' => 'pending',
+            'jenis_prestasi' => $berkasLama ? $berkasLama->jenis_prestasi : null,
+            'tingkat_prestasi' => $berkasLama ? $berkasLama->tingkat_prestasi : null
+        ]);
+
+        // Otomatis set pendaftaran ke status revisi jika sebelumnya menunggu_verifikasi agar diproses admin
+        $pendaftaran->update(['status' => 'revisi']);
+
+        return back()->with('success', 'Berkas ' . strtoupper($jenis) . ' berhasil diupload ulang. Menunggu verifikasi admin.');
     }
 }

@@ -1,216 +1,351 @@
 @extends('layouts.siswa')
-@section('title', 'Pengumuman Hasil Seleksi')
+@section('title', 'Hasil Seleksi PPDB')
 
 @section('content')
+@php
+    $namaSekolah   = $settings['nama_sekolah'] ?? 'SMK PPDB';
+    $tahunAjaran   = $settings['tahun_ajaran'] ?? date('Y') . '/' . (date('Y')+1);
+    $logoSekolah   = isset($settings['logo_sekolah']) ? asset('storage/' . $settings['logo_sekolah']) : null;
+    $tglPengumuman = isset($settings['tgl_pengumuman']) ? \Carbon\Carbon::parse($settings['tgl_pengumuman'])->isoFormat('D MMMM Y') : null;
+
+    $status    = $pendaftaran->status;
+    $gugur     = in_array($status, ['tidak_mengikuti_ujian', 'gugur']);
+    $belumFinal = !$hasil || !$hasil->is_finalisasi;
+    $kategori   = $hasil ? $hasil->kategori_kelulusan : null;
+    $lulus      = in_array($kategori, ['Unggulan', 'Reguler']);
+
+    $nomorSurat = sprintf('SK-%03d/PPDB/%s', $pendaftaran->id, date('Y'));
+    $kodeVerif  = strtoupper(substr(md5($pendaftaran->id . $pendaftaran->nisn . date('Y')), 0, 12));
+
+    // Status Badges untuk timeline
+    $statusBadges = [
+        'Registrasi & Pendaftaran' => true,
+        'Verifikasi Berkas'        => !in_array($status, ['draft', 'menunggu_verifikasi']),
+        'Ujian Online CBT'         => $hasilUjian ? true : false,
+        'Proses Seleksi'           => $hasil ? true : false,
+        'Pengumuman Hasil'         => $hasil && $hasil->is_finalisasi,
+    ];
+@endphp
+
 <style>
-    /* Styling for the surat kelulusan - hidden by default */
-    #surat-kelulusan-container {
-        display: none;
-    }
-    
-    /* When viewing the modal */
-    .modal-surat {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.8);
-        padding-top: 50px;
-    }
-    
-    .modal-content-surat {
-        background-color: #fff;
-        margin: auto;
-        padding: 40px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 800px;
-        color: black;
-        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-    }
+/* ─── Animations ─── */
+@keyframes fadeInUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.3); } 50% { box-shadow: 0 0 0 12px rgba(16,185,129,0); } }
+@keyframes confetti-fall { 0% { transform:translateY(-20px) rotate(0deg); opacity:1; } 100% { transform:translateY(60px) rotate(720deg); opacity:0; } }
 
-    .close-modal {
-        color: #aaaaaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-    }
+.fade-up { animation: fadeInUp .6s ease forwards; }
+.delay-1 { animation-delay:.1s; opacity:0; }
+.delay-2 { animation-delay:.2s; opacity:0; }
+.delay-3 { animation-delay:.3s; opacity:0; }
 
-    .close-modal:hover {
-        color: #000;
-    }
+/* ─── Certificate buttons ─── */
+.cert-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .75rem 1.5rem; border-radius: 12px; font-weight: 700;
+    font-size: .925rem; cursor: pointer; border: none; transition: all .2s;
+}
+.cert-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.15); }
 
-    /* Print styling */
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        #surat-kelulusan-template, #surat-kelulusan-template * {
-            visibility: visible;
-        }
-        #surat-kelulusan-template {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-        }
+/* ─── Modal Surat ─── */
+#modalSurat {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+    z-index: 9999; overflow-y: auto; padding: 2rem 1rem;
+}
+#modalSuratBox {
+    background: white; border-radius: 16px; max-width: 820px; margin: 0 auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,.4); overflow: hidden;
+}
+#modalSuratHeader {
+    background: linear-gradient(135deg,#0f172a,#1e3a5f);
+    padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+}
+
+/* ─── Print ─── */
+@media print {
+    body * { visibility: hidden !important; }
+    #surat-print-area, #surat-print-area * { visibility: visible !important; }
+    #surat-print-area {
+        position: fixed !important; inset: 0 !important;
+        width: 210mm !important; margin: 0 auto !important;
+        padding: 15mm 20mm !important; background: white !important;
     }
+}
+
+/* ─── Timeline ─── */
+.timeline-step { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; }
+.timeline-dot { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:800; }
+.timeline-line { width:2px; background:#e2e8f0; height:100%; margin: 0 auto; }
 </style>
 
-<div style="max-width: 700px; margin: 0 auto; text-align: center;" id="main-content-hasil">
-
-    @if(!$hasil || $pendaftaran->status !== 'siap_diumumkan')
-        <div class="glass-card" style="padding: 4rem 2rem;">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">⏳</div>
-            <h2 style="color: var(--dark); margin-bottom: 1rem;">Belum Ada Pengumuman</h2>
-            <p style="color: var(--gray-text);">Sistem sedang dalam proses seleksi. Pengumuman kelulusan akan ditampilkan pada halaman ini setelah Admin PPDB melakukan finalisasi hasil seleksi.</p>
-            <p style="color: var(--gray-text); margin-top: 1rem;">Status Anda saat ini: <strong style="text-transform: uppercase;">{{ str_replace('_', ' ', $pendaftaran->status) }}</strong></p>
+{{-- ══════════════════════════════════════════════
+     CASE A: GUGUR
+══════════════════════════════════════════════ --}}
+@if($gugur)
+<div class="fade-up" style="max-width:640px;margin:0 auto;">
+    <div style="background:linear-gradient(135deg,#1e1b4b,#7c3aed);border-radius:24px;padding:3rem 2rem;text-align:center;color:white;box-shadow:0 20px 60px rgba(109,40,217,.35);">
+        <div style="width:80px;height:80px;background:rgba(239,68,68,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.5rem;">😔</div>
+        <h2 style="font-size:1.75rem;font-weight:900;margin:0 0 .75rem;">Mohon Maaf</h2>
+        <p style="opacity:.85;font-size:1rem;line-height:1.7;margin-bottom:1.5rem;">
+            Anda dinyatakan <strong style="font-size:1.2rem;color:#fca5a5;">GUGUR</strong> dari seleksi PPDB<br>
+            karena tidak mengikuti ujian seleksi online.
+        </p>
+        <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.5rem;text-align:left;font-size:.875rem;line-height:1.7;">
+            <p style="margin:0;opacity:.9;">💡 <strong>Tetap semangat!</strong> Jangan menyerah dan terus kejar impianmu. Setiap kegagalan adalah langkah awal menuju keberhasilan. 💪</p>
         </div>
-    @else
-        @php $kategori = $hasil->kategori_kelulusan; @endphp
-
-        @if($kategori === 'Unggulan')
-            <div class="glass-card" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 4rem 2rem;">
-                <div style="font-size: 5rem; margin-bottom: 1rem;">⭐</div>
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">SELAMAT!</h1>
-                <p style="font-size: 1.25rem; opacity: 0.95; margin-bottom: 1.5rem;">Anda dinyatakan <strong style="font-size: 1.6rem;">DITERIMA</strong> di jurusan <strong>{{ $pendaftaran->jurusan->nama }}</strong>.</p>
-                <div style="background: rgba(255,255,255,0.2); padding: 1.25rem 2rem; border-radius: var(--radius-md); display: inline-block; text-align: left;">
-                    <p style="margin-bottom: 0.4rem; font-size: 1.1rem;">Kategori: <strong>⭐ Kelas Unggulan</strong></p>
-                    <p style="margin-bottom: 0.4rem;">Skor Akhir: <strong>{{ $hasil->skor_akhir }}</strong></p>
-                    <p>Ranking: <strong>#{{ $hasil->ranking }}</strong></p>
-                </div>
-            </div>
-
-        @elseif($kategori === 'Reguler')
-            <div class="glass-card" style="background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 4rem 2rem;">
-                <div style="font-size: 5rem; margin-bottom: 1rem;">🎉</div>
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">SELAMAT!</h1>
-                <p style="font-size: 1.25rem; opacity: 0.95; margin-bottom: 1.5rem;">Anda dinyatakan <strong style="font-size: 1.6rem;">DITERIMA</strong> di jurusan <strong>{{ $pendaftaran->jurusan->nama }}</strong>.</p>
-                <div style="background: rgba(255,255,255,0.2); padding: 1.25rem 2rem; border-radius: var(--radius-md); display: inline-block; text-align: left;">
-                    <p style="margin-bottom: 0.4rem; font-size: 1.1rem;">Kategori: <strong>✅ Kelas Reguler</strong></p>
-                    <p style="margin-bottom: 0.4rem;">Skor Akhir: <strong>{{ $hasil->skor_akhir }}</strong></p>
-                    <p>Ranking: <strong>#{{ $hasil->ranking }}</strong></p>
-                </div>
-            </div>
-
-        @else
-            <div class="glass-card" style="background: linear-gradient(135deg, #dc2626, #ef4444); color: white; padding: 4rem 2rem;">
-                <div style="font-size: 5rem; margin-bottom: 1rem;">😔</div>
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">MOHON MAAF</h1>
-                <p style="font-size: 1.25rem; opacity: 0.9; margin-bottom: 1.5rem;">Anda dinyatakan <strong style="font-size: 1.6rem;">TIDAK LULUS</strong> seleksi PPDB.</p>
-                <div style="background: rgba(255,255,255,0.2); padding: 1.25rem 2rem; border-radius: var(--radius-md); display: inline-block; text-align: left;">
-                    <p style="margin-bottom: 0.4rem;">Skor Akhir: <strong>{{ $hasil->skor_akhir }}</strong></p>
-                    <p>Ranking: <strong>#{{ $hasil->ranking }}</strong></p>
-                </div>
-                <p style="margin-top: 2rem; opacity: 0.85; font-size: 1rem;">Tetap semangat dan terus berjuang! 💪</p>
-            </div>
-        @endif
-
-        @if($kategori !== 'Tidak Lulus')
-        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-            <button class="btn-outline" onclick="openModal()" style="font-size: 1.125rem;">📄 Lihat Surat Kelulusan</button>
-            <button class="btn-primary" onclick="downloadPDF()" style="font-size: 1.125rem;">⬇️ Download PDF</button>
-        </div>
-
-        {{-- TEMPLATE SURAT KELULUSAN --}}
-        <div id="surat-kelulusan-container">
-            <div id="surat-kelulusan-template" style="background: white; padding: 40px; font-family: 'Times New Roman', Times, serif; color: black; text-align: left; line-height: 1.6;">
-                <div style="text-align: center; border-bottom: 3px solid black; padding-bottom: 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 20px;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Tut_Wuri_Handayani.svg/120px-Tut_Wuri_Handayani.svg.png" alt="Logo Sekolah" style="width: 80px; height: 80px; object-fit: contain;">
-                    <div>
-                        <h2 style="margin: 0; font-size: 24px; text-transform: uppercase; font-weight: bold;">PANITIA PENERIMAAN PESERTA DIDIK BARU</h2>
-                        <h1 style="margin: 5px 0; font-size: 28px; text-transform: uppercase; font-weight: bold;">SEKOLAH MASA DEPAN GEMILANG</h1>
-                        <p style="margin: 0; font-size: 14px;">Jl. Pendidikan No. 123, Jakarta | Telp: (021) 1234567</p>
-                    </div>
-                </div>
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h3 style="margin: 0; text-decoration: underline;">SURAT KEPUTUSAN KELULUSAN</h3>
-                    <p style="margin: 5px 0;">Nomor: {{ sprintf('%03d', $pendaftaran->id) }}/PPDB/{{ date('Y') }}</p>
-                </div>
-                <p>Berdasarkan hasil seleksi administrasi dan ujian masuk PPDB Tahun Ajaran {{ date('Y') }}, maka:</p>
-                <table style="width: 100%; margin: 20px 0; border-collapse: collapse; margin-left: 20px;">
-                    <tr><td style="width: 25%; padding: 5px 0;">Nama Lengkap</td><td style="width: 5%;">:</td><td style="font-weight: bold;">{{ Auth::user()->name }}</td></tr>
-                    <tr><td style="padding: 5px 0;">NISN</td><td>:</td><td style="font-weight: bold;">{{ $pendaftaran->nisn }}</td></tr>
-                    <tr><td style="padding: 5px 0;">Dinyatakan</td><td>:</td><td style="font-weight: bold; font-size: 18px; color: #059669;">LULUS</td></tr>
-                    <tr><td style="padding: 5px 0;">Pada Jurusan</td><td>:</td><td style="font-weight: bold;">{{ $pendaftaran->jurusan->nama }}</td></tr>
-                    <tr><td style="padding: 5px 0;">Kategori Kelas</td><td>:</td><td style="font-weight: bold;">{{ $hasil->kategori_kelulusan }}</td></tr>
-                    <tr><td style="padding: 5px 0;">Skor Akhir</td><td>:</td><td style="font-weight: bold;">{{ $hasil->skor_akhir }}</td></tr>
-                </table>
-                <p>Dimohon hadir untuk daftar ulang pada tanggal <strong>{{ date('d F Y', strtotime('+7 days')) }}</strong> dengan membawa berkas asli.</p>
-                <div style="margin-top: 50px; display: flex; justify-content: flex-end;">
-                    <div style="text-align: center; width: 300px;">
-                        <p style="margin-bottom: 5px;">Jakarta, {{ date('d F Y') }}</p>
-                        <p style="margin-bottom: 10px;">Kepala Sekolah</p>
-                        <div style="font-family: 'Brush Script MT', cursive; font-size: 32px; color: #1a365d; transform: rotate(-5deg); margin: 15px 0;">Dr. H. Pendidikan</div>
-                        <p style="font-weight: bold; text-decoration: underline; margin-bottom: 0;">Dr. H. Pendidikan, M.Pd.</p>
-                        <p style="margin-top: 0;">NIP. 19800101 200501 1 001</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Modal --}}
-        <div id="modalSurat" class="modal-surat">
-            <div class="modal-content-surat">
-                <span class="close-modal" onclick="closeModal()">&times;</span>
-                <div id="modal-body-surat" style="margin-bottom: 20px; border: 1px solid #ccc;"></div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <button class="btn-primary" onclick="downloadPDF()" style="padding: 10px 20px; margin-right: 10px;">Download PDF</button>
-                    <button class="btn-outline" onclick="closeModal()" style="padding: 10px 20px;">Tutup</button>
-                </div>
-            </div>
-        </div>
-        @endif
-    @endif
-
-
+    </div>
 </div>
 
-<!-- Include html2pdf.js for Client-Side PDF Generation -->
+{{-- ══════════════════════════════════════════════
+     CASE B: BELUM FINAL
+══════════════════════════════════════════════ --}}
+@elseif($belumFinal)
+<div style="max-width:720px;margin:0 auto;">
+
+    {{-- Status Card --}}
+    <div class="glass-card fade-up" style="margin-bottom:1.5rem;border-top:4px solid var(--primary);">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--primary),#6366f1);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">⏳</div>
+            <div>
+                <h2 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 .25rem;">Belum Ada Pengumuman</h2>
+                <p style="color:#64748b;margin:0;font-size:.875rem;">Hasil seleksi masih dalam proses finalisasi oleh admin PPDB.</p>
+            </div>
+        </div>
+
+        {{-- Status Badge --}}
+        @php
+            $statusMap = [
+                'lolos_admin'     => ['bg'=>'#d1fae5','color'=>'#065f46','icon'=>'✅','teks'=>'Berkas Diverifikasi','sub'=>'Administrasi Anda sudah lolos. Menunggu jadwal ujian atau proses seleksi.'],
+                'sudah_ujian'     => ['bg'=>'#dbeafe','color'=>'#1e40af','icon'=>'📝','teks'=>'Sudah Mengikuti Ujian','sub'=>'Ujian CBT selesai. Admin sedang memproses hasil seleksi.'],
+                'siap_finalisasi' => ['bg'=>'#ede9fe','color'=>'#5b21b6','icon'=>'🔄','teks'=>'Sedang Diproses Seleksi','sub'=>'Seleksi telah dijalankan. Menunggu finalisasi dari admin PPDB.'],
+            ];
+            $info = $statusMap[$status] ?? ['bg'=>'#f1f5f9','color'=>'#475569','icon'=>'⏳','teks'=>ucwords(str_replace('_',' ',$status)),'sub'=>'Hasil akan ditampilkan setelah admin melakukan finalisasi.'];
+        @endphp
+
+        <div style="background:{{ $info['bg'] }};border-radius:14px;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <span style="font-size:1.5rem;">{{ $info['icon'] }}</span>
+            <div>
+                <div style="font-weight:700;color:{{ $info['color'] }};font-size:1rem;">{{ $info['teks'] }}</div>
+                <div style="font-size:.82rem;color:{{ $info['color'] }};opacity:.8;margin-top:.2rem;">{{ $info['sub'] }}</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Timeline Progress --}}
+    <div class="glass-card fade-up delay-1">
+        <h3 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0 0 1.5rem;">📍 Progress Seleksi Anda</h3>
+        @foreach($statusBadges as $label => $done)
+        @php $last = $loop->last; @endphp
+        <div style="display:flex;gap:1rem;align-items:flex-start;{{ !$last ? 'margin-bottom:.25rem;' : '' }}">
+            <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;
+                    background:{{ $done ? '#10b981' : '#e2e8f0' }};color:{{ $done ? 'white' : '#94a3b8' }};">
+                    {{ $done ? '✓' : ($loop->index + 1) }}
+                </div>
+                @if(!$last)<div style="width:2px;height:28px;background:{{ $done ? '#10b981' : '#e2e8f0' }};margin:0 auto;"></div>@endif
+            </div>
+            <div style="padding-top:.5rem;{{ !$last ? 'padding-bottom:.5rem;' : '' }}">
+                <div style="font-weight:700;font-size:.9rem;color:{{ $done ? '#059669' : '#94a3b8' }};">{{ $label }}</div>
+            </div>
+        </div>
+        @endforeach
+
+        @if($tglPengumuman)
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:.875rem 1.25rem;margin-top:1.5rem;display:flex;align-items:center;gap:.75rem;">
+            <span style="font-size:1.25rem;">📅</span>
+            <div>
+                <div style="font-size:.75rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;">Estimasi Tanggal Pengumuman</div>
+                <div style="font-weight:700;color:#78350f;font-size:1rem;">{{ $tglPengumuman }}</div>
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════════════
+     CASE C: HASIL FINAL
+══════════════════════════════════════════════ --}}
+@else
+<div style="max-width:720px;margin:0 auto;">
+
+    @if($lulus)
+    {{-- ── LULUS ── --}}
+    @php
+        $isUnggulan = $kategori === 'Unggulan';
+        $gradFrom   = $isUnggulan ? '#f59e0b' : '#059669';
+        $gradTo     = $isUnggulan ? '#d97706' : '#10b981';
+        $gradClass  = $isUnggulan ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'linear-gradient(135deg,#f0fdf4,#dcfce7)';
+        $accentColor = $isUnggulan ? '#d97706' : '#059669';
+        $badgeText  = $isUnggulan ? '⭐ Jalur Unggulan' : '✅ Jalur Reguler';
+    @endphp
+
+    {{-- Hero Card --}}
+    <div style="background:linear-gradient(135deg,{{ $gradFrom }},{{ $gradTo }});border-radius:24px;padding:2.5rem;text-align:center;color:white;box-shadow:0 20px 60px rgba(0,0,0,.2);margin-bottom:1.5rem;position:relative;overflow:hidden;" class="fade-up">
+        <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,.08);border-radius:50%;"></div>
+        <div style="position:absolute;bottom:-30px;left:-20px;width:150px;height:150px;background:rgba(255,255,255,.06);border-radius:50%;"></div>
+
+        <div style="width:72px;height:72px;background:rgba(255,255,255,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;">
+            {{ $isUnggulan ? '⭐' : '🎉' }}
+        </div>
+        <p style="font-size:.875rem;font-weight:600;opacity:.9;margin:0 0 .5rem;letter-spacing:.1em;text-transform:uppercase;">Selamat!</p>
+        <h1 style="font-size:2rem;font-weight:900;margin:0 0 .75rem;letter-spacing:-.02em;">Anda Dinyatakan LULUS</h1>
+        <p style="font-size:1rem;opacity:.9;margin:0 0 1.5rem;">{{ $namaSekolah }} — Tahun Ajaran {{ $tahunAjaran }}</p>
+
+        <div style="background:rgba(255,255,255,.2);backdrop-filter:blur(10px);border-radius:14px;padding:1.25rem 1.5rem;display:inline-block;text-align:left;min-width:300px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                <div>
+                    <div style="font-size:.72rem;opacity:.8;text-transform:uppercase;letter-spacing:.06em;">Jurusan</div>
+                    <div style="font-weight:800;font-size:1rem;margin-top:.2rem;">{{ $pendaftaran->jurusan->nama }}</div>
+                </div>
+                <div>
+                    <div style="font-size:.72rem;opacity:.8;text-transform:uppercase;letter-spacing:.06em;">Jalur Penerimaan</div>
+                    <div style="font-weight:800;font-size:1rem;margin-top:.2rem;">{{ $badgeText }}</div>
+                </div>
+                <div>
+                    <div style="font-size:.72rem;opacity:.8;text-transform:uppercase;letter-spacing:.06em;">Skor Akhir</div>
+                    <div style="font-weight:800;font-size:1.25rem;margin-top:.2rem;">{{ $hasil->skor_akhir }}</div>
+                </div>
+                <div>
+                    <div style="font-size:.72rem;opacity:.8;text-transform:uppercase;letter-spacing:.06em;">Ranking</div>
+                    <div style="font-weight:800;font-size:1.25rem;margin-top:.2rem;">#{{ $hasil->ranking }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Detail Card --}}
+    <div class="glass-card fade-up delay-1" style="margin-bottom:1.5rem;">
+        <h3 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0 0 1.25rem;">📋 Detail Hasil Seleksi</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div style="background:#f8fafc;border-radius:12px;padding:1rem;">
+                <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;">Nama Lengkap</div>
+                <div style="font-weight:700;color:#0f172a;">{{ Auth::user()->name }}</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:12px;padding:1rem;">
+                <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;">NISN</div>
+                <div style="font-weight:700;color:#0f172a;font-family:monospace;">{{ $pendaftaran->nisn }}</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:12px;padding:1rem;">
+                <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;">Nilai CBT</div>
+                <div style="font-weight:700;color:var(--primary);font-size:1.2rem;">{{ $hasilUjian ? $hasilUjian->skor : '—' }}</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:12px;padding:1rem;">
+                <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;">Nilai Rapor</div>
+                <div style="font-weight:700;color:#0f172a;font-size:1.2rem;">{{ $pendaftaran->nilai_rapor }}</div>
+            </div>
+        </div>
+
+        {{-- Kode Verifikasi --}}
+        <div style="margin-top:1.25rem;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <div>
+                <div style="font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem;">Kode Verifikasi Dokumen</div>
+                <div style="font-family:monospace;font-size:1.1rem;font-weight:800;color:#38bdf8;letter-spacing:.15em;">{{ $kodeVerif }}</div>
+            </div>
+            <div style="font-size:.75rem;color:#64748b;max-width:180px;text-align:right;line-height:1.4;">Gunakan kode ini untuk memverifikasi keaslian surat.</div>
+        </div>
+    </div>
+
+    {{-- Action Buttons --}}
+    <div class="glass-card fade-up delay-2">
+        <h3 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0 0 1.25rem;">📄 Surat Kelulusan Resmi</h3>
+        <p style="color:#64748b;font-size:.875rem;margin:0 0 1.25rem;">Unduh atau cetak surat kelulusan resmi Anda sebagai bukti penerimaan di {{ $namaSekolah }}.</p>
+        <div style="display:flex;gap:.875rem;flex-wrap:wrap;">
+            <button onclick="openModal()" class="cert-btn" style="background:white;color:#0f172a;border:2px solid #e2e8f0;flex:1;min-width:140px;justify-content:center;">
+                <span>👁️</span> Preview Surat
+            </button>
+            <button onclick="downloadPDF()" class="cert-btn" style="background:linear-gradient(135deg,var(--primary),#6366f1);color:white;flex:1;min-width:140px;justify-content:center;">
+                <span>⬇️</span> Download PDF
+            </button>
+            <button onclick="window.print()" class="cert-btn" style="background:linear-gradient(135deg,#059669,#10b981);color:white;flex:1;min-width:140px;justify-content:center;">
+                <span>🖨️</span> Cetak
+            </button>
+        </div>
+    </div>
+
+    @else
+    {{-- ── TIDAK LULUS ── --}}
+    <div style="background:linear-gradient(135deg,#1e293b,#334155);border-radius:24px;padding:3rem 2rem;text-align:center;color:white;box-shadow:0 20px 60px rgba(0,0,0,.2);" class="fade-up">
+        <div style="width:72px;height:72px;background:rgba(239,68,68,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.5rem;">💙</div>
+        <h2 style="font-size:1.75rem;font-weight:900;margin:0 0 .75rem;">Mohon Maaf</h2>
+        <p style="opacity:.85;font-size:1rem;line-height:1.7;margin-bottom:1.5rem;">
+            Hasil seleksi menunjukkan bahwa Anda belum berhasil<br>diterima pada tahap ini.
+        </p>
+        <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:1.25rem 1.5rem;text-align:left;font-size:.875rem;line-height:1.8;max-width:420px;margin:0 auto;">
+            <p style="margin:0;color:#cbd5e1;">
+                💡 Tetap semangat dan jangan menyerah. Setiap proses adalah bagian dari perjalanan belajar. Terus tingkatkan kemampuanmu dan coba peluang lainnya. 💪
+            </p>
+        </div>
+    </div>
+    @endif
+
+</div>
+@endif
+
+{{-- ══════════════════════════════════════════════
+     SURAT KELULUSAN TEMPLATE (Hidden)
+══════════════════════════════════════════════ --}}
+@if($lulus && !$belumFinal)
+{{-- Area cetak --}}
+<div id="surat-print-area" style="display:none;">
+    @include('siswa.partials.surat_kelulusan', [
+        'namaSekolah'   => $namaSekolah,
+        'logoSekolah'   => $logoSekolah,
+        'tahunAjaran'   => $tahunAjaran,
+        'nomorSurat'    => $nomorSurat,
+        'kodeVerif'     => $kodeVerif,
+        'pendaftaran'   => $pendaftaran,
+        'hasil'         => $hasil,
+        'hasilUjian'    => $hasilUjian,
+        'badgeText'     => $badgeText,
+    ])
+</div>
+
+{{-- Modal Preview --}}
+<div id="modalSurat" onclick="if(event.target===this)closeModal()">
+    <div id="modalSuratBox">
+        <div id="modalSuratHeader">
+            <span style="color:white;font-weight:700;font-size:.9rem;">📄 Preview Surat Kelulusan</span>
+            <div style="display:flex;gap:.75rem;">
+                <button onclick="downloadPDF()" style="background:linear-gradient(135deg,var(--primary),#6366f1);color:white;padding:.5rem 1.1rem;border-radius:8px;font-weight:700;font-size:.82rem;border:none;cursor:pointer;">⬇️ Download PDF</button>
+                <button onclick="closeModal()" style="background:rgba(255,255,255,.15);color:white;padding:.5rem .875rem;border-radius:8px;font-size:.9rem;border:none;cursor:pointer;">✕ Tutup</button>
+            </div>
+        </div>
+        <div id="modal-body-surat" style="padding:2rem;overflow-y:auto;max-height:75vh;"></div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
     function openModal() {
-        var modal = document.getElementById("modalSurat");
-        var template = document.getElementById("surat-kelulusan-template").cloneNode(true);
-        template.id = "cloned-template";
-        
-        var modalBody = document.getElementById("modal-body-surat");
-        modalBody.innerHTML = '';
-        modalBody.appendChild(template);
-        
-        modal.style.display = "block";
+        const template = document.getElementById('surat-print-area').cloneNode(true);
+        template.style.display = 'block';
+        const body = document.getElementById('modal-body-surat');
+        body.innerHTML = '';
+        body.appendChild(template);
+        document.getElementById('modalSurat').style.display = 'block';
+        document.body.style.overflow = 'hidden';
     }
-
     function closeModal() {
-        document.getElementById("modalSurat").style.display = "none";
+        document.getElementById('modalSurat').style.display = 'none';
+        document.body.style.overflow = '';
     }
-
     function downloadPDF() {
-        var element = document.getElementById("surat-kelulusan-template");
-        
-        var opt = {
-            margin:       [10, 10, 10, 10],
-            filename:     'Surat_Kelulusan_{{ Auth::user()->name }}.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        const el = document.getElementById('surat-print-area').cloneNode(true);
+        el.style.display = 'block';
+        el.style.width = '210mm';
+        el.style.padding = '15mm 20mm';
+        el.style.background = 'white';
+        document.body.appendChild(el);
 
-        var tempDiv = document.createElement('div');
-        tempDiv.appendChild(element.cloneNode(true));
-        tempDiv.style.display = 'block';
-        tempDiv.style.width = '800px';
-        tempDiv.style.padding = '40px';
-        tempDiv.style.background = 'white';
-        
-        html2pdf().set(opt).from(tempDiv).save();
+        html2pdf().set({
+            margin: 0,
+            filename: 'Surat_Kelulusan_{{ Auth::user()->name }}.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(el).save().then(() => document.body.removeChild(el));
     }
+    document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
 </script>
+@endif
 @endsection

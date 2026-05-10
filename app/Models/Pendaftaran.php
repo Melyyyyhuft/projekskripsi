@@ -13,6 +13,10 @@ class Pendaftaran extends Model
     
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'ditunda_seleksi' => 'boolean',
+    ];
+
     public function user() {
         return $this->belongsTo(User::class);
     }
@@ -23,5 +27,9 @@ class Pendaftaran extends Model
 
     public function berkas() {
         return $this->hasMany(Berkas::class);
+    }
+
+    public function hasilSeleksi() {
+        return $this->hasOne(HasilSeleksi::class);
     }
 }
