@@ -73,6 +73,7 @@ Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     
     // Rute CBT
     Route::get('/ujian', [\App\Http\Controllers\Siswa\UjianController::class, 'index'])->name('siswa.ujian');
+    Route::post('/ujian/mulai', [\App\Http\Controllers\Siswa\UjianController::class, 'mulai'])->name('siswa.ujian.mulai');
     Route::post('/ujian/submit', [\App\Http\Controllers\Siswa\UjianController::class, 'submit'])->name('siswa.ujian.submit');
     
     // Hasil

@@ -42,11 +42,7 @@
         <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">🏫 Informasi Umum Sekolah</h3>
         <form action="{{ route('admin.pengaturan.umum') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label">Nama Sekolah</label>
-                    <input type="text" name="nama_sekolah" class="form-control" value="{{ $settings['nama_sekolah'] ?? 'SMK Negeri 1 Default' }}" required>
-                </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;max-width:640px;">
                 <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">Tahun Ajaran Aktif</label>
                     <input type="text" name="tahun_ajaran" class="form-control" value="{{ $settings['tahun_ajaran'] ?? '2026/2027' }}" required>
@@ -57,13 +53,6 @@
                         <option value="buka" {{ ($settings['status_ppdb'] ?? '') == 'buka' ? 'selected' : '' }}>🟢 Buka</option>
                         <option value="tutup" {{ ($settings['status_ppdb'] ?? '') == 'tutup' ? 'selected' : '' }}>🔴 Tutup</option>
                     </select>
-                </div>
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label">Logo Sekolah <span style="font-weight:400;color:#94a3b8;">(opsional)</span></label>
-                    <input type="file" name="logo_sekolah" class="form-control" accept=".jpg,.jpeg,.png">
-                    @if(isset($settings['logo_sekolah']))
-                        <div style="margin-top:.5rem;"><img src="{{ asset('storage/' . $settings['logo_sekolah']) }}" alt="Logo" style="height:40px;border-radius:6px;"></div>
-                    @endif
                 </div>
             </div>
             <div style="display:flex;justify-content:flex-end;">

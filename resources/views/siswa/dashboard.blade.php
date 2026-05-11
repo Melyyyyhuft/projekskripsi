@@ -3,16 +3,8 @@
 
 @section('content')
 
-@if (session('success'))
-    <div style="background:#d4edda;color:#155724;padding:1rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #c3e6cb;" class="animate-fade-in">
-        ✅ {{ session('success') }}
-    </div>
-@endif
-@if (session('error'))
-    <div style="background:#f8d7da;color:#721c24;padding:1rem;border-radius:8px;margin-bottom:1.5rem;border:1px solid #f5c6cb;" class="animate-fade-in">
-        ⚠️ {{ session('error') }}
-    </div>
-@endif
+
+
 
 @php
     // ── Status-status baru termasuk dari sistem seleksi fleksibel ──
@@ -234,7 +226,7 @@
         <div style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;font-size:.9rem;">
             @php
                 $tglMulaiGlobal = $settings['tgl_mulai_cbt'] ?? null;
-                $durasiGlobal = $settings['durasi_cbt'] ?? 0;
+                $durasiGlobal = (int) ($settings['durasi_cbt'] ?? 0);
                 $tglSelesaiGlobal = $tglMulaiGlobal ? \Carbon\Carbon::parse($tglMulaiGlobal)->addDays($durasiGlobal) : null;
                 $now = now();
                 $isPeriodActive = $tglMulaiGlobal && $now->between(\Carbon\Carbon::parse($tglMulaiGlobal), $tglSelesaiGlobal);

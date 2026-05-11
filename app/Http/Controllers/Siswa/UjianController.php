@@ -36,7 +36,7 @@ class UjianController extends Controller
         // Pengecekan Periode CBT Global dari Pengaturan
         $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
         $tglMulaiGlobal = $settings['tgl_mulai_cbt'] ?? null;
-        $durasiGlobal = $settings['durasi_cbt'] ?? 0;
+        $durasiGlobal = (int) ($settings['durasi_cbt'] ?? 0);
         $now = now();
         
         if ($tglMulaiGlobal) {
@@ -45,11 +45,11 @@ class UjianController extends Controller
             
             if ($now->lt($start)) {
                 $pesan = 'Ujian belum dimulai. Periode ujian CBT: ' . $start->format('d M Y') . ' s/d ' . $end->format('d M Y');
-                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif'));
+                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif', 'settings'));
             }
             if ($now->gt($end)) {
                 $pesan = 'Periode ujian CBT telah berakhir pada ' . $end->format('d M Y') . '.';
-                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif'));
+                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif', 'settings'));
             }
         }
 
@@ -69,7 +69,7 @@ class UjianController extends Controller
                 $pesan = $statusPesan[$pendaftaran->status] ?? 'Status pendaftaran: ' . $pendaftaran->status;
             }
             $ujian = $ujianAktif;
-            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
 
         // Ambil ujian aktif (belum ditutup)
@@ -77,19 +77,34 @@ class UjianController extends Controller
 
         if (!$ujian) {
             $pesan = 'Ujian belum tersedia. Silakan tunggu informasi dari panitia.';
-            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
 
         // Cek periode jadwal jika diset
         $now = now();
         if ($ujian->jadwal_mulai && $now->lt(\Carbon\Carbon::parse($ujian->jadwal_mulai))) {
             $pesan = 'Ujian belum dimulai. Jadwal mulai: ' . \Carbon\Carbon::parse($ujian->jadwal_mulai)->format('d M Y H:i');
-            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
         if ($ujian->jadwal_selesai && $now->gt(\Carbon\Carbon::parse($ujian->jadwal_selesai))) {
             $pesan = 'Periode ujian telah berakhir pada ' . \Carbon\Carbon::parse($ujian->jadwal_selesai)->format('d M Y H:i') . '.';
-            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian'));
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
+
+        // Cek apakah siswa sudah klik "Mulai Ujian"
+        if (!$pendaftaran->waktu_mulai_ujian) {
+            return view('siswa.ujian_mulai', compact('ujian', 'pendaftaran', 'settings'));
+        }
+
+        // Hitung sisa waktu
+        $waktuMulai = \Carbon\Carbon::parse($pendaftaran->waktu_mulai_ujian);
+        $waktuSelesai = (clone $waktuMulai)->addMinutes($ujian->durasi_menit);
+        
+        if ($now->gt($waktuSelesai)) {
+            return $this->autoSubmitHabisWaktu($ujian->id);
+        }
+
+        $sisaDetik = $now->diffInSeconds($waktuSelesai);
 
         // Ambil soal dari relasi ujian
         $soalsQuery = $ujian->soals();
@@ -111,7 +126,41 @@ class UjianController extends Controller
             }
         }
 
-        return view('siswa.ujian', compact('ujian', 'soals'));
+        return view('siswa.ujian', compact('ujian', 'soals', 'sisaDetik'));
+    }
+
+    public function mulai(Request $request)
+    {
+        $user_id = Auth::id();
+        $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
+        
+        if ($pendaftaran && !$pendaftaran->waktu_mulai_ujian) {
+            $pendaftaran->update(['waktu_mulai_ujian' => now()]);
+        }
+        
+        return redirect()->route('siswa.ujian');
+    }
+
+    private function autoSubmitHabisWaktu($ujian_id)
+    {
+        $user_id = Auth::id();
+        
+        // Cek apakah sudah ada hasil
+        $hasil = HasilUjian::where('user_id', $user_id)->where('ujian_id', $ujian_id)->first();
+        if (!$hasil) {
+            HasilUjian::create([
+                'user_id' => $user_id,
+                'ujian_id' => $ujian_id,
+                'skor' => 0
+            ]);
+
+            $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
+            if ($pendaftaran) {
+                $pendaftaran->update(['status' => 'sudah_ujian']);
+            }
+        }
+
+        return redirect()->route('siswa.dashboard')->with('error', 'Waktu ujian telah habis. Jawaban kosong otomatis tersimpan.');
     }
 
     public function submit(Request $request)

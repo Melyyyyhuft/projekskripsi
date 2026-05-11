@@ -23,6 +23,16 @@
     $mulaiTs   = ($ujianAda && $ujian->jadwal_mulai)   ? \Carbon\Carbon::parse($ujian->jadwal_mulai)->timestamp  * 1000 : null;
 @endphp
 
+@php
+    // Periode CBT Global dari settings
+    $settings        = $settings ?? [];
+    $tglMulaiGlobal  = $settings['tgl_mulai_cbt'] ?? null;
+    $durasiGlobal    = (int) ($settings['durasi_cbt'] ?? 0);
+    $tglSelesaiGlobal = $tglMulaiGlobal
+        ? \Carbon\Carbon::parse($tglMulaiGlobal)->addDays($durasiGlobal)
+        : null;
+@endphp
+
 <style>
 @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 @keyframes pulse-glow { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.3);} 50%{box-shadow:0 0 0 10px rgba(59,130,246,0);} }
@@ -139,7 +149,10 @@
                 <div>
                     <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Bebas memilih hari dan jam selama periode aktif</div>
                     <div style="font-size:.82rem;color:#64748b;">
-                        @if($ujian->jadwal_mulai)
+                        @if($tglMulaiGlobal)
+                            Periode: {{ \Carbon\Carbon::parse($tglMulaiGlobal)->format('d M Y') }}
+                            s/d {{ $tglSelesaiGlobal->format('d M Y') }}
+                        @elseif($ujian->jadwal_mulai)
                             Periode: {{ \Carbon\Carbon::parse($ujian->jadwal_mulai)->isoFormat('D MMM YYYY, HH:mm') }}
                             s/d {{ \Carbon\Carbon::parse($ujian->jadwal_selesai)->isoFormat('D MMM YYYY, HH:mm') }}
                         @else
@@ -246,6 +259,38 @@
                 <div style="font-weight:600;color:#0f172a;font-size:.9rem;">{{ \Carbon\Carbon::parse($ujian->jadwal_selesai)->isoFormat('D MMM YYYY, HH:mm') }}</div>
             </div>
             @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- Info Periode CBT Global dari Pengaturan --}}
+    @if($tglMulaiGlobal)
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+        <div style="font-size:.72rem;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">📅 Periode Ujian CBT</div>
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.2rem;">Mulai</div>
+                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ \Carbon\Carbon::parse($tglMulaiGlobal)->translatedFormat('d M Y') }}</div>
+            </div>
+            <div style="color:#cbd5e1;font-size:1.5rem;">→</div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.2rem;">Selesai</div>
+                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ $tglSelesaiGlobal->translatedFormat('d M Y') }}</div>
+            </div>
+            <div style="margin-left:auto;">
+                @php
+                    $nowCheck = now();
+                    $isPeriodActiveInfo = $nowCheck->between(\Carbon\Carbon::parse($tglMulaiGlobal), $tglSelesaiGlobal);
+                    $isBeforePeriodInfo = $nowCheck->lt(\Carbon\Carbon::parse($tglMulaiGlobal));
+                @endphp
+                @if($isPeriodActiveInfo)
+                    <span style="background:#dcfce7;color:#166534;padding:.3rem .75rem;border-radius:999px;font-size:.8rem;font-weight:700;">🟢 Sedang Berlangsung</span>
+                @elseif($isBeforePeriodInfo)
+                    <span style="background:#fef9c3;color:#92400e;padding:.3rem .75rem;border-radius:999px;font-size:.8rem;font-weight:700;">⏳ Belum Dimulai</span>
+                @else
+                    <span style="background:#fee2e2;color:#991b1b;padding:.3rem .75rem;border-radius:999px;font-size:.8rem;font-weight:700;">🔴 Sudah Berakhir</span>
+                @endif
+            </div>
         </div>
     </div>
     @endif

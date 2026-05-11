@@ -160,9 +160,8 @@
         goToSoal(0);
     }
 
-    // Timer Logic
-    let limitInMinutes = {{ $ujian->durasi_menit }};
-    let time = limitInMinutes * 60;
+    // Timer Logic tersinkronisasi dengan server
+    let time = {{ isset($sisaDetik) ? $sisaDetik : ($ujian->durasi_menit * 60) }};
     const timerDisplay = document.getElementById('timer');
 
     setInterval(() => {

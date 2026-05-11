@@ -2,12 +2,30 @@
 @section('title', 'Form Pendaftaran')
 
 @section('content')
+@php
+    $sudahUploadSemua = !empty($berkasAktif['skl']) && !empty($berkasAktif['rapor']) && !empty($berkasAktif['pasfoto']);
+@endphp
 <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
-    <h2 style="color: var(--primary); margin-bottom: 2rem;">Lengkapi Data Pendaftaran</h2>
-    
+    <h2 style="color: var(--primary); margin-bottom: 2rem;">
+        {{ $sudahUploadSemua ? '📋 Data & Dokumen Pendaftaran' : 'Lengkapi Data Pendaftaran' }}
+    </h2>
+
     @if($pendaftaran)
-        <div style="background: #e0f2fe; color: #0284c7; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
-            <strong>Informasi:</strong> Anda sudah mensubmit pendaftaran. Status saat ini: <span style="text-transform: uppercase;">{{ $pendaftaran->status }}</span>. Anda dapat memperbarui data jika belum diuji.
+        @php
+            $statusColor = match($pendaftaran->status) {
+                'lolos_admin'         => ['bg'=>'#d1fae5','color'=>'#065f46','icon'=>'✅'],
+                'ditolak_admin'       => ['bg'=>'#fee2e2','color'=>'#991b1b','icon'=>'❌'],
+                'menunggu_verifikasi' => ['bg'=>'#fef3c7','color'=>'#92400e','icon'=>'⏳'],
+                default               => ['bg'=>'#e0f2fe','color'=>'#0284c7','icon'=>'ℹ️'],
+            };
+        @endphp
+        <div style="background:{{ $statusColor['bg'] }};color:{{ $statusColor['color'] }};padding:1rem 1.25rem;border-radius:10px;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;">
+            <span style="font-size:1.25rem;">{{ $statusColor['icon'] }}</span>
+            <div>
+                <strong>Status Pendaftaran:</strong>
+                <span style="text-transform:uppercase;font-weight:700;"> {{ str_replace('_',' ',$pendaftaran->status) }}</span>
+                @if($sudahUploadSemua)<br><span style="font-size:.82rem;opacity:.85;">Semua berkas sudah diunggah. Data tidak dapat diubah lagi.</span>@endif
+            </div>
         </div>
     @endif
 
@@ -21,43 +39,83 @@
         </div>
     @endif
 
-    <form action="{{ url('siswa/pendaftaran') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-            <div class="form-group">
-                <label class="form-label" for="nisn">Nomor Induk Siswa Nasional (NISN)</label>
-                <input type="text" name="nisn" id="nisn" class="form-control" value="{{ $pendaftaran->nisn ?? old('nisn') }}" required>
+@if($sudahUploadSemua)
+    {{-- ═══ MODE READ-ONLY: semua berkas sudah diunggah ═══ --}}
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+        <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">📄 Ringkasan Data Pendaftaran</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1.5rem;">
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">NISN</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->nisn ?? '-' }}</div>
             </div>
-            
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Asal Sekolah</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->asal_sekolah ?? '-' }}</div>
+            </div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Rata-rata Nilai Rapor</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->nilai_rapor ?? '-' }}</div>
+            </div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Nomor HP / WhatsApp</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->no_hp ?? '-' }}</div>
+            </div>
+            <div style="grid-column:1/-1;">
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Jurusan Pilihan</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->jurusan->nama ?? '-' }}</div>
+            </div>
+        </div>
+    </div>
+@else
+    {{-- ═══ MODE FORM: belum semua berkas diunggah ═══ --}}
+    <form action="{{ url('siswa/pendaftaran') }}" method="POST" enctype="multipart/form-data" id="formPendaftaran">
+        @csrf
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <div class="form-group">
-                <label class="form-label" for="asal_sekolah">Asal Sekolah</label>
-                <input type="text" name="asal_sekolah" id="asal_sekolah" class="form-control" value="{{ $pendaftaran->asal_sekolah ?? old('asal_sekolah') }}" required>
+                <label class="form-label" for="nisn">Nomor Induk Siswa Nasional (NISN) <span style="color:#ef4444;">*</span></label>
+                <input type="text" name="nisn" id="nisn" class="form-control"
+                    value="{{ $pendaftaran->nisn ?? old('nisn') }}"
+                    required minlength="10" maxlength="10" pattern="[0-9]{10}"
+                    placeholder="10 digit angka" title="NISN harus 10 digit angka">
+                <small style="color:#94a3b8;">Tepat 10 digit angka</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="asal_sekolah">Asal Sekolah <span style="color:#ef4444;">*</span></label>
+                <input type="text" name="asal_sekolah" id="asal_sekolah" class="form-control"
+                    value="{{ $pendaftaran->asal_sekolah ?? old('asal_sekolah') }}"
+                    required placeholder="Nama sekolah asal Anda">
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <div class="form-group">
-                <label class="form-label" for="nilai_rapor">Rata-rata Nilai Rapor</label>
-                <input type="number" step="0.01" max="100" name="nilai_rapor" id="nilai_rapor" class="form-control" value="{{ $pendaftaran->nilai_rapor ?? old('nilai_rapor') }}" required>
+                <label class="form-label" for="nilai_rapor">Rata-rata Nilai Rapor <span style="color:#ef4444;">*</span></label>
+                <input type="number" step="0.01" min="0" max="100" name="nilai_rapor" id="nilai_rapor" class="form-control"
+                    value="{{ $pendaftaran->nilai_rapor ?? old('nilai_rapor') }}"
+                    required placeholder="Contoh: 85.50">
+                <small style="color:#94a3b8;">Angka 0–100</small>
             </div>
-            
             <div class="form-group">
-                <label class="form-label" for="no_hp">Nomor HP / WhatsApp</label>
-                <input type="text" name="no_hp" id="no_hp" class="form-control" value="{{ $pendaftaran->no_hp ?? old('no_hp') }}" required placeholder="Contoh: 081234567890">
+                <label class="form-label" for="no_hp">Nomor HP / WhatsApp <span style="color:#ef4444;">*</span></label>
+                <input type="text" name="no_hp" id="no_hp" class="form-control"
+                    value="{{ $pendaftaran->no_hp ?? old('no_hp') }}"
+                    required minlength="12" maxlength="13" pattern="[0-9]{12,13}"
+                    placeholder="Contoh: 081234567890" title="Nomor HP harus 12–13 digit angka">
+                <small style="color:#94a3b8;">12–13 digit angka (tanpa tanda +/spasi)</small>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="form-label" for="jurusan_id">Pilih Jurusan</label>
+            <label class="form-label" for="jurusan_id">Pilih Jurusan <span style="color:#ef4444;">*</span></label>
             <select name="jurusan_id" id="jurusan_id" class="form-control" required>
                 <option value="">-- Pilih Jurusan --</option>
                 @foreach($jurusans as $jurusan)
                     @php $sisa = $jurusan->sisa_kuota; @endphp
-                    <option value="{{ $jurusan->id }}" 
+                    <option value="{{ $jurusan->id }}"
                         {{ (isset($pendaftaran) && $pendaftaran->jurusan_id == $jurusan->id) ? 'selected' : '' }}
                         {{ $sisa <= 0 ? 'disabled' : '' }}
-                        style="{{ $sisa <= 0 ? 'color: #ef4444; font-weight: bold;' : '' }}">
+                        style="{{ $sisa <= 0 ? 'color:#ef4444;font-weight:bold;' : '' }}">
                         {{ $jurusan->nama }} &ndash; {{ $sisa <= 0 ? 'Penuh' : 'Tersedia' }}
                     </option>
                 @endforeach
@@ -65,10 +123,10 @@
         </div>
 
         @if(!empty($berkasAktif))
-        <div style="margin-top: 2rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); background: white; overflow: hidden;">
-            <div style="background: #f8fafc; padding: 1rem; border-bottom: 1px solid #e2e8f0;">
-                <h3 style="margin: 0; font-size: 1.1rem; color: #334155;">📋 Daftar Dokumen Aktif</h3>
-                <p style="margin: 0; font-size: 0.8rem; color: #64748b;">Dokumen terbaru yang Anda unggah untuk verifikasi.</p>
+        <div style="margin-top:1.5rem;border:1px solid #e2e8f0;border-radius:12px;background:white;overflow:hidden;">
+            <div style="background:#f8fafc;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;">
+                <h3 style="margin:0;font-size:1rem;font-weight:700;color:#334155;">📋 Daftar Dokumen Aktif</h3>
+                <p style="margin:.2rem 0 0;font-size:.8rem;color:#64748b;">Dokumen terbaru yang Anda unggah untuk verifikasi.</p>
             </div>
             <div style="display: flex; flex-direction: column;">
                 @foreach($berkasAktif as $key => $berkas)
@@ -132,32 +190,91 @@
         </details>
         @endif
 
-        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary);">Upload Berkas Pendukung</h3>
-        <div style="background: #fff8f1; padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #f59e0b; margin-bottom: 1rem; font-size: 0.9rem;">
+        @if(!$sudahUploadSemua)
+        <h3 style="margin-top:2rem;margin-bottom:1rem;color:var(--primary);">Upload Berkas Pendukung</h3>
+        <div style="background:#fff8f1;padding:1rem;border-radius:var(--radius-sm);border-left:4px solid #f59e0b;margin-bottom:1rem;font-size:.9rem;">
             <strong>Perhatian:</strong> Berkas wajib harus diisi agar pendaftaran dapat dikirim. Maksimal 2MB per file.
         </div>
-        <div style="background: #f0fdf4; padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #22c55e; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        <div style="background:#f0fdf4;padding:1rem;border-radius:var(--radius-sm);border-left:4px solid #22c55e;margin-bottom:1.5rem;font-size:.9rem;">
             <i class="fa-solid fa-shield-halved"></i> <strong>Privasi:</strong> Dokumen hanya digunakan untuk keperluan verifikasi dan tidak disebarluaskan.
         </div>
+        @endif
 
-        <div class="form-group">
-            <label class="form-label" for="skl">1. Scan SKL / Ijazah {{ isset($pendaftaran) ? '(Opsional jika sudah ada)' : '(Wajib)' }}</label>
-            <input type="file" name="skl" id="file_skl" class="form-control" accept=".pdf,.jpg,.jpeg,.png" {{ isset($pendaftaran) ? '' : 'required' }}>
-            <small style="color: var(--gray-text);">Format: PDF, JPG, PNG.</small>
+        @php
+            $berkasSkl    = $berkasAktif['skl']    ?? null;
+            $berkasRapor  = $berkasAktif['rapor']  ?? null;
+            $berkasPasfoto = $berkasAktif['pasfoto'] ?? null;
+
+            $statusBadge = fn($v) => match($v) {
+                'valid'       => ['bg'=>'#d1fae5','color'=>'#059669','label'=>'✅ Diterima'],
+                'tidak_valid' => ['bg'=>'#fee2e2','color'=>'#dc2626','label'=>'❌ Ditolak'],
+                default       => ['bg'=>'#fef3c7','color'=>'#d97706','label'=>'⏳ Pending'],
+            };
+        @endphp
+
+        {{-- Helper macro: satu berkas wajib --}}
+        @foreach([
+            ['key'=>'skl',     'no'=>1, 'label'=>'Scan SKL / Ijazah',    'name'=>'skl',     'accept'=>'.pdf,.jpg,.jpeg,.png', 'hint'=>'Format: PDF, JPG, PNG.'],
+            ['key'=>'rapor',   'no'=>2, 'label'=>'Scan Rapor Terakhir',  'name'=>'rapor',   'accept'=>'.pdf',                 'hint'=>'Format: PDF.'],
+            ['key'=>'pasfoto', 'no'=>3, 'label'=>'Pas Foto Terkini',     'name'=>'pasfoto', 'accept'=>'.jpg,.jpeg,.png',      'hint'=>'Format: JPG, PNG.'],
+        ] as $item)
+        @php
+            $existing = $berkasAktif[$item['key']] ?? null;
+            $badge    = $existing ? $statusBadge($existing->status_verifikasi) : null;
+            $fileId   = 'file_' . $item['key'];
+        @endphp
+        <div class="form-group" style="border:1px solid #e2e8f0;border-radius:12px;padding:1rem 1.25rem;background:#f8fafc;">
+            <label class="form-label" style="font-weight:700;color:#0f172a;margin-bottom:.75rem;display:block;">
+                {{ $item['no'] }}. {{ $item['label'] }}
+                @if($existing)
+                    <span style="background:{{ $badge['bg'] }};color:{{ $badge['color'] }};font-size:.72rem;padding:.2rem .55rem;border-radius:999px;font-weight:700;margin-left:.5rem;">{{ $badge['label'] }}</span>
+                @else
+                    <span style="background:#fee2e2;color:#dc2626;font-size:.72rem;padding:.2rem .55rem;border-radius:999px;font-weight:700;margin-left:.5rem;">Belum Upload</span>
+                @endif
+            </label>
+
+            @if($existing)
+                {{-- Sudah ada berkas: tampilkan preview, sembunyikan input --}}
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:.6rem;background:white;border:1px solid #e2e8f0;border-radius:8px;padding:.6rem 1rem;flex:1;min-width:0;">
+                        <span style="font-size:1.25rem;">
+                            {{ strtolower($existing->file_type ?? '') === 'pdf' ? '📄' : '🖼️' }}
+                        </span>
+                        <span style="font-size:.82rem;color:#334155;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $existing->nama_file }}</span>
+                    </div>
+                    <button type="button" class="btn-outline" style="padding:.45rem 1rem;font-size:.82rem;white-space:nowrap;"
+                        onclick="openLightbox('{{ asset('storage/'.$existing->file_path) }}', '{{ strtolower($existing->file_type ?? '') === 'pdf' ? 'pdf' : 'img' }}')">
+                        👁️ Preview
+                    </button>
+                    @if($existing->status_verifikasi !== 'valid')
+                    <button type="button" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;border-radius:8px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;"
+                        onclick="toggleReplaceInput('{{ $fileId }}')">
+                        🔄 Ganti File
+                    </button>
+                    @endif
+                </div>
+                @if($existing->status_verifikasi !== 'valid')
+                <div id="{{ $fileId }}_replace" style="display:none;margin-top:.75rem;padding:.875rem;background:#fff7ed;border:1px dashed #fb923c;border-radius:8px;">
+                    <p style="font-size:.8rem;color:#9a3412;margin:0 0 .5rem;font-weight:600;">⚠️ File lama akan diganti. Pilih file baru:</p>
+                    <input type="file" name="{{ $item['name'] }}" id="{{ $fileId }}" class="form-control" accept="{{ $item['accept'] }}">
+                    <small style="color:var(--gray-text);">{{ $item['hint'] }}</small>
+                </div>
+                @endif
+            @else
+                {{-- Belum ada berkas: tampilkan input upload --}}
+                <input type="file" name="{{ $item['name'] }}" id="{{ $fileId }}" class="form-control"
+                    accept="{{ $item['accept'] }}"
+                    {{ !isset($pendaftaran) ? 'required' : '' }}
+                    onchange="showPreview(this, '{{ $fileId }}_preview')">
+                <small style="color:var(--gray-text);">{{ $item['hint'] }}</small>
+                {{-- Preview sebelum upload --}}
+                <div id="{{ $fileId }}_preview" style="display:none;margin-top:.75rem;"></div>
+            @endif
         </div>
+        @endforeach
 
-        <div class="form-group">
-            <label class="form-label" for="rapor">2. Scan Rapor Terakhir {{ isset($pendaftaran) ? '(Opsional jika sudah ada)' : '(Wajib)' }}</label>
-            <input type="file" name="rapor" id="file_rapor" class="form-control" accept=".pdf" {{ isset($pendaftaran) ? '' : 'required' }}>
-            <small style="color: var(--gray-text);">Format: PDF.</small>
-        </div>
 
-        <div class="form-group">
-            <label class="form-label" for="pasfoto">3. Pas Foto Terkini {{ isset($pendaftaran) ? '(Opsional jika sudah ada)' : '(Wajib)' }}</label>
-            <input type="file" name="pasfoto" id="file_pasfoto" class="form-control" accept=".jpg,.jpeg,.png" {{ isset($pendaftaran) ? '' : 'required' }}>
-            <small style="color: var(--gray-text);">Format: JPG, PNG.</small>
-        </div>
-
+        @if(!$sudahUploadSemua)
         <div class="form-group" style="margin-top: 2rem;">
             <label class="form-label">4. Sertifikat Pendukung (Opsional)</label>
             
@@ -210,37 +327,72 @@
             </button>
         </div>
 
-        <button type="submit" id="btn_submit" class="btn-primary" style="width: 100%; margin-top: 1rem; font-size: 1.125rem; padding: 1rem;" disabled>Kirim Pendaftaran</button>
+        <button type="button" id="btn_submit" class="btn-primary"
+            style="width:100%;margin-top:1rem;font-size:1.125rem;padding:1rem;"
+            onclick="konfirmasiKirim()">
+            📨 Kirim Pendaftaran
+        </button>
+
+        @endif {{-- end !$sudahUploadSemua --}}
     </form>
+@endif {{-- end else (read-only vs form) --}}
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const skl = document.getElementById('file_skl');
-        const rapor = document.getElementById('file_rapor');
-        const pasfoto = document.getElementById('file_pasfoto');
-        const btnSubmit = document.getElementById('btn_submit');
-
-        function checkFiles() {
-            // Cek apakah ketiganya memiliki setidaknya 1 file
-            if (skl.files.length > 0 && rapor.files.length > 0 && pasfoto.files.length > 0) {
-                btnSubmit.disabled = false;
-                btnSubmit.style.opacity = '1';
-                btnSubmit.style.cursor = 'pointer';
-            } else {
-                btnSubmit.disabled = true;
-                btnSubmit.style.opacity = '0.5';
-                btnSubmit.style.cursor = 'not-allowed';
-            }
-        }
-
-        skl.addEventListener('change', checkFiles);
-        rapor.addEventListener('change', checkFiles);
-        pasfoto.addEventListener('change', checkFiles);
+    // Preview file sebelum upload (untuk berkas yang belum ada)
+    function showPreview(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (!input.files || !input.files[0]) { preview.style.display = 'none'; return; }
+        const file = input.files[0];
+        const isPdf = file.type === 'application/pdf';
+        const url = URL.createObjectURL(file);
         
-        // Panggil sekali saat load
-        checkFiles();
-        // Script Tambah Prestasi
+        preview.style.display = 'block';
+        if (isPdf) {
+            preview.innerHTML = `<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;">
+                <span style="font-size:1.5rem;">📄</span>
+                <div>
+                    <div style="font-weight:700;font-size:.85rem;color:#0369a1;word-break:break-all;">${file.name}</div>
+                    <div style="font-size:.75rem;color:#64748b;">${(file.size/1024).toFixed(1)} KB · PDF</div>
+                </div>
+                <div style="margin-left:auto; display:flex; flex-direction:column; gap:.3rem; align-items:flex-end;">
+                    <span style="background:#dcfce7;color:#166534;font-size:.7rem;padding:.15rem .5rem;border-radius:999px;font-weight:700;">✓ Siap Upload</span>
+                    <button type="button" class="btn-outline" style="padding:.2rem .5rem;font-size:.75rem;white-space:nowrap;" onclick="openLightbox('${url}', 'pdf')">👁️ Lihat File</button>
+                </div>
+            </div>`;
+        } else {
+            preview.innerHTML = `<div style="display:flex; align-items:center; gap:1rem; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:.5rem;">
+                <div style="position:relative; cursor:pointer;" onclick="openLightbox('${url}', 'img')">
+                    <img src="${url}" style="max-height:80px;border-radius:6px;display:block;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:transform .2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);border-radius:6px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">
+                        <i class="fa-solid fa-eye" style="color:white;font-size:1.2rem;"></i>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-weight:700;font-size:.85rem;color:#0369a1;word-break:break-all;">${file.name}</div>
+                    <div style="font-size:.75rem;color:#64748b;margin-bottom:.3rem;">${(file.size/1024).toFixed(1)} KB · Gambar</div>
+                    <span style="background:#dcfce7;color:#166534;font-size:.7rem;padding:.15rem .5rem;border-radius:999px;font-weight:700;">✓ Siap Upload</span>
+                </div>
+            </div>`;
+        }
+    }
+
+    // Toggle form ganti file (untuk berkas yang sudah ada tapi belum valid)
+    function toggleReplaceInput(fileId) {
+        const box = document.getElementById(fileId + '_replace');
+        if (!box) return;
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Konfirmasi sebelum kirim
+    function konfirmasiKirim() {
+        if (confirm('📨 Yakin ingin mengirim pendaftaran?\n\nPastikan semua data dan berkas sudah benar sebelum dikirim.')) {
+            document.getElementById('formPendaftaran').submit();
+        }
+    }
+
+    // Script Tambah Prestasi
+    document.addEventListener('DOMContentLoaded', function() {
         const btnAddPrestasi = document.getElementById('btn_add_prestasi');
         const prestasiContainer = document.getElementById('prestasi-container');
         
