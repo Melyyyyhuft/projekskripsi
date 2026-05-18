@@ -67,8 +67,8 @@
     <div class="glass-card">
         <h4 style="color:var(--primary);margin:0 0 .5rem;font-size:1rem;">⚡ Proses Seleksi Fleksibel</h4>
         <p style="color:var(--gray-text);font-size:.82rem;margin-bottom:1rem;line-height:1.5;">
-            Rumus: <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.8rem;">Skor = ({{ ($settings['bobot_ujian']??60) }}% × Ujian) + ({{ ($settings['bobot_rapor']??40) }}% × Rapor) + Bonus Sertifikat</code><br>
-            <strong>Melakukan Ranking Otomatis Berdasarkan Jurusan.</strong>
+            Rumus: <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.8rem;">Skor = (60% × Rapor) + (40% × Ujian CBT) + Bonus Sertifikat</code><br>
+            <strong>Melakukan Ranking Otomatis Berdasarkan Jurusan & Kuota.</strong>
         </p>
         @if($sudahDifinalisasi)
             <div style="background:#d1fae5;color:#059669;padding:.75rem 1rem;border-radius:8px;font-size:.85rem;">
@@ -156,18 +156,25 @@
             <tbody>
                 @forelse($semua as $p)
                 @php
-                    $bobotUjian = ($settings['bobot_ujian'] ?? 60) / 100;
-                    $bobotRapor = ($settings['bobot_rapor'] ?? 40) / 100;
                     $nilaiUjian = $p->hasil_ujian ? $p->hasil_ujian->skor : null;
                     
-                    // Bonus Sertifikat
-                    $bonusMapping = ['Sekolah'=>2,'Kecamatan'=>3,'Kabupaten/Kota'=>5,'Provinsi'=>10,'Nasional'=>15,'Internasional'=>15];
+                    // Bonus Sertifikat (Hanya 1 terbaik, Max 5)
+                    $bonusMapping = [
+                        'Sekolah'         => 1,
+                        'Kecamatan'       => 1,
+                        'Kabupaten/Kota'  => 2,
+                        'Provinsi'        => 3,
+                        'Nasional'        => 4,
+                        'Internasional'   => 5,
+                    ];
                     $bonusSertifikat = 0;
-                    foreach($p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid') as $sert) {
-                        $bonusSertifikat += $bonusMapping[$sert->tingkat_prestasi] ?? 0;
+                    $sertifikats = $p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid');
+                    foreach($sertifikats as $sert) {
+                        $val = $bonusMapping[$sert->tingkat_prestasi] ?? 0;
+                        if($val > $bonusSertifikat) $bonusSertifikat = $val;
                     }
 
-                    $skorAkhir  = ($nilaiUjian !== null) ? round(($bobotUjian * $nilaiUjian) + ($bobotRapor * $p->nilai_rapor) + $bonusSertifikat, 2) : null;
+                    $skorAkhir  = ($nilaiUjian !== null) ? round((0.60 * $p->nilai_rapor) + (0.40 * $nilaiUjian) + $bonusSertifikat, 2) : null;
                     $sudahUjian = in_array($p->status, ['sudah_ujian','siap_finalisasi','siap_diumumkan']);
                     $belumUjian = $p->status === 'lolos_admin';
                     $tidakIkut  = in_array($p->status, ['tidak_mengikuti_ujian','gugur']);
@@ -281,23 +288,31 @@
             </thead>
             <tbody>
                 @foreach($hasil as $h)
-                <tr style="border-bottom:1px solid #f1f5f9;background:{{ $h->kategori_kelulusan==='Unggulan'?'#fffbeb':'#f0fdf4' }};">
+                <tr style="border-bottom:1px solid #f1f5f9;background:{{ $h->kategori_kelulusan==='DITERIMA'?'#f0fdf4':($h->kategori_kelulusan==='GUGUR'?'#fef2f2':'#fffbeb') }};">
                     <td style="padding:.75rem 1rem;text-align:center;">
-                        <span style="font-size:1rem;font-weight:800;color:{{ $h->kategori_kelulusan==='Unggulan'?'#d97706':'#059669' }};">#{{ $h->ranking }}</span>
+                        <div style="font-size:1rem;font-weight:800;color:#0f172a;">
+                            @if($h->ranking > 0)
+                                #{{ $h->ranking }} <span style="font-size:.7rem;color:#94a3b8;font-weight:600;">/ {{ $totalPerJurusan[$h->pendaftaran->jurusan_id] ?? '?' }}</span>
+                            @else
+                                <span style="color:#94a3b8;">—</span>
+                            @endif
+                        </div>
                     </td>
                     <td style="padding:.75rem 1rem;font-weight:700;color:#0f172a;">{{ $h->pendaftaran->user->name }}</td>
                     <td style="padding:.75rem 1rem;font-size:.875rem;color:#475569;">{{ $h->pendaftaran->jurusan->nama }}</td>
-                    <td style="padding:.75rem 1rem;text-align:center;"><strong style="font-size:1rem;">{{ $h->skor_akhir }}</strong></td>
+                    <td style="padding:.75rem 1rem;text-align:center;"><strong style="font-size:1rem;">{{ number_format($h->skor_akhir, 2) }}</strong></td>
                     <td style="padding:.75rem 1rem;text-align:center;">
-                        @if($h->kategori_kelulusan === 'Unggulan')
-                            <span style="background:#fbbf24;color:#78350f;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">⭐ Unggulan</span>
+                        @if($h->kategori_kelulusan === 'DITERIMA')
+                            <span style="background:#d1fae5;color:#065f46;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">✅ DITERIMA</span>
+                        @elseif($h->kategori_kelulusan === 'TIDAK DITERIMA')
+                            <span style="background:#fee2e2;color:#991b1b;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">❌ TIDAK DITERIMA</span>
                         @else
-                            <span style="background:#6ee7b7;color:#065f46;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">✅ Reguler</span>
+                            <span style="background:#f1f5f9;color:#475569;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">⚪ GUGUR</span>
                         @endif
                     </td>
                     <td style="padding:.75rem 1rem;text-align:center;">
                         @if($h->is_finalisasi)
-                            <span style="background:#e0f2fe;color:#0369a1;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700;">🔒 Dikunci</span>
+                            <span style="background:#e0f2fe;color:#0369a1;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700;">🔒 Final</span>
                         @else
                             <span style="background:#fef3c7;color:#92400e;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700;">⏳ Draft</span>
                         @endif

@@ -12,7 +12,7 @@
     $gugur     = in_array($status, ['tidak_mengikuti_ujian', 'gugur']);
     $belumFinal = !$hasil || !$hasil->is_finalisasi;
     $kategori   = $hasil ? $hasil->kategori_kelulusan : null;
-    $lulus      = in_array($kategori, ['Unggulan', 'Reguler']);
+    $lulus      = $kategori === 'DITERIMA';
 
     $nomorSurat = sprintf('SK-%03d/PPDB/%s', $pendaftaran->id, date('Y'));
     $kodeVerif  = strtoupper(substr(md5($pendaftaran->id . $pendaftaran->nisn . date('Y')), 0, 12));
@@ -171,12 +171,11 @@
     @if($lulus)
     {{-- ── LULUS ── --}}
     @php
-        $isUnggulan = $kategori === 'Unggulan';
-        $gradFrom   = $isUnggulan ? '#f59e0b' : '#059669';
-        $gradTo     = $isUnggulan ? '#d97706' : '#10b981';
-        $gradClass  = $isUnggulan ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'linear-gradient(135deg,#f0fdf4,#dcfce7)';
-        $accentColor = $isUnggulan ? '#d97706' : '#059669';
-        $badgeText  = $isUnggulan ? '⭐ Jalur Unggulan' : '✅ Jalur Reguler';
+        $gradFrom   = '#059669';
+        $gradTo     = '#10b981';
+        $gradClass  = 'linear-gradient(135deg,#f0fdf4,#dcfce7)';
+        $accentColor = '#059669';
+        $badgeText  = '✅ Jalur Seleksi';
     @endphp
 
     {{-- Hero Card --}}

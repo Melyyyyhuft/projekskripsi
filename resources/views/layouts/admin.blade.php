@@ -37,6 +37,9 @@
             <a href="{{ route('admin.seleksi.index') }}" class="sidebar-item {{ request()->is('admin/seleksi*') ? 'active' : '' }}">
                 <span>⚡ Proses Seleksi</span>
             </a>
+            <a href="{{ route('admin.penempatan.index') }}" class="sidebar-item {{ request()->is('admin/penempatan*') ? 'active' : '' }}">
+                <span>🏫 Seleksi &amp; Penempatan</span>
+            </a>
 
             <div style="flex-grow:1;"></div>
             <div class="sidebar-divider"></div>

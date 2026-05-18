@@ -54,6 +54,11 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::post('/seleksi/tanda-tidak-ujian', [\App\Http\Controllers\Admin\SeleksiController::class, 'tandaTidakIkutUjian'])->name('admin.seleksi.tanda-tidak-ujian');
     Route::post('/seleksi/finalisasi', [\App\Http\Controllers\Admin\SeleksiController::class, 'finalisasi'])->name('admin.seleksi.finalisasi');
 
+    // Seleksi & Penempatan
+    Route::get('/penempatan', [\App\Http\Controllers\Admin\PenempatanController::class, 'index'])->name('admin.penempatan.index');
+    Route::post('/penempatan/proses', [\App\Http\Controllers\Admin\PenempatanController::class, 'prosesSeleksi'])->name('admin.penempatan.proses');
+    Route::post('/penempatan/publish', [\App\Http\Controllers\Admin\PenempatanController::class, 'publishPengumuman'])->name('admin.penempatan.publish');
+
     
     // Pengaturan & Jurusan
     Route::get('/pengaturan', [\App\Http\Controllers\Admin\PengaturanController::class, 'index'])->name('admin.pengaturan.index');

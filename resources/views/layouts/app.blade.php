@@ -66,7 +66,6 @@
                 <p>Mewujudkan generasi cerdas, berkarakter, dan berdaya saing global melalui sistem pendidikan yang modern dan transparan.</p>
                 <div class="social-links">
                     <a href="https://tiktok.com/@smk.mitrabintaro" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
-                    <a href="#" class="social-btn"><i class="fa-brands fa-twitter"></i></a>
                     <a href="https://instagram.com/mitrabintaro" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
                     <a href="https://youtube.com/@smkmitrabintaro-real?si=XbGJnuRTiMQs6RvR" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
                 </div>
