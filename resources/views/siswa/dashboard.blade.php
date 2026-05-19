@@ -125,7 +125,7 @@
 </div>
 
 {{-- ─── Welcome Card ─── --}}
-<div class="glass-card welcome-gradient animate-slide-up" style="margin-bottom:2.5rem;padding:2.5rem;">
+<div class="glass-card animate-slide-up" style="margin-bottom:2.5rem;padding:2.5rem;background:#ffffff;border-left:4px solid var(--primary);border-radius:12px;">
     <h2 style="font-size:1.8rem;margin-bottom:.5rem;color:var(--dark);">Selamat Datang, {{ Auth::user()->name }}! 👋</h2>
     <p style="color:var(--gray-text);font-size:1.1rem;max-width:700px;position:relative;z-index:1;">
         Portal pendaftaran peserta didik baru SMK. Ikuti tahapan di bawah ini secara berurutan untuk menyelesaikan proses pendaftaran Anda.
@@ -165,7 +165,7 @@
             @endif
 
             {{-- Circle --}}
-            <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;border:4px solid white;position:relative;z-index:2;box-shadow:0 0 0 3px {{ $step['done'] ? 'rgba(16,185,129,.25)' : ($step['active'] ? 'rgba(59,130,246,.25)' : 'transparent') }};background:{{ $step['done'] ? '#10b981' : ($step['active'] ? 'var(--primary)' : '#e2e8f0') }};color:{{ ($step['done'] || $step['active']) ? 'white' : '#64748b' }};">
+            <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;border:4px solid white;position:relative;z-index:2;box-shadow:0 0 0 3px {{ $step['done'] ? 'rgba(16,185,129,.25)' : ($step['active'] ? 'rgba(30,64,175,.25)' : 'transparent') }};background:{{ $step['done'] ? '#10b981' : ($step['active'] ? 'var(--primary)' : '#e2e8f0') }};color:{{ ($step['done'] || $step['active']) ? 'white' : '#64748b' }};">
                 @if($step['done'])
                     <i class="fa-solid fa-check"></i>
                 @else
@@ -329,7 +329,7 @@
         @if(in_array($s, $statusDiterima))
             <div style="display:flex; gap:.5rem;">
                 <a href="{{ route('siswa.hasil') }}" class="btn-primary"
-                   style="flex:1; text-align:center; background:linear-gradient(135deg,#f59e0b,#d97706); padding:.6rem;">
+                   style="flex:1; text-align:center; background:#f59e0b; padding:.6rem;">
                    Lihat Detail
                 </a>
                 <button onclick="window.print()" class="btn-outline" style="flex:1; text-align:center; border-color:#f59e0b; color:#f59e0b; padding:.6rem;">

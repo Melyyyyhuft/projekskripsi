@@ -8,7 +8,7 @@
 
     // Status siswa
     $sudahUjian   = in_array($s, ['sudah_ujian','siap_finalisasi','siap_diumumkan','gugur','tidak_mengikuti_ujian']);
-    $bisaUjian    = ($s === 'lolos_admin') && $ujian;
+    $bisaUjian    = ($s === 'lolos_admin') && isset($ujian) && $ujian;
     $belumVerif   = in_array($s, ['draft','menunggu_verifikasi', null]);
     $ditolak      = $s === 'ditolak_admin';
 

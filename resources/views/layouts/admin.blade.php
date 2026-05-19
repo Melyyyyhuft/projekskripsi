@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - @yield('title')</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <script>
+        if(localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
 </head>
 <body>
     <div class="admin-layout">
@@ -41,12 +46,9 @@
                 <span>🏫 Seleksi &amp; Penempatan</span>
             </a>
 
-            <div style="flex-grow:1;"></div>
-            <div class="sidebar-divider"></div>
-
-            <form action="{{ route('logout') }}" method="POST" style="padding:.5rem .75rem .75rem;">
+            <form action="{{ route('logout') }}" method="POST" style="padding: 1.5rem 1rem 1.5rem; margin-top: auto;">
                 @csrf
-                <button type="submit" class="sidebar-item" style="width:100%;background:rgba(239,68,68,.12);color:#fca5a5;margin:0;border-radius:10px;">
+                <button type="submit" class="sidebar-item danger-btn" style="width: 100%; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; margin: 0; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
                     <span>🚪 Keluar</span>
                 </button>
             </form>
@@ -60,9 +62,13 @@
                     <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;display:none;">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <h2 style="margin:0;color:#0f172a;font-size:1.15rem;font-weight:800;letter-spacing:-.02em;">@yield('title')</h2>
+                    <h2 style="margin:0;color:var(--dark);font-size:1.15rem;font-weight:800;letter-spacing:-.02em;">@yield('title')</h2>
                 </div>
                 <div style="display:flex;align-items:center;gap:1.5rem;">
+                    
+                    <button onclick="toggleTheme()" class="header-icon-btn" title="Toggle Dark Mode">
+                        <i class="fa-solid fa-moon" id="themeIcon"></i>
+                    </button>
 
                     {{-- Bell notifikasi --}}
                     <a href="{{ route('admin.notifikasi.index') }}" class="header-icon-btn">
@@ -76,8 +82,8 @@
                     {{-- User info --}}
                     <div style="display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
                         <div style="text-align:right;line-height:1.2;">
-                            <span style="font-weight:700;font-size:.875rem;color:#0f172a;display:block;">{{ Auth::user()->name }}</span>
-                            <span style="font-size:.72rem;color:#64748b;font-weight:600;">Administrator</span>
+                            <span style="font-weight:700;font-size:.875rem;color:var(--dark);display:block;">{{ Auth::user()->name }}</span>
+                            <span style="font-size:.72rem;color:var(--gray-text);font-weight:600;">Administrator</span>
                         </div>
                         <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;box-shadow:0 4px 12px rgba(59,130,246,.25);">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
@@ -106,6 +112,25 @@
             } else {
                 overlay.style.display = 'none';
             }
+        }
+
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
+            document.getElementById('themeIcon').className = targetTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+        
+        // Init theme
+        if(localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.addEventListener('DOMContentLoaded', () => {
+                const icon = document.getElementById('themeIcon');
+                if(icon) icon.className = 'fa-solid fa-sun';
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {

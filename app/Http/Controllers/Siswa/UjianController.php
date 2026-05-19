@@ -45,11 +45,13 @@ class UjianController extends Controller
             
             if ($now->lt($start)) {
                 $pesan = 'Ujian belum dimulai. Periode ujian CBT: ' . $start->format('d M Y') . ' s/d ' . $end->format('d M Y');
-                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif', 'settings'));
+                $ujian = $ujianAktif;
+                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
             }
             if ($now->gt($end)) {
                 $pesan = 'Periode ujian CBT telah berakhir pada ' . $end->format('d M Y') . '.';
-                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujianAktif', 'settings'));
+                $ujian = $ujianAktif;
+                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
             }
         }
 
