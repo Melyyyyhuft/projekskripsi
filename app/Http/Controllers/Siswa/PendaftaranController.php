@@ -64,17 +64,30 @@ class PendaftaranController extends Controller
 
         // Validasi Relasional dan File Upload
         $request->validate([
-            'jurusan_id' => 'required|exists:jurusans,id',
-            'nisn' => 'required|numeric',
-            'asal_sekolah' => 'required|string|max:255',
-            'no_hp' => 'required|string|max:20',
-            'nilai_rapor' => 'required|numeric|min:0|max:100',
-            'skl' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf,jpg,jpeg,png|max:2048',
-            'rapor' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf|max:2048',
+            'jurusan_id'          => 'required|exists:jurusans,id',
+            'nisn'                => ['required', 'digits:10'],
+            'asal_sekolah'        => ['required', 'string', 'max:255', 'regex:/^(SMA|SMK|MAN|MAS|SMP|MTsN|MTsS|SD|MI)\s+.+/i'],
+            'no_hp'               => ['required', 'digits_between:10,15'],
+            'nilai_rapor'         => 'required|numeric|min:0|max:100',
+            'tempat_lahir'        => 'required|string|max:100',
+            'tanggal_lahir'       => 'required|date|before:today',
+            'alamat'              => 'required|string|max:500',
+            'skl'     => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf,jpg,jpeg,png|max:2048',
+            'rapor'   => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf|max:2048',
             'pasfoto' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:jpg,jpeg,png|max:2048',
-            'sertifikat_file.*' => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
-            'sertifikat_jenis.*' => 'nullable|string',
-            'sertifikat_tingkat.*' => 'nullable|string'
+            'sertifikat_file.*'   => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
+            'sertifikat_jenis.*'  => 'nullable|string',
+            'sertifikat_tingkat.*' => 'nullable|string',
+        ], [
+            'nisn.digits'               => 'NISN harus tepat 10 digit angka.',
+            'no_hp.digits_between'      => 'Nomor HP harus berupa angka tanpa spasi atau simbol, 10–15 digit.',
+            'nilai_rapor.max'           => 'Nilai rapor tidak boleh melebihi 100.',
+            'nilai_rapor.numeric'       => 'Nilai rapor harus berupa angka (gunakan tanda titik untuk desimal, contoh: 90.00).',
+            'asal_sekolah.regex'        => 'Asal sekolah harus diawali dengan jenis sekolah, contoh: SMA Negeri 1 Bandung atau SMK Al-Hikmah.',
+            'tempat_lahir.required'     => 'Tempat lahir wajib diisi.',
+            'tanggal_lahir.required'    => 'Tanggal lahir wajib diisi.',
+            'tanggal_lahir.before'      => 'Tanggal lahir tidak valid.',
+            'alamat.required'           => 'Alamat rumah wajib diisi.',
         ]);
 
         // Validasi double submit (mencegah edit jika status sudah diproses)
@@ -95,12 +108,15 @@ class PendaftaranController extends Controller
         $pendaftaran = Pendaftaran::updateOrCreate(
             ['user_id' => Auth::id()],
             [
-                'jurusan_id' => $request->jurusan_id,
-                'nisn' => $request->nisn,
-                'asal_sekolah' => $request->asal_sekolah,
-                'no_hp' => $request->no_hp,
-                'nilai_rapor' => $request->nilai_rapor,
-                'status' => 'menunggu_verifikasi'
+                'jurusan_id'    => $request->jurusan_id,
+                'nisn'          => $request->nisn,
+                'asal_sekolah'  => $request->asal_sekolah,
+                'no_hp'         => $request->no_hp,
+                'nilai_rapor'   => $request->nilai_rapor,
+                'tempat_lahir'  => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat'        => $request->alamat,
+                'status'        => 'menunggu_verifikasi',
             ]
         );
 

@@ -60,9 +60,20 @@
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Nomor HP / WhatsApp</div>
                 <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->no_hp ?? '-' }}</div>
             </div>
-            <div style="grid-column:1/-1;">
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Tempat, Tanggal Lahir</div>
+                <div style="font-weight:700;color:#0f172a;">
+                    {{ $pendaftaran->tempat_lahir ?? '-' }},
+                    {{ $pendaftaran->tanggal_lahir ? \Carbon\Carbon::parse($pendaftaran->tanggal_lahir)->translatedFormat('d F Y') : '-' }}
+                </div>
+            </div>
+            <div>
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Jurusan Pilihan</div>
                 <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->jurusan->nama ?? '-' }}</div>
+            </div>
+            <div style="grid-column:1/-1;">
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Alamat Rumah</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->alamat ?? '-' }}</div>
             </div>
         </div>
     </div>
@@ -71,41 +82,51 @@
     <form action="{{ url('siswa/pendaftaran') }}" method="POST" enctype="multipart/form-data" id="formPendaftaran">
         @csrf
 
+        {{-- ── Baris 1: NISN & Asal Sekolah ── --}}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="nisn">Nomor Induk Siswa Nasional (NISN) <span style="color:#ef4444;">*</span></label>
                 <input type="text" name="nisn" id="nisn" class="form-control"
                     value="{{ $pendaftaran->nisn ?? old('nisn') }}"
                     required minlength="10" maxlength="10" pattern="[0-9]{10}"
-                    placeholder="10 digit angka" title="NISN harus 10 digit angka">
-                <small style="color:#94a3b8;">Tepat 10 digit angka</small>
+                    placeholder="Contoh: 0123456789"
+                    oninput="this.value=this.value.replace(/\D/g,'')"
+                    title="NISN harus tepat 10 digit angka">
+                <small style="color:#94a3b8;">Wajib tepat <strong>10 digit angka</strong>.</small>
             </div>
             <div class="form-group">
                 <label class="form-label" for="asal_sekolah">Asal Sekolah <span style="color:#ef4444;">*</span></label>
                 <input type="text" name="asal_sekolah" id="asal_sekolah" class="form-control"
                     value="{{ $pendaftaran->asal_sekolah ?? old('asal_sekolah') }}"
-                    required placeholder="Nama sekolah asal Anda">
+                    required placeholder="Contoh: SMA Negeri 1 Bandung">
+                <small style="color:#94a3b8;">Awali dengan jenis sekolah: <strong>SMA / SMK / MAN / SMP</strong>, dst.</small>
             </div>
         </div>
 
+        {{-- ── Baris 2: Nilai Rapor & Nomor HP ── --}}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="nilai_rapor">Rata-rata Nilai Rapor <span style="color:#ef4444;">*</span></label>
-                <input type="number" step="0.01" min="0" max="100" name="nilai_rapor" id="nilai_rapor" class="form-control"
+                <input type="text" inputmode="decimal" name="nilai_rapor" id="nilai_rapor" class="form-control"
                     value="{{ $pendaftaran->nilai_rapor ?? old('nilai_rapor') }}"
-                    required placeholder="Contoh: 85.50">
-                <small style="color:#94a3b8;">Angka 0–100</small>
+                    required placeholder="Contoh: 90.00"
+                    pattern="^(100(\.0{1,2})?|[0-9]{1,2}(\.[0-9]{1,2})?)$"
+                    title="Angka 0–100, gunakan titik (.) untuk desimal">
+                <small style="color:#94a3b8;">Maksimal <strong>100</strong>. Gunakan titik (.) untuk desimal, contoh: <strong>90.00</strong>.</small>
             </div>
             <div class="form-group">
                 <label class="form-label" for="no_hp">Nomor HP / WhatsApp <span style="color:#ef4444;">*</span></label>
                 <input type="text" name="no_hp" id="no_hp" class="form-control"
                     value="{{ $pendaftaran->no_hp ?? old('no_hp') }}"
-                    required minlength="12" maxlength="13" pattern="[0-9]{12,13}"
-                    placeholder="Contoh: 081234567890" title="Nomor HP harus 12–13 digit angka">
-                <small style="color:#94a3b8;">12–13 digit angka (tanpa tanda +/spasi)</small>
+                    required minlength="10" maxlength="15" pattern="[0-9]{10,15}"
+                    placeholder="Contoh: 081234567890"
+                    oninput="this.value=this.value.replace(/\D/g,'')"
+                    title="Nomor HP harus berupa angka tanpa spasi atau simbol">
+                <small style="color:#94a3b8;">Hanya <strong>angka</strong>, tanpa spasi, +, atau tanda lain.</small>
             </div>
         </div>
 
+        {{-- ── Baris 3: Jurusan ── --}}
         <div class="form-group">
             <label class="form-label" for="jurusan_id">Pilih Jurusan <span style="color:#ef4444;">*</span></label>
             <select name="jurusan_id" id="jurusan_id" class="form-control" required>
@@ -120,6 +141,31 @@
                     </option>
                 @endforeach
             </select>
+        </div>
+
+        {{-- ── Data Tambahan ── --}}
+        <div style="margin-top:.5rem;padding:1.25rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;">
+            <h4 style="margin:0 0 1rem;font-size:.9rem;font-weight:700;color:#0369a1;"><i class="fa-solid fa-circle-info" style="margin-right:.4rem;"></i>Data Tambahan</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="tempat_lahir">Tempat Lahir <span style="color:#ef4444;">*</span></label>
+                    <input type="text" name="tempat_lahir" id="tempat_lahir" class="form-control"
+                        value="{{ $pendaftaran->tempat_lahir ?? old('tempat_lahir') }}"
+                        required placeholder="Contoh: Bandung">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" for="tanggal_lahir">Tanggal Lahir <span style="color:#ef4444;">*</span></label>
+                    <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="form-control"
+                        value="{{ $pendaftaran->tanggal_lahir ?? old('tanggal_lahir') }}"
+                        required max="{{ date('Y-m-d', strtotime('-5 years')) }}">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:1.25rem;margin-bottom:0;">
+                <label class="form-label" for="alamat">Alamat Rumah <span style="color:#ef4444;">*</span></label>
+                <textarea name="alamat" id="alamat" class="form-control" rows="3"
+                    required placeholder="Contoh: Jl. Merdeka No. 5, Kel. Sukajadi, Kec. Bandung Utara"
+                    style="resize:vertical;">{{ $pendaftaran->alamat ?? old('alamat') }}</textarea>
+            </div>
         </div>
 
         @if(!empty($berkasAktif))
@@ -192,10 +238,17 @@
 
         @if(!$sudahUploadSemua)
         <h3 style="margin-top:2rem;margin-bottom:1rem;color:var(--primary);">Upload Berkas Pendukung</h3>
-        <div style="background:#fff8f1;padding:1rem;border-radius:var(--radius-sm);border-left:4px solid #f59e0b;margin-bottom:1rem;font-size:.9rem;">
-            <strong>Perhatian:</strong> Berkas wajib harus diisi agar pendaftaran dapat dikirim. Maksimal 2MB per file.
+
+        {{-- Ketentuan Upload --}}
+        <div style="background:#fff8f1;padding:1.1rem 1.25rem;border-radius:12px;border-left:4px solid #f59e0b;margin-bottom:1rem;font-size:.875rem;">
+            <p style="font-weight:700;color:#92400e;margin:0 0 .5rem;">⚠️ Ketentuan Upload Berkas</p>
+            <ul style="margin:0;padding-left:1.25rem;color:#78350f;line-height:1.75;">
+                <li>Maksimal ukuran file <strong>2 MB per berkas</strong>.</li>
+                <li>Pastikan seluruh dokumen terlihat <strong>jelas, tidak blur, dan dapat dibaca</strong>.</li>
+                <li>Dokumen hanya digunakan untuk <strong>proses verifikasi pendaftaran</strong> dan tidak disebarluaskan.</li>
+            </ul>
         </div>
-        <div style="background:#f0fdf4;padding:1rem;border-radius:var(--radius-sm);border-left:4px solid #22c55e;margin-bottom:1.5rem;font-size:.9rem;">
+        <div style="background:#f0fdf4;padding:1rem 1.25rem;border-radius:12px;border-left:4px solid #22c55e;margin-bottom:1.5rem;font-size:.875rem;">
             <i class="fa-solid fa-shield-halved"></i> <strong>Privasi:</strong> Dokumen hanya digunakan untuk keperluan verifikasi dan tidak disebarluaskan.
         </div>
         @endif

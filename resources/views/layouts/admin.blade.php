@@ -12,44 +12,76 @@
     </script>
 </head>
 <body>
+    <div class="siswa-bg-pattern"></div>
     <div class="admin-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-title">PPDB Admin Panel</div>
+            <div class="sidebar-title">
+                <div class="sidebar-title-icon-wrap">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="sidebar-title-text">
+                    <span class="sidebar-title-main">PPDB</span>
+                    <span class="sidebar-title-sub">Admin Panel</span>
+                </div>
+            </div>
 
             <div class="sidebar-nav-label">Utama</div>
             <a href="{{ route('admin.dashboard') }}" class="sidebar-item {{ request()->is('admin/dashboard') ? 'active' : '' }}">
-                <span>🏠 Dashboard</span>
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Dashboard</span>
             </a>
             <a href="{{ route('admin.pengaturan.index') }}" class="sidebar-item {{ request()->is('admin/pengaturan') ? 'active' : '' }}">
-                <span>⚙️ Pengaturan Sistem</span>
+                <i class="fa-solid fa-sliders"></i>
+                <span>Pengaturan Sistem</span>
             </a>
 
             <div class="sidebar-divider"></div>
             <div class="sidebar-nav-label">Pendaftaran</div>
             <a href="{{ route('admin.pendaftaran.index') }}" class="sidebar-item {{ request()->is('admin/pendaftaran') ? 'active' : '' }}">
-                <span>📝 Data Pendaftaran</span>
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Data Pendaftaran</span>
             </a>
 
             <div class="sidebar-divider"></div>
-            <div class="sidebar-nav-label">Ujian & Seleksi</div>
+            <div class="sidebar-nav-label">Ujian &amp; Seleksi</div>
             <a href="{{ route('admin.bank_soal.index') }}" class="sidebar-item {{ request()->is('admin/bank_soal*') ? 'active' : '' }}">
-                <span>📚 Bank Soal</span>
+                <i class="fa-solid fa-book-open"></i>
+                <span>Bank Soal</span>
             </a>
             <a href="{{ route('admin.ujian.index') }}" class="sidebar-item {{ request()->is('admin/ujian*') ? 'active' : '' }}">
-                <span>🖥️ Modul Ujian</span>
+                <i class="fa-solid fa-laptop-code"></i>
+                <span>Modul Ujian</span>
             </a>
             <a href="{{ route('admin.seleksi.index') }}" class="sidebar-item {{ request()->is('admin/seleksi*') ? 'active' : '' }}">
-                <span>⚡ Proses Seleksi</span>
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Proses Seleksi</span>
             </a>
             <a href="{{ route('admin.penempatan.index') }}" class="sidebar-item {{ request()->is('admin/penempatan*') ? 'active' : '' }}">
-                <span>🏫 Seleksi &amp; Penempatan</span>
+                <i class="fa-solid fa-school"></i>
+                <span>Seleksi &amp; Penempatan</span>
             </a>
 
-            <form action="{{ route('logout') }}" method="POST" style="padding: 1.5rem 1rem 1.5rem; margin-top: auto;">
+            <!-- Profile Widget at the bottom -->
+            <div class="sidebar-profile-card" style="cursor: default;" title="Administrator">
+                <div class="sidebar-profile-avatar-wrap">
+                    <div class="sidebar-profile-avatar" style="background: linear-gradient(135deg, #1e40af, #3b82f6);">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </div>
+                    <div class="sidebar-profile-status"></div>
+                </div>
+                <div class="sidebar-profile-info">
+                    <span class="sidebar-profile-name">{{ Auth::user()->name }}</span>
+                    <span class="sidebar-profile-email">Administrator</span>
+                </div>
+            </div>
+
+            <!-- Logout Form -->
+            <form action="{{ route('logout') }}" method="POST" class="sidebar-logout-form">
                 @csrf
-                <button type="submit" class="sidebar-item danger-btn" style="width: 100%; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; margin: 0; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                    <span>🚪 Keluar</span>
+                <button type="submit" class="sidebar-logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Keluar</span>
                 </button>
             </form>
         </aside>

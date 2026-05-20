@@ -161,31 +161,63 @@
     <div class="admin-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-title">PPDB Siswa Panel</div>
-            <div class="sidebar-nav-label">Menu</div>
+            <div class="sidebar-title">
+                <div class="sidebar-title-icon-wrap">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="sidebar-title-text">
+                    <span class="sidebar-title-main">PPDB</span>
+                    <span class="sidebar-title-sub">Siswa Panel</span>
+                </div>
+            </div>
+
+            <div class="sidebar-nav-label">Menu Utama</div>
             <a href="{{ route('siswa.dashboard') }}" class="sidebar-item {{ request()->is('siswa/dashboard') ? 'active' : '' }}">
-                <span>🏠 Dashboard Utama</span>
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
             </a>
 
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-nav-label">Pendaftaran</div>
             <a href="{{ route('siswa.pendaftaran') }}" class="sidebar-item {{ request()->is('siswa/pendaftaran') ? 'active' : '' }}">
-                <span>📋 Pendaftaran &amp; Berkas</span>
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>Pendaftaran</span>
             </a>
 
             <div class="sidebar-divider"></div>
             <div class="sidebar-nav-label">Seleksi</div>
             <a href="{{ route('siswa.ujian') }}" class="sidebar-item {{ request()->is('siswa/ujian*') ? 'active' : '' }}">
-                <span>💻 Ujian Online (CBT)</span>
+                <i class="fa-solid fa-laptop"></i>
+                <span>Ujian Online (CBT)</span>
             </a>
             <a href="{{ route('siswa.hasil') }}" class="sidebar-item {{ request()->is('siswa/hasil') ? 'active' : '' }}">
-                <span>📢 Hasil Seleksi</span>
+                <i class="fa-solid fa-award"></i>
+                <span>Hasil Seleksi</span>
             </a>
 
-            <form action="{{ route('logout') }}" method="POST" style="padding: 1.5rem 1rem 1.5rem; margin-top: auto;">
+            <!-- Profile Widget at the bottom -->
+            <div class="sidebar-profile-card" onclick="document.getElementById('profileModal').classList.add('open')" title="Profil Saya">
+                <div class="sidebar-profile-avatar-wrap">
+                    <div class="sidebar-profile-avatar">
+                        @if(Auth::user()->foto)
+                            <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="foto profil">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        @endif
+                    </div>
+                    <div class="sidebar-profile-status"></div>
+                </div>
+                <div class="sidebar-profile-info">
+                    <span class="sidebar-profile-name">{{ Auth::user()->name }}</span>
+                    <span class="sidebar-profile-email">{{ Auth::user()->email }}</span>
+                </div>
+                <i class="fa-solid fa-chevron-right sidebar-profile-arrow"></i>
+            </div>
+
+            <!-- Logout Form -->
+            <form action="{{ route('logout') }}" method="POST" class="sidebar-logout-form">
                 @csrf
-                <button type="submit" class="sidebar-item danger-btn" style="width: 100%; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; margin: 0; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                    <span>🚪 Keluar</span>
+                <button type="submit" class="sidebar-logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Keluar</span>
                 </button>
             </form>
         </aside>
