@@ -3,7 +3,11 @@
 
 @section('content')
 @php
-    $sudahUploadSemua = !empty($berkasAktif['skl']) && !empty($berkasAktif['rapor']) && !empty($berkasAktif['pasfoto']);
+    $berkasWajibIds = ['skl', 'rapor', 'pasfoto'];
+    $sudahUploadSemua = collect($berkasWajibIds)->every(fn($id) => !empty($berkasAktif[$id]));
+    
+    $isRevisi = $pendaftaran && $pendaftaran->status == 'revisi';
+    $tampilkanForm = !$sudahUploadSemua || $isRevisi;
 @endphp
 <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
     <h2 style="color: var(--primary); margin-bottom: 2rem;">
@@ -15,6 +19,7 @@
             $statusColor = match($pendaftaran->status) {
                 'lolos_admin'         => ['bg'=>'#d1fae5','color'=>'#065f46','icon'=>'✅'],
                 'ditolak_admin'       => ['bg'=>'#fee2e2','color'=>'#991b1b','icon'=>'❌'],
+                'revisi'              => ['bg'=>'#fff9db','color'=>'#856404','icon'=>'⚠️'],
                 'menunggu_verifikasi' => ['bg'=>'#fef3c7','color'=>'#92400e','icon'=>'⏳'],
                 default               => ['bg'=>'#e0f2fe','color'=>'#0284c7','icon'=>'ℹ️'],
             };
@@ -24,7 +29,11 @@
             <div>
                 <strong>Status Pendaftaran:</strong>
                 <span style="text-transform:uppercase;font-weight:700;"> {{ str_replace('_',' ',$pendaftaran->status) }}</span>
-                @if($sudahUploadSemua)<br><span style="font-size:.82rem;opacity:.85;">Semua berkas sudah diunggah. Data tidak dapat diubah lagi.</span>@endif
+                @if($isRevisi)
+                    <br><span style="font-size:.82rem;font-weight:600;">Ada berkas yang perlu Anda perbaiki. Silakan periksa daftar dokumen di bawah.</span>
+                @elseif($sudahUploadSemua && $pendaftaran->status == 'menunggu_verifikasi')
+                    <br><span style="font-size:.82rem;opacity:.85;">Semua berkas sudah diunggah. Menunggu verifikasi admin.</span>
+                @endif
             </div>
         </div>
     @endif
@@ -39,26 +48,14 @@
         </div>
     @endif
 
-@if($sudahUploadSemua)
-    {{-- ═══ MODE READ-ONLY: semua berkas sudah diunggah ═══ --}}
+@if(!$tampilkanForm)
+    {{-- ═══ MODE READ-ONLY: Data sudah lengkap & bukan masa revisi ═══ --}}
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
         <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">📄 Ringkasan Data Pendaftaran</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1.5rem;">
             <div>
-                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">NISN</div>
-                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->nisn ?? '-' }}</div>
-            </div>
-            <div>
-                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Asal Sekolah</div>
-                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->asal_sekolah ?? '-' }}</div>
-            </div>
-            <div>
-                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Rata-rata Nilai Rapor</div>
-                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->nilai_rapor ?? '-' }}</div>
-            </div>
-            <div>
-                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Nomor HP / WhatsApp</div>
-                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->no_hp ?? '-' }}</div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Nama Lengkap</div>
+                <div style="font-weight:700;color:#0f172a;">{{ Auth::user()->name }}</div>
             </div>
             <div>
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Tempat, Tanggal Lahir</div>
@@ -67,22 +64,72 @@
                     {{ $pendaftaran->tanggal_lahir ? \Carbon\Carbon::parse($pendaftaran->tanggal_lahir)->translatedFormat('d F Y') : '-' }}
                 </div>
             </div>
-            <div>
-                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Jurusan Pilihan</div>
-                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->jurusan->nama ?? '-' }}</div>
-            </div>
             <div style="grid-column:1/-1;">
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Alamat Rumah</div>
                 <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->alamat ?? '-' }}</div>
             </div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">NISN</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->nisn ?? '-' }}</div>
+            </div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Nomor HP / WhatsApp</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->no_hp ?? '-' }}</div>
+            </div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Rata-rata Nilai Rapor</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->nilai_rapor ?? '-' }}</div>
+            </div>
+            <div>
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Asal Sekolah</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->asal_sekolah ?? '-' }}</div>
+            </div>
+            <div style="grid-column:1/-1;">
+                <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.15rem;">Jurusan Pilihan</div>
+                <div style="font-weight:700;color:#0f172a;">{{ $pendaftaran->jurusan->nama ?? '-' }}</div>
+            </div>
         </div>
     </div>
 @else
-    {{-- ═══ MODE FORM: belum semua berkas diunggah ═══ --}}
+    {{-- ═══ MODE FORM: Belum lengkap atau perlu revisi ═══ --}}
+    @if(!$isRevisi)
     <form action="{{ url('siswa/pendaftaran') }}" method="POST" enctype="multipart/form-data" id="formPendaftaran">
         @csrf
 
-        {{-- ── Baris 1: NISN & Asal Sekolah ── --}}
+        {{-- ── Baris 1: Nama Lengkap ── --}}
+        <div class="form-group">
+            <label class="form-label" for="nama">Nama Lengkap <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="nama" id="nama" class="form-control" 
+                value="{{ old('nama', Auth::user()->name) }}" required
+                placeholder="Contoh: Ahmad Subarjo">
+            <small style="color:#94a3b8;">Input nama lengkap sesuai ijazah/akta.</small>
+        </div>
+
+        {{-- ── Baris 2: TTL ── --}}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="form-group">
+                <label class="form-label" for="tempat_lahir">Tempat Lahir <span style="color:#ef4444;">*</span></label>
+                <input type="text" name="tempat_lahir" id="tempat_lahir" class="form-control"
+                    value="{{ $pendaftaran->tempat_lahir ?? old('tempat_lahir') }}"
+                    required placeholder="Contoh: Bandung">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="tanggal_lahir">Tanggal Lahir <span style="color:#ef4444;">*</span></label>
+                <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="form-control"
+                    value="{{ $pendaftaran->tanggal_lahir ?? old('tanggal_lahir') }}"
+                    required max="{{ date('Y-m-d', strtotime('-5 years')) }}">
+            </div>
+        </div>
+
+        {{-- ── Baris 3: Alamat Rumah ── --}}
+        <div class="form-group">
+            <label class="form-label" for="alamat">Alamat Rumah <span style="color:#ef4444;">*</span></label>
+            <textarea name="alamat" id="alamat" class="form-control" rows="3"
+                required placeholder="Contoh: Jl. Merdeka No. 5, Kel. Sukajadi, Kec. Bandung Utara"
+                style="resize:vertical;">{{ $pendaftaran->alamat ?? old('alamat') }}</textarea>
+        </div>
+
+        {{-- ── Baris 4: NISN & Nomor HP ── --}}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="nisn">Nomor Induk Siswa Nasional (NISN) <span style="color:#ef4444;">*</span></label>
@@ -95,15 +142,18 @@
                 <small style="color:#94a3b8;">Wajib tepat <strong>10 digit angka</strong>.</small>
             </div>
             <div class="form-group">
-                <label class="form-label" for="asal_sekolah">Asal Sekolah <span style="color:#ef4444;">*</span></label>
-                <input type="text" name="asal_sekolah" id="asal_sekolah" class="form-control"
-                    value="{{ $pendaftaran->asal_sekolah ?? old('asal_sekolah') }}"
-                    required placeholder="Contoh: SMA Negeri 1 Bandung">
-                <small style="color:#94a3b8;">Awali dengan jenis sekolah: <strong>SMA / SMK / MAN / SMP</strong>, dst.</small>
+                <label class="form-label" for="no_hp">Nomor HP / WhatsApp <span style="color:#ef4444;">*</span></label>
+                <input type="text" name="no_hp" id="no_hp" class="form-control"
+                    value="{{ $pendaftaran->no_hp ?? old('no_hp') }}"
+                    required minlength="10" maxlength="13" pattern="[0-9]{10,13}"
+                    placeholder="Contoh: 081234567890"
+                    oninput="this.value=this.value.replace(/\D/g,'')"
+                    title="Nomor HP harus berupa angka 10-13 digit">
+                <small style="color:#94a3b8;">Hanya <strong>angka</strong>, 10–13 digit.</small>
             </div>
         </div>
 
-        {{-- ── Baris 2: Nilai Rapor & Nomor HP ── --}}
+        {{-- ── Baris 5: Nilai Rapor & Asal Sekolah ── --}}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="nilai_rapor">Rata-rata Nilai Rapor <span style="color:#ef4444;">*</span></label>
@@ -112,21 +162,18 @@
                     required placeholder="Contoh: 90.00"
                     pattern="^(100(\.0{1,2})?|[0-9]{1,2}(\.[0-9]{1,2})?)$"
                     title="Angka 0–100, gunakan titik (.) untuk desimal">
-                <small style="color:#94a3b8;">Maksimal <strong>100</strong>. Gunakan titik (.) untuk desimal, contoh: <strong>90.00</strong>.</small>
+                <small style="color:#94a3b8;">Maksimal <strong>100</strong>. Gunakan titik (.) untuk desimal.</small>
             </div>
             <div class="form-group">
-                <label class="form-label" for="no_hp">Nomor HP / WhatsApp <span style="color:#ef4444;">*</span></label>
-                <input type="text" name="no_hp" id="no_hp" class="form-control"
-                    value="{{ $pendaftaran->no_hp ?? old('no_hp') }}"
-                    required minlength="10" maxlength="15" pattern="[0-9]{10,15}"
-                    placeholder="Contoh: 081234567890"
-                    oninput="this.value=this.value.replace(/\D/g,'')"
-                    title="Nomor HP harus berupa angka tanpa spasi atau simbol">
-                <small style="color:#94a3b8;">Hanya <strong>angka</strong>, tanpa spasi, +, atau tanda lain.</small>
+                <label class="form-label" for="asal_sekolah">Asal Sekolah <span style="color:#ef4444;">*</span></label>
+                <input type="text" name="asal_sekolah" id="asal_sekolah" class="form-control"
+                    value="{{ $pendaftaran->asal_sekolah ?? old('asal_sekolah') }}"
+                    required placeholder="Contoh: SMP Negeri 1 Bandung">
+                <small style="color:#94a3b8;">Wajib mengandung huruf (contoh: SMPN 1).</small>
             </div>
         </div>
 
-        {{-- ── Baris 3: Jurusan ── --}}
+        {{-- ── Baris 6: Jurusan ── --}}
         <div class="form-group">
             <label class="form-label" for="jurusan_id">Pilih Jurusan <span style="color:#ef4444;">*</span></label>
             <select name="jurusan_id" id="jurusan_id" class="form-control" required>
@@ -143,81 +190,72 @@
             </select>
         </div>
 
-        {{-- ── Data Tambahan ── --}}
-        <div style="margin-top:.5rem;padding:1.25rem;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;">
-            <h4 style="margin:0 0 1rem;font-size:.9rem;font-weight:700;color:#0369a1;"><i class="fa-solid fa-circle-info" style="margin-right:.4rem;"></i>Data Tambahan</h4>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label" for="tempat_lahir">Tempat Lahir <span style="color:#ef4444;">*</span></label>
-                    <input type="text" name="tempat_lahir" id="tempat_lahir" class="form-control"
-                        value="{{ $pendaftaran->tempat_lahir ?? old('tempat_lahir') }}"
-                        required placeholder="Contoh: Bandung">
-                </div>
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label" for="tanggal_lahir">Tanggal Lahir <span style="color:#ef4444;">*</span></label>
-                    <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="form-control"
-                        value="{{ $pendaftaran->tanggal_lahir ?? old('tanggal_lahir') }}"
-                        required max="{{ date('Y-m-d', strtotime('-5 years')) }}">
-                </div>
-            </div>
-            <div class="form-group" style="margin-top:1.25rem;margin-bottom:0;">
-                <label class="form-label" for="alamat">Alamat Rumah <span style="color:#ef4444;">*</span></label>
-                <textarea name="alamat" id="alamat" class="form-control" rows="3"
-                    required placeholder="Contoh: Jl. Merdeka No. 5, Kel. Sukajadi, Kec. Bandung Utara"
-                    style="resize:vertical;">{{ $pendaftaran->alamat ?? old('alamat') }}</textarea>
-            </div>
-        </div>
-
-        @if(!empty($berkasAktif))
-        <div style="margin-top:1.5rem;border:1px solid #e2e8f0;border-radius:12px;background:white;overflow:hidden;">
-            <div style="background:#f8fafc;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;">
-                <h3 style="margin:0;font-size:1rem;font-weight:700;color:#334155;">📋 Daftar Dokumen Aktif</h3>
-                <p style="margin:.2rem 0 0;font-size:.8rem;color:#64748b;">Dokumen terbaru yang Anda unggah untuk verifikasi.</p>
-            </div>
-            <div style="display: flex; flex-direction: column;">
-                @foreach($berkasAktif as $key => $berkas)
-                <div style="padding: 1rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <strong style="text-transform: capitalize; color: var(--primary);">{{ $berkas->jenis_berkas }} {{ $berkas->jenis_prestasi ? '('.$berkas->jenis_prestasi.')' : '' }}</strong>
-                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.25rem;">{{ $berkas->nama_file }}</div>
-                        @if($berkas->status_verifikasi == 'tidak_valid' && $berkas->catatan_admin)
-                        <div style="margin-top: 0.5rem; background: #fef2f2; color: #991b1b; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; border: 1px solid #fca5a5;">
-                            <strong>Catatan Penolakan:</strong> {{ $berkas->catatan_admin }}
-                        </div>
-                        @endif
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            @if($berkas->status_verifikasi == 'valid')
-                                <span style="background: #d1fae5; color: #059669; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">✅ DITERIMA</span>
-                            @elseif($berkas->status_verifikasi == 'tidak_valid')
-                                <span style="background: #fee2e2; color: #dc2626; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">❌ DITOLAK</span>
-                            @else
-                                <span style="background: #fef3c7; color: #d97706; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">⏳ PENDING</span>
-                            @endif
-                            <button type="button" class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openLightbox('{{ asset('storage/'.$berkas->file_path) }}', '{{ strtolower($berkas->file_type) == 'pdf' ? 'pdf' : 'img' }}')">👁️ Lihat File</button>
-                        </div>
-                        @if($berkas->status_verifikasi == 'tidak_valid')
-                        <button type="button" class="btn-primary" style="background: #ef4444; border: none; padding: 0.3rem 0.75rem; font-size: 0.8rem; border-radius: 4px;" onclick="document.getElementById('reupload-form-{{ $berkas->id }}').style.display='block'; this.style.display='none';">🔄 Upload Ulang Ini Saja</button>
-                        
-                        <form action="{{ route('siswa.pendaftaran.reupload') }}" method="POST" enctype="multipart/form-data" id="reupload-form-{{ $berkas->id }}" style="display: none; background: #f8fafc; padding: 0.75rem; border-radius: 6px; border: 1px dashed #cbd5e1; margin-top: 0.5rem;">
-                            @csrf
-                            <input type="hidden" name="berkas_id_lama" value="{{ $berkas->id }}">
-                            <input type="hidden" name="jenis_berkas" value="{{ $berkas->jenis_berkas }}">
-                            <label style="font-size: 0.8rem; font-weight: bold; margin-bottom: 0.25rem; display: block;">Pilih File Baru (PDF/JPG/PNG max 2MB):</label>
-                            <input type="file" name="file_reupload" class="form-control" style="padding: 0.4rem; font-size: 0.8rem; margin-bottom: 0.5rem;" required accept=".pdf,.jpg,.jpeg,.png">
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button type="submit" class="btn-primary" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; flex: 1;">Kirim Revisi</button>
-                                <button type="button" class="btn-outline" style="padding: 0.3rem 0.75rem; font-size: 0.8rem;" onclick="document.getElementById('reupload-form-{{ $berkas->id }}').style.display='none'; this.closest('div.display\\:flex').parentElement.previousElementSibling.style.display='block';">Batal</button>
-                            </div>
-                        </form>
-                        @endif
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
+        @if(!$isRevisi)
+        <button type="button" id="btn_submit" class="btn-primary"
+            style="width:100%;margin-top:1rem;font-size:1.125rem;padding:1rem;"
+            onclick="konfirmasiKirim()">
+            📨 Kirim Pendaftaran
+        </button>
         @endif
+    </form>
+    @endif
+
+    {{-- Dokumen Aktif (Selalu Muncul jika sudah ada pendaftaran) --}}
+    @if(!empty($berkasAktif))
+    <div style="margin-top:2rem;border:1px solid #e2e8f0;border-radius:12px;background:white;overflow:hidden;">
+        <div style="background:#f8fafc;padding:1rem 1.25rem;border-bottom:1px solid #e2e8f0;">
+            <h3 style="margin:0;font-size:1rem;font-weight:700;color:#334155;">📋 Daftar Dokumen & Status Verifikasi</h3>
+            <p style="margin:.2rem 0 0;font-size:.8rem;color:#64748b;">Pantau status verifikasi tiap berkas Anda di sini.</p>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+            @foreach($berkasAktif as $key => $berkas)
+            <div style="padding: 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                <div style="flex:1; min-width: 250px;">
+                    <strong style="text-transform: capitalize; color: var(--primary); font-size: 1rem;">{{ str_replace('_', ' ', $berkas->jenis_berkas) }} {{ $berkas->jenis_prestasi ? '('.$berkas->jenis_prestasi.')' : '' }}</strong>
+                    <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-file-lines"></i> {{ $berkas->nama_file }}
+                    </div>
+                    
+                    @if($berkas->status_verifikasi == 'tidak_valid')
+                    <div style="margin-top: 0.75rem; background: #fff5f5; color: #c92a2a; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem; border-left: 4px solid #fa5252;">
+                        <strong>Alasan Revisi:</strong> {{ $berkas->catatan_admin ?? 'Berkas kurang sesuai, harap upload ulang.' }}
+                    </div>
+                    @endif
+                </div>
+                
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        @if($berkas->status_verifikasi == 'valid')
+                            <span style="background: #d1fae5; color: #059669; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em;">✅ DITERIMA</span>
+                        @elseif($berkas->status_verifikasi == 'tidak_valid')
+                            <span style="background: #fff5f5; color: #e03131; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em;">❌ PERLU REVISI</span>
+                        @else
+                            <span style="background: #eef2ff; color: #4338ca; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em;">⏳ SEDANG DIVERIFIKASI</span>
+                        @endif
+                        <button type="button" class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 6px;" onclick="openLightbox('{{ asset('storage/'.$berkas->file_path) }}', '{{ strtolower($berkas->file_type) == 'pdf' ? 'pdf' : 'img' }}')">👁️ Lihat</button>
+                    </div>
+
+                    @if($berkas->status_verifikasi == 'tidak_valid' && $isRevisi)
+                    <button type="button" class="btn-primary" style="background: var(--primary); border: none; padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 6px; font-weight: 600;" onclick="this.nextElementSibling.style.display='block'; this.style.display='none';">🔄 Upload Ulang</button>
+                    
+                    <form action="{{ route('siswa.pendaftaran.reupload') }}" method="POST" enctype="multipart/form-data" style="display: none; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 0.5rem; width: 100%; max-width: 300px;">
+                        @csrf
+                        <input type="hidden" name="berkas_id_lama" value="{{ $berkas->id }}">
+                        <input type="hidden" name="jenis_berkas" value="{{ $berkas->jenis_berkas }}">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 0.5rem; display: block;">Pilih File Baru (PDF/JPG/PNG max 2MB):</label>
+                        <input type="file" name="file_reupload" class="form-control" style="padding: 0.4rem; font-size: 0.8rem; margin-bottom: 0.75rem;" required accept=".pdf,.jpg,.jpeg,.png">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="submit" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; flex: 1; background: #22c55e;">Upload</button>
+                            <button type="button" class="btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" onclick="this.parentElement.parentElement.style.display='none'; this.parentElement.parentElement.previousElementSibling.style.display='block';">Batal</button>
+                        </div>
+                    </form>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
         @if(!empty($riwayatBerkas))
         <details style="margin-top: 1rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); background: #f8fafc;">
@@ -276,7 +314,7 @@
             $badge    = $existing ? $statusBadge($existing->status_verifikasi) : null;
             $fileId   = 'file_' . $item['key'];
         @endphp
-        <div class="form-group" style="border:1px solid #e2e8f0;border-radius:12px;padding:1rem 1.25rem;background:#f8fafc;">
+        <div class="form-group" style="border:1px solid #e2e8f0;border-radius:12px;padding:1rem 1.25rem;background:#f8fafc; display: {{ $isRevisi ? 'none' : 'block' }};">
             <label class="form-label" style="font-weight:700;color:#0f172a;margin-bottom:.75rem;display:block;">
                 {{ $item['no'] }}. {{ $item['label'] }}
                 @if($existing)
@@ -327,7 +365,7 @@
         @endforeach
 
 
-        @if(!$sudahUploadSemua)
+        @if(!$sudahUploadSemua && !$isRevisi)
         <div class="form-group" style="margin-top: 2rem;">
             <label class="form-label">4. Sertifikat Pendukung (Opsional)</label>
             

@@ -64,10 +64,11 @@ class PendaftaranController extends Controller
 
         // Validasi Relasional dan File Upload
         $request->validate([
+            'nama'                => 'required|string|max:100',
             'jurusan_id'          => 'required|exists:jurusans,id',
             'nisn'                => ['required', 'digits:10'],
-            'asal_sekolah'        => ['required', 'string', 'max:255', 'regex:/^(SMA|SMK|MAN|MAS|SMP|MTsN|MTsS|SD|MI)\s+.+/i'],
-            'no_hp'               => ['required', 'digits_between:10,15'],
+            'asal_sekolah'        => ['required', 'string', 'max:255', 'regex:/[a-zA-Z]/', 'regex:/^[a-zA-Z0-9\s.,-]+$/'],
+            'no_hp'               => ['required', 'digits_between:10,13'],
             'nilai_rapor'         => 'required|numeric|min:0|max:100',
             'tempat_lahir'        => 'required|string|max:100',
             'tanggal_lahir'       => 'required|date|before:today',
@@ -80,10 +81,10 @@ class PendaftaranController extends Controller
             'sertifikat_tingkat.*' => 'nullable|string',
         ], [
             'nisn.digits'               => 'NISN harus tepat 10 digit angka.',
-            'no_hp.digits_between'      => 'Nomor HP harus berupa angka tanpa spasi atau simbol, 10–15 digit.',
+            'no_hp.digits_between'      => 'Nomor HP harus berupa angka 10–13 digit.',
             'nilai_rapor.max'           => 'Nilai rapor tidak boleh melebihi 100.',
             'nilai_rapor.numeric'       => 'Nilai rapor harus berupa angka (gunakan tanda titik untuk desimal, contoh: 90.00).',
-            'asal_sekolah.regex'        => 'Asal sekolah harus diawali dengan jenis sekolah, contoh: SMA Negeri 1 Bandung atau SMK Al-Hikmah.',
+            'asal_sekolah.regex'        => 'Asal sekolah wajib mengandung huruf dan hanya boleh berisi angka, titik, koma, atau strip.',
             'tempat_lahir.required'     => 'Tempat lahir wajib diisi.',
             'tanggal_lahir.required'    => 'Tanggal lahir wajib diisi.',
             'tanggal_lahir.before'      => 'Tanggal lahir tidak valid.',
@@ -104,6 +105,9 @@ class PendaftaranController extends Controller
                 return back()->with('error', 'Mohon maaf, kuota jurusan ' . $jurusan->nama . ' sudah penuh.')->withInput();
             }
         }
+
+        // Update nama user jika diubah
+        Auth::user()->update(['name' => $request->nama]);
 
         $pendaftaran = Pendaftaran::updateOrCreate(
             ['user_id' => Auth::id()],
@@ -209,28 +213,41 @@ class PendaftaranController extends Controller
             'berkas_id_lama' => 'required|exists:berkas,id'
         ]);
 
-        $file = $request->file('file_reupload');
-        $jenis = $request->jenis_berkas;
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
-        $path = $file->store('berkas_pendaftaran/'.$jenis, 'public');
+            $file = $request->file('file_reupload');
+            $jenis = $request->jenis_berkas;
 
-        // Simpan sebagai baris baru untuk menjaga riwayat
-        $berkasLama = Berkas::find($request->berkas_id_lama);
+            $path = $file->store('berkas_pendaftaran/'.$jenis, 'public');
 
-        Berkas::create([
-            'pendaftaran_id' => $pendaftaran->id,
-            'jenis_berkas' => $jenis,
-            'file_path' => $path,
-            'nama_file' => $file->getClientOriginalName(),
-            'file_type' => $file->getClientOriginalExtension(),
-            'status_verifikasi' => 'pending',
-            'jenis_prestasi' => $berkasLama ? $berkasLama->jenis_prestasi : null,
-            'tingkat_prestasi' => $berkasLama ? $berkasLama->tingkat_prestasi : null
-        ]);
+            // Simpan sebagai baris baru untuk menjaga riwayat
+            $berkasLama = Berkas::find($request->berkas_id_lama);
 
-        // Otomatis set pendaftaran ke status revisi jika sebelumnya menunggu_verifikasi agar diproses admin
-        $pendaftaran->update(['status' => 'revisi']);
+            Berkas::create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'jenis_berkas' => $jenis,
+                'file_path' => $path,
+                'nama_file' => $file->getClientOriginalName(),
+                'file_type' => $file->getClientOriginalExtension(),
+                'status_verifikasi' => 'pending',
+                'jenis_prestasi' => $berkasLama ? $berkasLama->jenis_prestasi : null,
+                'tingkat_prestasi' => $berkasLama ? $berkasLama->tingkat_prestasi : null
+            ]);
 
-        return back()->with('success', 'Berkas ' . strtoupper($jenis) . ' berhasil diupload ulang. Menunggu verifikasi admin.');
+            // Mengembalikan status ke menunggu_verifikasi agar admin tahu ada berkas baru yang masuk
+            $pendaftaran->update(['status' => 'menunggu_verifikasi']);
+
+            // Kirim Notifikasi ke Admin
+            $admins = \App\Models\User::where('role', 'admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranRevisiNotification($pendaftaran));
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return back()->with('success', 'Berkas ' . strtoupper($jenis) . ' berhasil diupload ulang. Menunggu verifikasi ulang oleh admin.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'Gagal mengunggah berkas: ' . $e->getMessage());
+        }
     }
 }

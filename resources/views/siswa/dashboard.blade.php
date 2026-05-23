@@ -23,6 +23,8 @@
     // Progress bar
     if (!$pendaftaran) {
         $progressPercent = 0;
+    } elseif ($s === 'revisi') {
+        $progressPercent = 15;
     } elseif ($s === 'menunggu_verifikasi') {
         $progressPercent = 30;
     } elseif ($s === 'lolos_admin') {
@@ -61,6 +63,7 @@
     $labelStatus = [
         'draft'                  => 'Draft',
         'menunggu_verifikasi'    => 'Menunggu Verifikasi',
+        'revisi'                 => '<span style="color:#ef4444;font-weight:800;">PERLU REVISI ⚠️</span>',
         'lolos_admin'            => 'Lolos Administrasi ✓',
         'ditolak_admin'          => 'Ditolak Admin',
         'sudah_ujian'            => 'Sudah Ujian ✓',
@@ -73,6 +76,43 @@
     ];
     $statusLabel = $s ? ($labelStatus[$s] ?? ucwords(str_replace('_', ' ', $s))) : 'Belum Mendaftar';
 @endphp
+
+{{-- ─── Alert Revisi (Jika Ada) ─── --}}
+@if($s === 'revisi')
+<div class="glass-card animate-slide-up" style="margin-bottom:2rem; padding:0; border:none; background:#fef2f2; border-left:6px solid #ef4444; overflow:hidden; box-shadow:0 10px 25px rgba(239, 68, 68, 0.15);">
+    <div style="padding:1.5rem 2rem; background:rgba(239,68,68,0.05); display:flex; align-items:center; gap:1.25rem; border-bottom:1px solid rgba(239,68,68,0.1);">
+        <div style="width:50px; height:50px; border-radius:12px; background:#fecaca; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <div>
+            <h2 style="margin:0; font-size:1.4rem; color:#991b1b; font-weight:800;">Mohon Maaf, Berkas Anda Perlu Revisi!</h2>
+            <p style="margin:0.25rem 0 0; color:#b91c1c; font-size:0.95rem; font-weight:500;">Beberapa berkas yang Anda unggah tidak valid atau memerlukan perbaikan.</p>
+        </div>
+    </div>
+    <div style="padding:1.5rem 2rem;">
+        <p style="margin:0 0 1rem; color:#7f1d1d; font-weight:700; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Daftar Berkas Bermasalah:</p>
+        <div style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;">
+            @php $berkasDitolak = $pendaftaran->berkas->where('status_verifikasi', 'tidak_valid'); @endphp
+            @foreach($berkasDitolak as $bd)
+            <div style="background:white; border:1px solid #fee2e2; padding:1rem; border-radius:10px; display:flex; flex-direction:column; gap:0.5rem;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-weight:700; color:#ef4444; text-transform:capitalize;"><i class="fa-solid fa-file"></i> Berkas {{ str_replace('_', ' ', $bd->jenis_berkas) }}</span>
+                    <span style="background:#fee2e2; color:#ef4444; font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:999px; font-weight:800;">TIDAK VALID</span>
+                </div>
+                <div style="font-size:0.875rem; color:#4b5563; padding:0.75rem; background:#f9fafb; border-radius:6px; border-left:3px solid #ef4444;">
+                    <strong style="color:#111827;">Alasan Admin:</strong> {{ $bd->catatan_admin ?? 'Berkas kurang jelas atau tidak sesuai, mohon upload ulang.' }}
+                </div>
+            </div>
+            @endforeach
+        </div>
+        <div style="display:flex; align-items:center; justify-content:flex-end;">
+            <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary" style="background:#ef4444; border-color:#ef4444; padding:0.75rem 2.5rem; font-weight:800; box-shadow:0 10px 15px -3px rgba(239, 68, 68, 0.3);">
+                🔄 Perbaiki Sekarang
+            </a>
+        </div>
+    </div>
+</div>
+@endif
 
 {{-- ─── Top Statistics ─── --}}
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-bottom:2rem;" class="animate-slide-up">
@@ -197,7 +237,12 @@
         <p style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;">
             Lengkapi data diri, nilai rapor, dokumen persyaratan, dan pilih jurusan tujuan Anda.
         </p>
-        @if($step1Completed)
+        @if($s === 'revisi')
+            <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary"
+               style="display:block;width:100%;text-align:center;background:#f59e0b;border-color:#f59e0b;">
+               🔄 Revisi Berkas Sekarang
+            </a>
+        @elseif($step1Completed)
             <a href="{{ route('siswa.pendaftaran') }}" class="btn-outline"
                style="display:block;width:100%;text-align:center;border-color:#10b981;color:#10b981;">
                Lihat / Edit Data
@@ -349,4 +394,22 @@
         @endif
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    @if($s === 'revisi')
+        Swal.fire({
+            icon: 'error',
+            title: 'Perlu Revisi!',
+            text: 'Admin meminta Anda memperbaiki beberapa berkas. Silakan cek detail di dashboard.',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#ef4444',
+            timer: 10000,
+            timerProgressBar: true,
+            toast: true,
+            position: 'top-end',
+        });
+    @endif
+</script>
 @endsection

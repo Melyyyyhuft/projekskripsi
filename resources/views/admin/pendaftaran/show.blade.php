@@ -20,7 +20,7 @@
                 <tr><td style="font-weight: 600;">Rata-rata Rapor</td><td>{{ $pendaftaran->nilai_rapor }}</td></tr>
                 <tr><td style="font-weight: 600;">Pilihan Jurusan</td><td>{{ $pendaftaran->jurusan->nama }}</td></tr>
                 <tr>
-                    <td style="font-weight: 600;">Status</td>
+                    <td style="font-weight: 600;">Status Pendaftaran</td>
                     <td>
                         @php
                             $bg = '#e0f2fe';
@@ -49,19 +49,60 @@
             </tbody>
         </table>
 
+        @php
+            $berkasList = $pendaftaran->berkas;
+            $adaPending = $berkasList->contains('status_verifikasi', 'pending');
+            $adaDitolak = $berkasList->contains('status_verifikasi', 'tidak_valid');
+            
+            $wajibs = ['skl', 'rapor', 'pasfoto'];
+            $berkasWajib = $berkasList->whereIn('jenis_berkas', $wajibs);
+            $semuaWajibAda = collect($wajibs)->every(fn($w) => $berkasList->contains('jenis_berkas', $w));
+            $semuaWajibValid = $semuaWajibAda && $berkasWajib->every('status_verifikasi', 'valid');
+            
+            // Sertifikat juga harus valid jika ada
+            $sertifikatValid = $berkasList->where('jenis_berkas', 'sertifikat')->every('status_verifikasi', 'valid');
+            
+            $bisaLolos = $semuaWajibValid && $sertifikatValid && !$adaPending && !$adaDitolak;
+            $bisaRevisi = $adaDitolak;
+        @endphp
+
         @if(in_array($pendaftaran->status, ['menunggu_verifikasi', 'revisi']))
         <div style="margin-top: 2rem; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1.5rem;">
             <h4 style="margin-bottom: 1rem; color: var(--dark);">Keputusan Verifikasi</h4>
-            <div style="display: flex; gap: 1rem;">
-                <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST" style="flex: 1;">
+            
+            @if($adaPending)
+                <div style="background: #fff9db; color: #856404; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border-left: 4px solid #fcc419;">
+                    ⚠️ Masih ada berkas yang **PENDING**. Harap periksa semua berkas sebelum meloloskan.
+                </div>
+            @elseif($adaDitolak)
+                <div style="background: #fff5f5; color: #c92a2a; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border-left: 4px solid #ff6b6b;">
+                    ❌ Ada berkas yang **DITOLAK**. Silakan klik "Minta Revisi" agar siswa dapat memperbaikinya.
+                </div>
+            @elseif(!$semuaWajibAda)
+                <div style="background: #fff5f5; color: #c92a2a; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border-left: 4px solid #ff6b6b;">
+                    ⚠️ Dokumen wajib (SKL/Rapor/Foto) belum lengkap.
+                </div>
+            @endif
+
+            <div style="display: flex; gap: 1rem; flex-direction: column;">
+                <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
                     @csrf
                     <input type="hidden" name="status" value="lolos_admin">
-                    <button type="submit" class="btn-primary" style="width: 100%; background: #10b981;" onclick="return confirm('Apakah Anda yakin ingin mengubah status verifikasi?');">Loloskan</button>
+                    <button type="submit" class="btn-primary" style="width: 100%; background: {{ $bisaLolos ? '#10b981' : '#94a3b8' }};" 
+                        {{ !$bisaLolos ? 'disabled' : '' }}
+                        onclick="return confirm('Loloskan siswa ini?');">
+                        Loloskan
+                    </button>
                 </form>
-                <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST" style="flex: 1;">
+                
+                <form action="{{ route('admin.pendaftaran.verifikasi', $pendaftaran->id) }}" method="POST">
                     @csrf
                     <input type="hidden" name="status" value="revisi">
-                    <button type="submit" class="btn-primary" style="width: 100%; background: #f59e0b;" onclick="return confirm('Apakah Anda yakin ingin mengubah status verifikasi?');">Minta Revisi</button>
+                    <button type="submit" class="btn-primary" style="width: 100%; background: {{ $bisaRevisi ? '#f59e0b' : '#94a3b8' }};" 
+                        {{ !$bisaRevisi ? 'disabled' : '' }}
+                        onclick="return confirm('Minta siswa untuk revisi berkas?');">
+                        Minta Revisi
+                    </button>
                 </form>
             </div>
         </div>

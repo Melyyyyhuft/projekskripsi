@@ -26,7 +26,16 @@ class DashboardController extends Controller
 
     public function checkNewPendaftar()
     {
-        $count = \Illuminate\Support\Facades\Auth::user()->unreadNotifications->count();
-        return response()->json(['count' => $count]);
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $count = $user->unreadNotifications->count();
+        $latest = $user->unreadNotifications()->latest()->first();
+        
+        return response()->json([
+            'count' => $count,
+            'latest' => $latest ? [
+                'type' => $latest->data['type'] ?? 'baru',
+                'pesan' => $latest->data['pesan'] ?? 'Notifikasi baru'
+            ] : null
+        ]);
     }
 }

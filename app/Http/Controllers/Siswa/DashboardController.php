@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function index()
     {
         $user_id     = Auth::id();
-        $pendaftaran = Pendaftaran::with(['jurusan', 'hasilSeleksi'])
+        $pendaftaran = Pendaftaran::with(['jurusan', 'hasilSeleksi', 'berkas'])
             ->where('user_id', $user_id)
             ->first();
 

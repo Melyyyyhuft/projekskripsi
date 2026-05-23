@@ -187,17 +187,24 @@
                         
                         updateBadge(currentCount);
 
-                        if (lastCount !== null && currentCount > lastCount) {
+                        if (lastCount !== null && currentCount > lastCount && data.latest) {
                             // Ada notifikasi baru yang belum dibaca
+                            const isRevisi = data.latest.type === 'revisi';
                             Swal.fire({
                                 toast: true,
                                 position: 'top-end',
-                                icon: 'info',
-                                title: 'Pendaftaran Baru!',
-                                text: 'Ada pendaftar baru. Cek menu Notifikasi.',
+                                icon: isRevisi ? 'warning' : 'info',
+                                iconColor: isRevisi ? '#f59e0b' : '#10b981',
+                                title: isRevisi ? 'Revisi Masuk!' : 'Pendaftaran Baru!',
+                                text: data.latest.pesan,
                                 showConfirmButton: false,
-                                timer: 5000,
+                                timer: 6000,
                                 timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.addEventListener('click', () => {
+                                        window.location.href = "{{ route('admin.notifikasi.index') }}";
+                                    })
+                                }
                             });
                         }
                         

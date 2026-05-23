@@ -42,9 +42,13 @@ class PendaftaranController extends Controller
         $pendaftaran = Pendaftaran::findOrFail($id);
         $request->validate(['status' => 'required|in:revisi,lolos_admin']);
         
-        $pendaftaran->update(['status' => $request->status]);
-        
-        return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', 'Status verifikasi berhasil diperbarui.');
+        try {
+            $pendaftaran->update(['status' => $request->status]);
+            $msg = $request->status == 'revisi' ? 'Permintaan revisi telah dikirim ke siswa.' : 'Siswa telah diloloskan verifikasi administrasi.';
+            return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', $msg);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+        }
     }
 
     public function verifikasiBerkas(Request $request, $id)
