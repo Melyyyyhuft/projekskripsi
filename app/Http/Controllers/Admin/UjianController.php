@@ -164,4 +164,13 @@ class UjianController extends Controller
         return redirect()->route('admin.ujian.show', $ujian->id)
             ->with('success', "Ujian telah ditutup secara manual. {$jumlah} siswa yang belum ujian otomatis berstatus 'Tidak Mengikuti Ujian'.");
     }
+
+    public function destroy(Ujian $ujian)
+    {
+        // Hapus relasi soal dulu (opsional jika cascade)
+        $ujian->soals()->detach();
+        $ujian->delete();
+
+        return back()->with('success', 'Modul Ujian berhasil dihapus!');
+    }
 }

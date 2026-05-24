@@ -23,7 +23,7 @@
                     <td style="font-weight: 600;">Status Pendaftaran</td>
                     <td>
                         @php
-                            $isRevision = $pendaftaran->status == 'menunggu_verifikasi' && $pendaftaran->berkas->where('status_verifikasi', 'valid')->count() > 0;
+                            $isRevision = $pendaftaran->status == 'menunggu_verifikasi' && $pendaftaran->berkas->whereNotNull('catatan_admin')->count() > 0;
                             
                             $bg = '#e0f2fe';
                             $text = '#0284c7';
@@ -140,7 +140,7 @@
                         <div style="display: flex; flex-direction: column;">
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                 <strong style="text-transform: capitalize; color: var(--primary);">{{ $berkas->jenis_berkas }}</strong>
-                                @if($berkas->status_verifikasi == 'pending')
+                                @if($berkas->status_verifikasi == 'pending' && $berkas->catatan_admin)
                                     <span style="background: #fef3c7; color: #d97706; padding: 0.15rem 0.6rem; border-radius: 99px; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.05em; border: 1px solid #fde68a;">📌 REVISI MASUK</span>
                                 @endif
                             </div>

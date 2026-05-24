@@ -27,13 +27,20 @@
                     </div>
                 </div>
                 
-                <div style="display:flex; flex-direction:column; gap:.75rem; padding-left:3rem;">
+                <div style="display:flex; flex-direction:column; gap:.75rem; padding-left:3rem; margin-bottom: 1.5rem;">
                     @foreach($soal->shuffled_opsi as $key => $value)
-                    <label class="opsi-label" style="display:flex; align-items:flex-start; gap:1rem; padding:1rem; border:1px solid #e2e8f0; border-radius:12px; cursor:pointer; transition:all .2s; background:#f8fafc;">
-                        <input type="radio" name="jawaban[{{ $soal->id }}]" value="{{ $key }}" onchange="markAnswered({{ $index }})" style="margin-top:.2rem; transform:scale(1.2); accent-color:var(--primary);">
-                        <span style="font-size:.95rem; color:#334155;">{{ $value }}</span>
+                    <label class="opsi-label" style="display:flex; align-items:center; gap:1rem; padding:0.875rem 1.25rem; border:1px solid #e2e8f0; border-radius:12px; cursor:pointer; transition:all .2s; background:#f8fafc; min-height: 52px;">
+                        <input type="radio" name="jawaban[{{ $soal->id }}]" value="{{ $key }}" onchange="handleAnswerChange({{ $index }})" style="margin:0; transform:scale(1.2); accent-color:var(--primary);">
+                        <span style="font-size:1rem; color:#334155; font-weight: 500;">{{ $value }}</span>
                     </label>
                     @endforeach
+                </div>
+
+                <div style="padding-left:3rem;">
+                   <label style="display:inline-flex; align-items:center; gap:.5rem; padding:.5rem 1rem; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; cursor:pointer; transition:all .2s; font-size:.85rem; font-weight:700; color:#92400e;">
+                       <input type="checkbox" name="ragu[{{ $index }}]" id="ragu-{{ $index }}" onchange="handleRaguChange({{ $index }})" style="accent-color:#f59e0b;">
+                       🤔 Ragu-Ragu
+                   </label>
                 </div>
             </div>
             @endforeach
@@ -71,10 +78,11 @@
                 @endforeach
             </div>
 
-            <div style="margin-top:1.5rem; display:flex; flex-direction:column; gap:.5rem; font-size:.75rem; color:#64748b;">
-                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:12px; height:12px; background:var(--primary); border-radius:3px;"></div> Sedang Dilihat</div>
-                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:12px; height:12px; background:#10b981; border-radius:3px;"></div> Sudah Dijawab</div>
-                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:12px; height:12px; border:1px solid #cbd5e1; background:white; border-radius:3px;"></div> Belum Dijawab</div>
+            <div style="margin-top:1.5rem; display:flex; flex-direction:column; gap:.6rem; font-size:.8rem; color:#475569;">
+                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:14px; height:14px; background:var(--primary); border-radius:4px; box-shadow:0 2px 4px rgba(30,64,175,0.2);"></div> <span style="font-weight:600;">Sedang Dilihat</span></div>
+                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:14px; height:14px; background:#10b981; border-radius:4px; box-shadow:0 2px 4px rgba(16,185,129,0.2);"></div> <span style="font-weight:600;">Sudah Dijawab</span></div>
+                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:14px; height:14px; background:#f59e0b; border-radius:4px; box-shadow:0 2px 4px rgba(245,158,11,0.2);"></div> <span style="font-weight:600;">Ragu-Ragu</span></div>
+                <div style="display:flex; align-items:center; gap:.5rem;"><div style="width:14px; height:14px; border:1px solid #cbd5e1; background:white; border-radius:4px;"></div> <span style="font-weight:600;">Belum Dijawab</span></div>
             </div>
 
             <hr style="border:none; border-top:1px dashed #e2e8f0; margin:1.5rem 0;">
@@ -93,9 +101,11 @@
         background:#eff6ff!important;
         box-shadow:0 0 0 2px rgba(59,130,246,.2);
     }
-    .grid-btn:hover { border-color:var(--primary); color:var(--primary); }
-    .grid-btn.active { background:var(--primary)!important; border-color:var(--primary)!important; color:white!important; }
-    .grid-btn.answered { background:#10b981; border-color:#10b981; color:white; }
+    .grid-btn:hover { border-color:var(--primary); color:var(--primary); transform: translateY(-2px); }
+    .grid-btn.active { background:var(--primary)!important; border-color:var(--primary)!important; color:white!important; box-shadow: 0 4px 10px rgba(30, 64, 175, 0.3); }
+    .grid-btn.answered { background:#10b981!important; border-color:#10b981!important; color:white!important; }
+    .grid-btn.doubtful { background:#f59e0b!important; border-color:#d97706!important; color:white!important; }
+    .grid-btn.doubtful.active { box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); }
 </style>
 
 <script>
@@ -136,18 +146,53 @@
         if (currentIndex < totalSoal - 1) goToSoal(currentIndex + 1);
     }
 
-    function markAnswered(index) {
-        // Hapus class active dulu biar gak ketimpa warnanya saat sedang dilihat
+    function handleAnswerChange(index) {
+        updateGridStatus(index);
+    }
+
+    function handleRaguChange(index) {
+        updateGridStatus(index);
+    }
+
+    function updateGridStatus(index) {
         const btn = document.getElementById(`grid-btn-${index}`);
-        btn.classList.add('answered');
+        const isRagu = document.getElementById(`ragu-${index}`).checked;
+        const soalId = btn.dataset.soalId;
+        const radioChecked = !!document.querySelector(`input[name="jawaban[${soalId}]"]:checked`);
+
+        btn.classList.remove('answered', 'doubtful');
+        
+        if (isRagu) {
+            btn.classList.add('doubtful');
+        } else if (radioChecked) {
+            btn.classList.add('answered');
+        }
+    }
+
+    // Helper to setup datasets for JS lookup
+    document.querySelectorAll('.grid-btn').forEach((btn, idx) => {
+        // Find the soal ID from the input names in the corresponding soal div
+        const soalContainer = document.querySelector(`#soal-${idx}`);
+        const firstInput = soalContainer.querySelector('input[type="radio"]');
+        if (firstInput) {
+            const matches = firstInput.name.match(/\[(\d+)\]/);
+            if (matches) {
+                btn.dataset.soalId = matches[1];
+            }
+        }
+    });
+
+    function markAnswered(index) {
+        updateGridStatus(index);
     }
 
     function confirmSubmit() {
-        // Cek jawaban kosong
-        const answeredCount = document.querySelectorAll('.grid-btn.answered').length;
-        let msg = `Anda yakin ingin mengakhiri ujian?\n\nSoal Terjawab: ${answeredCount} dari ${totalSoal}`;
-        if (answeredCount < totalSoal) {
-            msg += `\nMasih ada ${totalSoal - answeredCount} soal yang BELUM dijawab!`;
+        // Cek jawaban yang memiliki pilihan (baik answered biasa maupun doubtful)
+        const chosenCount = document.querySelectorAll('.grid-btn.answered, .grid-btn.doubtful').length;
+        let msg = `Anda yakin ingin mengakhiri ujian?\n\nTotal Terjawab: ${chosenCount} dari ${totalSoal}`;
+        
+        if (chosenCount < totalSoal) {
+            msg += `\n\nPERINGATAN: Masih ada ${totalSoal - chosenCount} soal yang BELUM diisi!`;
         }
 
         if(confirm(msg)) {
@@ -161,16 +206,18 @@
     }
 
     // Timer Logic tersinkronisasi dengan server
-    let time = {{ isset($sisaDetik) ? $sisaDetik : ($ujian->durasi_menit * 60) }};
+    let time = Math.floor({{ isset($sisaDetik) ? $sisaDetik : ($ujian->durasi_menit * 60) }});
     const timerDisplay = document.getElementById('timer');
 
-    setInterval(() => {
+    const countdown = setInterval(() => {
         if(time <= 0) {
+            clearInterval(countdown);
+            timerDisplay.innerText = "00:00";
             alert('Waktu Habis! Ujian akan dikumpulkan secara otomatis.');
             document.getElementById('ujianForm').submit();
         } else {
             let minutes = Math.floor(time / 60);
-            let seconds = time % 60;
+            let seconds = Math.floor(time % 60);
             timerDisplay.innerText = 
                 (minutes < 10 ? "0" + minutes : minutes) + ":" + 
                 (seconds < 10 ? "0" + seconds : seconds);

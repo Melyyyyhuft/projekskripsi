@@ -57,7 +57,16 @@ class HasilController extends Controller
         }
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('siswa.hasil_pdf', compact('pendaftaran', 'hasil', 'settings'));
-        
-        return $pdf->download('Surat_Hasil_PPDB_' . $pendaftaran->nomor_pendaftaran . '.pdf');
+        $output = $pdf->output();
+        $fileName = 'Surat_Hasil_PPDB_' . ($pendaftaran->nomor_pendaftaran ?? 'Siswa') . '.pdf';
+
+        return response()->make($output, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Length' => strlen($output),
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 }

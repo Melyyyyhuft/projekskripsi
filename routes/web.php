@@ -60,8 +60,12 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
 
     // Seleksi & Penempatan
     Route::get('/penempatan', [\App\Http\Controllers\Admin\PenempatanController::class, 'index'])->name('admin.penempatan.index');
-    Route::post('/penempatan/proses', [\App\Http\Controllers\Admin\PenempatanController::class, 'prosesSeleksi'])->name('admin.penempatan.proses');
-    Route::post('/penempatan/publish', [\App\Http\Controllers\Admin\PenempatanController::class, 'publishPengumuman'])->name('admin.penempatan.publish');
+    Route::post('/penempatan/preview', [\App\Http\Controllers\Admin\PenempatanController::class, 'previewHitung'])->name('admin.penempatan.preview');
+    Route::post('/penempatan/hitung', [\App\Http\Controllers\Admin\PenempatanController::class, 'hitungSeleksi'])->name('admin.penempatan.hitung');
+    Route::post('/penempatan/publish', [\App\Http\Controllers\Admin\PenempatanController::class, 'publishHasil'])->name('admin.penempatan.publish');
+    Route::post('/penempatan/update/{id}', [\App\Http\Controllers\Admin\PenempatanController::class, 'updateHasil'])->name('admin.penempatan.update');
+    Route::get('/penempatan/detail/{id}', [\App\Http\Controllers\Admin\PenempatanController::class, 'getDetail'])->name('admin.penempatan.detail');
+    Route::get('/penempatan/pdf/{id}', [\App\Http\Controllers\Admin\PenempatanController::class, 'generatePDF'])->name('admin.penempatan.pdf');
 
     
     // Pengaturan & Jurusan
@@ -80,7 +84,7 @@ Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     Route::post('/profil/foto', [\App\Http\Controllers\Siswa\DashboardController::class, 'updateFoto'])->name('siswa.profil.foto');
     Route::get('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'create'])->name('siswa.pendaftaran');
     Route::post('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'store'])->name('siswa.pendaftaran.store');
-    Route::post('/berkas/reupload', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'reuploadMass'])->name('siswa.pendaftaran.reupload');
+    Route::post('/berkas/reupload', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'reuploadMass'])->name('siswa.pendaftaran.reuploadMass');
     
     // Rute CBT
     Route::get('/ujian', [\App\Http\Controllers\Siswa\UjianController::class, 'index'])->name('siswa.ujian');

@@ -200,7 +200,9 @@ class UjianController extends Controller
 
         // Update status pendaftaran menjadi sudah_ujian
         $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
-        $pendaftaran->update(['status' => 'sudah_ujian']);
+        if ($pendaftaran) {
+            $pendaftaran->update(['status' => 'sudah_ujian']);
+        }
 
         return redirect()->route('siswa.dashboard')->with('success', 'Ujian selesai! Skor Anda telah disimpan dan Anda siap masuk ke tahap seleksi perangkingan.');
     }

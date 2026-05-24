@@ -77,9 +77,16 @@ class BankSoalController extends Controller
         ];
         
         $xlsx = \Shuchkin\SimpleXLSXGen::fromArray($data);
-        return response()->streamDownload(function() use ($xlsx) {
-            echo $xlsx;
-        }, 'template_bank_soal.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        $output = (string) $xlsx;
+        
+        return response()->make($output, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="template_bank_soal.xlsx"',
+            'Content-Length' => strlen($output),
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 
     public function import(Request $request)

@@ -8,8 +8,8 @@
 
 @php
     // ── Status-status baru termasuk dari sistem seleksi fleksibel ──
-    $statusDiterima   = ['siap_diumumkan'];
-    $statusSudahUjian = ['sudah_ujian', 'siap_finalisasi', 'siap_diumumkan'];
+    $statusDiterima   = ['siap_diumumkan', 'diterima', 'tidak_diterima'];
+    $statusSudahUjian = ['sudah_ujian', 'siap_finalisasi', 'siap_diumumkan', 'diterima', 'tidak_diterima'];
     $statusGugur      = ['gugur', 'tidak_mengikuti_ujian'];
     $statusDitolak    = ['ditolak_admin'];
 
