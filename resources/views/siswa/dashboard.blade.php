@@ -77,39 +77,26 @@
     $statusLabel = $s ? ($labelStatus[$s] ?? ucwords(str_replace('_', ' ', $s))) : 'Belum Mendaftar';
 @endphp
 
-{{-- ─── Alert Revisi (Jika Ada) ─── --}}
+
+{{-- ─── Inline Alert Dashboard (Revisi) ─── --}}
 @if($s === 'revisi')
-<div class="glass-card animate-slide-up" style="margin-bottom:2rem; padding:0; border:none; background:#fef2f2; border-left:6px solid #ef4444; overflow:hidden; box-shadow:0 10px 25px rgba(239, 68, 68, 0.15);">
-    <div style="padding:1.5rem 2rem; background:rgba(239,68,68,0.05); display:flex; align-items:center; gap:1.25rem; border-bottom:1px solid rgba(239,68,68,0.1);">
-        <div style="width:50px; height:50px; border-radius:12px; background:#fecaca; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0;">
-            <i class="fa-solid fa-circle-exclamation"></i>
-        </div>
-        <div>
-            <h2 style="margin:0; font-size:1.4rem; color:#991b1b; font-weight:800;">Mohon Maaf, Berkas Anda Perlu Revisi!</h2>
-            <p style="margin:0.25rem 0 0; color:#b91c1c; font-size:0.95rem; font-weight:500;">Beberapa berkas yang Anda unggah tidak valid atau memerlukan perbaikan.</p>
-        </div>
+<div class="animate-slide-up" style="margin-bottom:1.5rem; padding:1rem 1.5rem; background:linear-gradient(135deg, #fff5f5 0%, #fffafa 100%); border:1px solid #fee2e2; border-left:5px solid #ef4444; border-radius:12px; display:flex; align-items:center; gap:1.25rem; box-shadow:0 8px 20px rgba(239, 68, 68, 0.04); position:relative;">
+    <div style="width:42px; height:42px; border-radius:10px; background:#fecaca; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
     </div>
-    <div style="padding:1.5rem 2rem;">
-        <p style="margin:0 0 1rem; color:#7f1d1d; font-weight:700; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Daftar Berkas Bermasalah:</p>
-        <div style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;">
-            @php $berkasDitolak = $pendaftaran->berkas->where('status_verifikasi', 'tidak_valid'); @endphp
-            @foreach($berkasDitolak as $bd)
-            <div style="background:white; border:1px solid #fee2e2; padding:1rem; border-radius:10px; display:flex; flex-direction:column; gap:0.5rem;">
-                <div style="display:flex; align-items:center; justify-content:space-between;">
-                    <span style="font-weight:700; color:#ef4444; text-transform:capitalize;"><i class="fa-solid fa-file"></i> Berkas {{ str_replace('_', ' ', $bd->jenis_berkas) }}</span>
-                    <span style="background:#fee2e2; color:#ef4444; font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:999px; font-weight:800;">TIDAK VALID</span>
-                </div>
-                <div style="font-size:0.875rem; color:#4b5563; padding:0.75rem; background:#f9fafb; border-radius:6px; border-left:3px solid #ef4444;">
-                    <strong style="color:#111827;">Alasan Admin:</strong> {{ $bd->catatan_admin ?? 'Berkas kurang jelas atau tidak sesuai, mohon upload ulang.' }}
-                </div>
-            </div>
-            @endforeach
-        </div>
-        <div style="display:flex; align-items:center; justify-content:flex-end;">
-            <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary" style="background:#ef4444; border-color:#ef4444; padding:0.75rem 2.5rem; font-weight:800; box-shadow:0 10px 15px -3px rgba(239, 68, 68, 0.3);">
-                🔄 Perbaiki Sekarang
-            </a>
-        </div>
+    
+    <div style="flex:1;">
+        <h2 style="margin:0; font-size:1.1rem; color:#991b1b; font-weight:800; letter-spacing:-0.01em;">Perlu Revisi</h2>
+        <p style="margin:0.1rem 0 0; color:#b91c1c; font-size:0.9rem; font-weight:500; opacity:0.9;">
+            Beberapa data pendaftaran Anda harus diperbaiki.
+        </p>
+    </div>
+    
+    <div style="flex-shrink:0;">
+        <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary" style="background:#ef4444; border:none; padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:8px; font-weight:700; box-shadow:0 5px 15px rgba(239,68,68,0.2); display:flex; align-items:center; gap:.4rem;">
+            <span>Lihat Revisi</span>
+            <i class="fa-solid fa-arrow-right" style="font-size:0.7rem;"></i>
+        </a>
     </div>
 </div>
 @endif
@@ -124,7 +111,7 @@
         </div>
         <div style="flex:1;">
             <p style="margin:0;font-size:.875rem;color:var(--gray-text);font-weight:600;">Status Pendaftaran</p>
-            <h3 style="margin:0;font-size:1rem;color:var(--dark);">{{ $statusLabel }}</h3>
+            <h3 style="margin:0;font-size:1rem;color:var(--dark);">{!! $statusLabel !!}</h3>
         </div>
     </div>
 
@@ -270,19 +257,21 @@
 
         <div style="color:var(--gray-text);margin-bottom:1.5rem;min-height:48px;font-size:.9rem;">
             @php
-                $tglMulaiGlobal = $settings['tgl_mulai_cbt'] ?? null;
-                $durasiGlobal = (int) ($settings['durasi_cbt'] ?? 0);
-                $tglSelesaiGlobal = $tglMulaiGlobal ? \Carbon\Carbon::parse($tglMulaiGlobal)->addDays($durasiGlobal) : null;
+                $tglMulaiGlobal = $settings['cbt_tgl_mulai'] ?? null;
+                $tglSelesaiGlobal = $settings['cbt_tgl_selesai'] ?? null;
+                $durasiGlobal = (int) ($settings['cbt_durasi_default'] ?? 0);
+                $statusCbt = $settings['cbt_status'] ?? 'ditutup';
+                
                 $now = now();
-                $isPeriodActive = $tglMulaiGlobal && $now->between(\Carbon\Carbon::parse($tglMulaiGlobal), $tglSelesaiGlobal);
+                $isPeriodActive = $statusCbt == 'aktif' && $tglMulaiGlobal && $tglSelesaiGlobal && $now->between(\Carbon\Carbon::parse($tglMulaiGlobal), \Carbon\Carbon::parse($tglSelesaiGlobal));
                 $isBeforePeriod = $tglMulaiGlobal && $now->lt(\Carbon\Carbon::parse($tglMulaiGlobal));
-                $isAfterPeriod = $tglSelesaiGlobal && $now->gt($tglSelesaiGlobal);
+                $isAfterPeriod = $tglSelesaiGlobal && $now->gt(\Carbon\Carbon::parse($tglSelesaiGlobal));
             @endphp
 
-            @if($tglMulaiGlobal)
+            @if($tglMulaiGlobal && $tglSelesaiGlobal)
                 <div style="margin-bottom: .75rem; background: #f0f9ff; padding: .75rem; border-radius: 8px; border: 1px solid #bae6fd;">
                     <p style="margin:0; color:#0369a1; font-weight:700;"><i class="fa-solid fa-calendar-days"></i> Periode Ujian CBT:</p>
-                    <p style="margin:0; font-size:.85rem;">{{ \Carbon\Carbon::parse($tglMulaiGlobal)->format('d M Y') }} s/d {{ $tglSelesaiGlobal->format('d M Y') }}</p>
+                    <p style="margin:0; font-size:.85rem;">{{ \Carbon\Carbon::parse($tglMulaiGlobal)->format('d M Y') }} s/d {{ \Carbon\Carbon::parse($tglSelesaiGlobal)->format('d M Y') }}</p>
                 </div>
             @elseif($ujian_aktif)
                 <div style="margin-bottom: .5rem; background: #f8fafc; padding: .5rem; border-radius: 8px;">

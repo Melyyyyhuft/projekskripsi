@@ -11,21 +11,25 @@ class BankSoalController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil tahun ajaran unik dari database untuk dropdown filter
+        // Ambil tahun ajaran & nama paket unik dari database untuk dropdown filter
         $tahunAjarans = Soal::select('tahun_ajaran')->distinct()->pluck('tahun_ajaran');
+        $namaPakets = Soal::select('nama_paket')->distinct()->pluck('nama_paket');
         
         $filterTahun = $request->tahun_ajaran;
+        $filterPaket = $request->nama_paket;
         
-        if (!$filterTahun && $tahunAjarans->isNotEmpty()) {
+        if (!$filterTahun && !$filterPaket && $tahunAjarans->isNotEmpty()) {
             // Default ambil tahun ajaran pertama atau yang aktif
             $filterTahun = Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';
         }
 
         $soals = Soal::when($filterTahun, function ($q) use ($filterTahun) {
             return $q->where('tahun_ajaran', $filterTahun);
+        })->when($filterPaket, function ($q) use ($filterPaket) {
+            return $q->where('nama_paket', $filterPaket);
         })->get();
 
-        return view('admin.bank_soal.index', compact('soals', 'tahunAjarans', 'filterTahun'));
+        return view('admin.bank_soal.index', compact('soals', 'tahunAjarans', 'namaPakets', 'filterTahun', 'filterPaket'));
     }
 
     public function store(Request $request)
@@ -81,53 +85,112 @@ class BankSoalController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file_soal' => 'required|file|max:5120', // max 5MB
+            'file_soal' => 'required|file|max:10240', // max 10MB
         ]);
 
         $file = $request->file('file_soal');
-        $content = file_get_contents($file->getRealPath());
-        $lines = explode("\n", str_replace("\r", "", $content));
+        $fileName = $file->getClientOriginalName();
+        $filePath = $file->getRealPath();
         
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return back()->with('error', 'Gagal membuka file.');
+        }
+
+        // Baca header
+        $headerLine = fgets($handle);
+        if (!$headerLine) {
+            fclose($handle);
+            return back()->with('error', 'File kosong.');
+        }
+
+        // Deteksi delimiter
+        $delimiters = ["|", ";", ","];
+        $delimiter = "|"; // Default
+        $maxCount = 0;
+        foreach ($delimiters as $d) {
+            $count = substr_count($headerLine, $d);
+            if ($count > $maxCount) {
+                $maxCount = $count;
+                $delimiter = $d;
+            }
+        }
+
+        rewind($handle);
+        $headerData = fgetcsv($handle, 0, $delimiter);
+        
+        // Validasi Kolom Header Secara Ketat
+        $requiredHeaders = ['Tahun Ajaran', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar'];
+        $actualHeaders = array_map('trim', $headerData);
+
+        // Cari index kolom
+        $colMap = [];
+        foreach ($requiredHeaders as $req) {
+            $found = false;
+            foreach ($actualHeaders as $idx => $act) {
+                if (strcasecmp($act, $req) === 0 || str_contains(strtolower($act), strtolower($req))) {
+                    $colMap[$req] = $idx;
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                fclose($handle);
+                return back()->with('error', "Format file tidak sesuai! Kolom [$req] tidak ditemukan. Silakan gunakan template yang benar.");
+            }
+        }
+
         $validSoal = [];
-        foreach ($lines as $index => $line) {
-            if ($index == 0) continue; // Skip header
-            if (empty(trim($line))) continue;
+        $errorCount = 0;
+        $rowCount = 0;
 
-            $delimiter = '|';
-            if (strpos($line, '|') === false) {
-                if (strpos($line, ';') !== false) {
-                    $delimiter = ';';
-                } else {
-                    $delimiter = ',';
-                }
-            }
+        while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+            $rowCount++;
+            if (empty(array_filter($data))) continue;
 
-            $data = str_getcsv($line, $delimiter);
-            
-            if (count($data) >= 7) {
-                $jawaban = strtoupper(trim($data[6]));
-                if (in_array($jawaban, ['A', 'B', 'C', 'D'])) {
+            try {
+                $tahun    = trim($data[$colMap['Tahun Ajaran']] ?? '');
+                $soal     = trim($data[$colMap['Pertanyaan']] ?? '');
+                $oa       = trim($data[$colMap['Opsi A']] ?? '');
+                $ob       = trim($data[$colMap['Opsi B']] ?? '');
+                $oc       = trim($data[$colMap['Opsi C']] ?? '');
+                $od       = trim($data[$colMap['Opsi D']] ?? '');
+                $jawaban  = strtoupper(trim($data[$colMap['Jawaban Benar']] ?? ''));
+
+                if ($tahun && $soal && $oa && $ob && $oc && $od && in_array($jawaban, ['A', 'B', 'C', 'D'])) {
                     $validSoal[] = [
-                        'tahun_ajaran' => trim($data[0]),
-                        'teks_soal' => trim($data[1]),
-                        'opsi_a' => trim($data[2]),
-                        'opsi_b' => trim($data[3]),
-                        'opsi_c' => trim($data[4]),
-                        'opsi_d' => trim($data[5]),
+                        'tahun_ajaran' => $tahun,
+                        'nama_paket'   => $fileName,
+                        'teks_soal'    => $soal,
+                        'opsi_a'       => $oa,
+                        'opsi_b'       => $ob,
+                        'opsi_c'       => $oc,
+                        'opsi_d'       => $od,
                         'jawaban_benar' => $jawaban,
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
                     ];
+                } else {
+                    $errorCount++;
                 }
+            } catch (\Exception $e) {
+                $errorCount++;
             }
         }
+        fclose($handle);
 
-        if (count($validSoal) < 50) {
-            return back()->with('error', 'Gagal import! File hanya memiliki ' . count($validSoal) . ' soal valid (kurang dari 50). Pastikan formatnya benar.');
+        if (count($validSoal) == 0) {
+            return back()->with('error', 'Tidak ada soal valid yang ditemukan dalam file. Periksa format data dan kunci jawaban (A,B,C,D).');
         }
 
-        Soal::insert($validSoal);
+        // Chunk insert if many
+        foreach (array_chunk($validSoal, 100) as $chunk) {
+            Soal::insert($chunk);
+        }
+        
+        $msg = count($validSoal) . ' soal berhasil diimport ke paket "' . $fileName . '".';
+        if ($errorCount > 0) $msg .= " ({$errorCount} baris bermasalah diabaikan).";
 
-        return back()->with('success', count($validSoal) . ' soal massal berhasil diimport ke Bank Soal!');
+        return back()->with('success', $msg);
     }
 }

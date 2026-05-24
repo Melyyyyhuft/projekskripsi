@@ -9,7 +9,17 @@ class Soal extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tahun_ajaran', 
+        'nama_paket',
+        'mapel',
+        'teks_soal', 
+        'opsi_a', 
+        'opsi_b', 
+        'opsi_c', 
+        'opsi_d', 
+        'jawaban_benar'
+    ];
 
     public function ujians()
     {

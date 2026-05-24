@@ -53,13 +53,9 @@
                 <i class="fa-solid fa-laptop-code"></i>
                 <span>Modul Ujian</span>
             </a>
-            <a href="{{ route('admin.seleksi.index') }}" class="sidebar-item {{ request()->is('admin/seleksi*') ? 'active' : '' }}">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>Proses Seleksi</span>
-            </a>
             <a href="{{ route('admin.penempatan.index') }}" class="sidebar-item {{ request()->is('admin/penempatan*') ? 'active' : '' }}">
                 <i class="fa-solid fa-school"></i>
-                <span>Seleksi &amp; Penempatan</span>
+                <span>Seleksi & Penempatan</span>
             </a>
 
             <!-- Profile Widget at the bottom -->
@@ -112,13 +108,23 @@
                     <div style="width:1px;height:24px;background:#e2e8f0;"></div>
 
                     {{-- User info --}}
-                    <div style="display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-                        <div style="text-align:right;line-height:1.2;">
-                            <span style="font-weight:700;font-size:.875rem;color:var(--dark);display:block;">{{ Auth::user()->name }}</span>
-                            <span style="font-size:.72rem;color:var(--gray-text);font-weight:600;">Administrator</span>
+                    <div class="dropdown">
+                        <div style="display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'" onclick="this.nextElementSibling.classList.toggle('show')">
+                            <div style="text-align:right;line-height:1.2;">
+                                <span style="font-weight:700;font-size:.875rem;color:var(--dark);display:block;">{{ Auth::user()->name }}</span>
+                                <span style="font-size:.72rem;color:var(--gray-text);font-weight:600;">Administrator <i class="fa-solid fa-chevron-down" style="font-size: .6rem; margin-left: 2px;"></i></span>
+                            </div>
+                            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;box-shadow:0 4px 12px rgba(59,130,246,.25);">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
                         </div>
-                        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;box-shadow:0 4px 12px rgba(59,130,246,.25);">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        <div class="dropdown-content" style="min-width: 160px; right: 0;">
+                            <a href="#" onclick="event.preventDefault(); document.getElementById('header-logout-form').submit();" style="color: #ef4444;">
+                                <i class="fa-solid fa-right-from-bracket"></i> Keluar
+                            </a>
+                            <form id="header-logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -224,6 +230,15 @@
                     updateBadge(data.count);
                 })
                 .catch(err => console.error(err));
+        });
+
+        // Click outside to close dropdown
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-content.show').forEach(dd => {
+                    dd.classList.remove('show');
+                });
+            }
         });
     </script>
 </body>

@@ -16,6 +16,11 @@ class Jurusan extends Model
         return $this->hasMany(Pendaftaran::class);
     }
 
+    public function ujian()
+    {
+        return $this->hasOne(Ujian::class);
+    }
+
     // Hitung jumlah pendaftar (semua pendaftar aktif)
     public function getPendaftarCountAttribute()
     {

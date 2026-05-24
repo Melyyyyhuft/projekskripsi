@@ -41,6 +41,10 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::post('ujian/{ujian}/soal', [\App\Http\Controllers\Admin\UjianController::class, 'assignSoal'])->name('admin.ujian.soal.assign');
     Route::delete('ujian/{ujian}/soal/{soal}', [\App\Http\Controllers\Admin\UjianController::class, 'detachSoal'])->name('admin.ujian.soal.detach');
     Route::post('ujian/{ujian}/tutup', [\App\Http\Controllers\Admin\UjianController::class, 'tutupUjian'])->name('admin.ujian.tutup');
+    Route::post('ujian/{ujian}/buka', [\App\Http\Controllers\Admin\UjianController::class, 'bukaUjian'])->name('admin.ujian.buka');
+    Route::post('ujian/{ujian}/perpanjang', [\App\Http\Controllers\Admin\UjianController::class, 'perpanjangUjian'])->name('admin.ujian.perpanjang');
+    Route::post('ujian/cbt-settings', [\App\Http\Controllers\Admin\UjianController::class, 'saveCbtSettings'])->name('admin.ujian.cbt_settings');
+    Route::post('ujian/{ujian}/toggle', [\App\Http\Controllers\Admin\UjianController::class, 'toggleStatus'])->name('admin.ujian.toggle');
 
     
     Route::get('bank_soal/template', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplate'])->name('admin.bank_soal.template');
@@ -65,6 +69,7 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::post('/pengaturan/umum', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateUmum'])->name('admin.pengaturan.umum');
     Route::post('/pengaturan/periode', [\App\Http\Controllers\Admin\PengaturanController::class, 'updatePeriode'])->name('admin.pengaturan.periode');
     Route::post('/pengaturan/bobot', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateBobot'])->name('admin.pengaturan.bobot');
+    Route::post('/pengaturan/sosmed', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateSosmed'])->name('admin.pengaturan.sosmed');
     
     Route::resource('jurusan-setting', \App\Http\Controllers\Admin\JurusanController::class)->names('admin.jurusan-setting');
 });
@@ -72,9 +77,10 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
 // Siswa Routes
 Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Siswa\DashboardController::class, 'index'])->name('siswa.dashboard');
+    Route::post('/profil/foto', [\App\Http\Controllers\Siswa\DashboardController::class, 'updateFoto'])->name('siswa.profil.foto');
     Route::get('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'create'])->name('siswa.pendaftaran');
     Route::post('/pendaftaran', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'store'])->name('siswa.pendaftaran.store');
-    Route::post('/berkas/reupload', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'reuploadBerkas'])->name('siswa.pendaftaran.reupload');
+    Route::post('/berkas/reupload', [\App\Http\Controllers\Siswa\PendaftaranController::class, 'reuploadMass'])->name('siswa.pendaftaran.reupload');
     
     // Rute CBT
     Route::get('/ujian', [\App\Http\Controllers\Siswa\UjianController::class, 'index'])->name('siswa.ujian');
@@ -83,9 +89,13 @@ Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     
     // Hasil
     Route::get('/hasil', [\App\Http\Controllers\Siswa\HasilController::class, 'index'])->name('siswa.hasil');
+    Route::get('/hasil/download', [\App\Http\Controllers\Siswa\HasilController::class, 'downloadSurat'])->name('siswa.hasil.download');
 
-    // Profil
-    Route::post('/profil/foto', [\App\Http\Controllers\Siswa\ProfilController::class, 'uploadFoto'])->name('siswa.profil.foto');
+    // Profil (New Comprehensive)
+    Route::get('/profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('siswa.profile');
+    Route::put('/profile/update', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('siswa.profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\Siswa\ProfileController::class, 'updatePassword'])->name('siswa.profile.password');
+    Route::put('/profile/photo', [\App\Http\Controllers\Siswa\ProfileController::class, 'updatePhoto'])->name('siswa.profile.photo');
 });
 
 // Halaman Tentang Kami

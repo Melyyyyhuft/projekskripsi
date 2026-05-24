@@ -193,6 +193,13 @@
                 <span>Hasil Seleksi</span>
             </a>
 
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-nav-label">Akun</div>
+            <a href="{{ route('siswa.profile') }}" class="sidebar-item {{ request()->is('siswa/profile') ? 'active' : '' }}">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>Profil Saya</span>
+            </a>
+
             <!-- Profile Widget at the bottom -->
             <div class="sidebar-profile-card" onclick="document.getElementById('profileModal').classList.add('open')" title="Profil Saya">
                 <div class="sidebar-profile-avatar-wrap">
@@ -331,6 +338,11 @@
                         <p class="pm-value">{{ Auth::user()->created_at->format('d M Y') }}</p>
                     </div>
                 </div>
+
+                <a href="{{ route('siswa.profile') }}" onclick="document.getElementById('profileModal').classList.remove('open')" 
+                   style="display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.7rem;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;border:none;border-radius:8px;font-weight:600;font-size:.85rem;cursor:pointer;text-decoration:none;margin-bottom:.5rem;transition:all .3s;">
+                    <i class="fa-solid fa-user-gear"></i> Lihat Profil Lengkap
+                </a>
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf

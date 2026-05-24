@@ -5,32 +5,28 @@
 @php
     $s = $pendaftaran ? $pendaftaran->status : null;
     $now = now();
+    $settings = $settings ?? [];
+
+    // Settings CBT Global
+    $startCbt = \Carbon\Carbon::parse($settings['cbt_tgl_mulai'] ?? now());
+    $endCbt   = \Carbon\Carbon::parse($settings['cbt_tgl_selesai'] ?? now()->addDays(3));
+    $statusCbt = $settings['cbt_status'] ?? 'aktif';
+
+    // Derived variables (previously undefined)
+    $tglMulaiGlobal  = $startCbt;
+    $tglSelesaiGlobal = $endCbt;
+    $periodeAktif = $statusCbt === 'aktif' && $now->between($startCbt, $endCbt);
+    $mulaiTs  = $startCbt->timestamp * 1000;
+    $selesaiTs = $endCbt->timestamp * 1000;
 
     // Status siswa
     $sudahUjian   = in_array($s, ['sudah_ujian','siap_finalisasi','siap_diumumkan','gugur','tidak_mengikuti_ujian']);
-    $bisaUjian    = ($s === 'lolos_admin') && isset($ujian) && $ujian;
-    $belumVerif   = in_array($s, ['draft','menunggu_verifikasi', null]);
-    $ditolak      = $s === 'ditolak_admin';
+    $bisaUjian    = ($s === 'lolos_admin') && $statusCbt === 'aktif' && $now->between($startCbt, $endCbt);
+    $belumVerif   = in_array($s, [null, 'draft', 'menunggu_verifikasi', 'perlu_revisi']);
+    $ditolak      = ($s === 'ditolak_admin');
 
-    // Info ujian jika ada
-    $ujianAda       = isset($ujian) && $ujian;
-    $periodeBelum   = $ujianAda && $ujian->jadwal_mulai && $now->lt(\Carbon\Carbon::parse($ujian->jadwal_mulai));
-    $periodeSelesai = $ujianAda && $ujian->jadwal_selesai && $now->gt(\Carbon\Carbon::parse($ujian->jadwal_selesai));
-    $periodeAktif   = $ujianAda && !$periodeBelum && !$periodeSelesai;
-
-    // Hitung countdown untuk jadwal selesai (jika ada)
-    $selesaiTs = ($ujianAda && $ujian->jadwal_selesai) ? \Carbon\Carbon::parse($ujian->jadwal_selesai)->timestamp * 1000 : null;
-    $mulaiTs   = ($ujianAda && $ujian->jadwal_mulai)   ? \Carbon\Carbon::parse($ujian->jadwal_mulai)->timestamp  * 1000 : null;
-@endphp
-
-@php
-    // Periode CBT Global dari settings
-    $settings        = $settings ?? [];
-    $tglMulaiGlobal  = $settings['tgl_mulai_cbt'] ?? null;
-    $durasiGlobal    = (int) ($settings['durasi_cbt'] ?? 0);
-    $tglSelesaiGlobal = $tglMulaiGlobal
-        ? \Carbon\Carbon::parse($tglMulaiGlobal)->addDays($durasiGlobal)
-        : null;
+    // Check if exam module for specific jurusan exists
+    $ujianAda = isset($ujian) && $ujian;
 @endphp
 
 <style>
@@ -76,12 +72,12 @@
 
     <div style="display:flex;gap:.875rem;justify-content:center;flex-wrap:wrap;">
         <a href="{{ route('siswa.dashboard') }}" class="btn-outline" style="min-width:160px;text-align:center;">🏠 Dashboard</a>
-        <a href="{{ route('siswa.hasil') }}" class="btn-primary" style="min-width:160px;text-align:center;background:linear-gradient(135deg,#f59e0b,#d97706);">📢 Lihat Hasil Seleksi</a>
+        <a href="{{ route('siswa.hasil') }}" class="btn-primary" style="min-width:160px;text-align:center;">📢 Lihat Hasil</a>
     </div>
 </div>
 
 {{-- ══════════════ LOLOS ADMIN — SIAP UJIAN ══════════════ --}}
-@elseif($bisaUjian && $periodeAktif)
+@elseif($bisaUjian && $ujianAda)
 
     {{-- Hero: Siap Ujian --}}
     <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f,#1d4ed8);border-radius:24px;padding:2.5rem;color:white;margin-bottom:1.5rem;position:relative;overflow:hidden;" class="fade-up">
@@ -89,21 +85,20 @@
         <div style="position:absolute;bottom:-40px;left:-20px;width:160px;height:160px;background:rgba(59,130,246,.1);border-radius:50%;"></div>
 
         <div style="display:flex;align-items:flex-start;gap:1.25rem;flex-wrap:wrap;position:relative;z-index:1;">
-            <div style="width:56px;height:56px;background:rgba(59,130,246,.3);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;animation:pulse-glow 2s infinite;">🖥️</div>
+            <div style="width:56px;height:56px;background:rgba(59,130,246,.3);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🖥️</div>
             <div style="flex:1;">
                 <div style="font-size:.75rem;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;">Ujian Online CBT — Periode Aktif</div>
                 <h2 style="font-size:1.6rem;font-weight:900;margin:0 0 .5rem;">{{ $ujian->judul }}</h2>
                 <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.875rem;opacity:.85;">
                     <span>⏱️ Durasi: <strong>{{ $ujian->durasi_menit }} menit</strong></span>
                     <span>📝 Soal: <strong>{{ $ujian->soals()->count() }} soal</strong></span>
-                    @if($ujian->jadwal_selesai)<span>📅 Ditutup: <strong>{{ \Carbon\Carbon::parse($ujian->jadwal_selesai)->isoFormat('D MMM YYYY, HH:mm') }}</strong></span>@endif
+                    <span>📅 Ditutup: <strong>{{ $endCbt->format('d M Y, H:i') }}</strong></span>
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Countdown Penutupan --}}
-    @if($ujian->jadwal_selesai)
     <div class="glass-card fade-up delay-1" style="margin-bottom:1.5rem;text-align:center;">
         <div style="font-size:.75rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;">⏳ Sisa Waktu Ujian Ditutup</div>
         <div class="countdown-box" id="countdown-main">
@@ -115,64 +110,25 @@
             <span class="countdown-sep">:</span>
             <div class="countdown-unit"><span class="countdown-num" id="cd-secs">00</span><span class="countdown-label">Detik</span></div>
         </div>
-        <p style="font-size:.8rem;color:#94a3b8;margin:1rem 0 0;">Setelah periode ditutup, Anda tidak dapat lagi mengakses ujian ini.</p>
+        <p style="font-size:.8rem;color:#94a3b8;margin:1rem 0 0;">Setelah periode ditutup pada {{ $endCbt->format('d M Y, H:i') }}, Anda tidak dapat lagi mengakses ujian.</p>
     </div>
-    @endif
 
     {{-- Peraturan --}}
     <div class="glass-card fade-up delay-1" style="margin-bottom:1.5rem;">
-        <h3 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0 0 1.25rem;display:flex;align-items:center;gap:.5rem;">
-            📋 <span>Peraturan & Ketentuan Ujian CBT</span>
-        </h3>
-
-        <div style="background:#eff6ff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;border:1px solid #bfdbfe;">
-            <p style="margin:0;font-size:.875rem;color:#1e40af;font-weight:600;">🔵 Metode CBT Fleksibel — Ujian dibuka selama periode aktif. Anda bebas memilih kapan akan mengerjakan.</p>
-        </div>
-
+        <h3 style="font-size:1rem;font-weight:700;color:#0f172a;margin:0 0 1.25rem;">📋 Peraturan & Ketentuan</h3>
         <div>
             <div class="peraturan-item">
                 <div class="peraturan-num">1</div>
                 <div>
-                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Ujian hanya dapat dikerjakan 1 (satu) kali</div>
-                    <div style="font-size:.82rem;color:#64748b;">Setelah submit, jawaban Anda tidak dapat diubah dan ujian tidak dapat diulang.</div>
+                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Ujian Jurusan: {{ $pendaftaran->jurusan->nama ?? '-' }}</div>
+                    <div style="font-size:.82rem;color:#64748b;">Gunakan perangkat dengan layar cukup lebar dan internet stabil.</div>
                 </div>
             </div>
             <div class="peraturan-item">
                 <div class="peraturan-num">2</div>
                 <div>
-                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Timer {{ $ujian->durasi_menit }} menit berjalan otomatis saat Mulai Ujian ditekan</div>
-                    <div style="font-size:.82rem;color:#64748b;">Pastikan koneksi internet stabil. Jika waktu habis, jawaban otomatis dikumpulkan.</div>
-                </div>
-            </div>
-            <div class="peraturan-item">
-                <div class="peraturan-num">3</div>
-                <div>
-                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Bebas memilih hari dan jam selama periode aktif</div>
-                    <div style="font-size:.82rem;color:#64748b;">
-                        @if($tglMulaiGlobal)
-                            Periode: {{ \Carbon\Carbon::parse($tglMulaiGlobal)->format('d M Y') }}
-                            s/d {{ $tglSelesaiGlobal->format('d M Y') }}
-                        @elseif($ujian->jadwal_mulai)
-                            Periode: {{ \Carbon\Carbon::parse($ujian->jadwal_mulai)->isoFormat('D MMM YYYY, HH:mm') }}
-                            s/d {{ \Carbon\Carbon::parse($ujian->jadwal_selesai)->isoFormat('D MMM YYYY, HH:mm') }}
-                        @else
-                            Ujian tersedia sampai ditutup oleh admin.
-                        @endif
-                    </div>
-                </div>
-            </div>
-            <div class="peraturan-item">
-                <div class="peraturan-num">4</div>
-                <div>
-                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Jangan refresh atau tutup tab saat ujian berlangsung</div>
-                    <div style="font-size:.82rem;color:#64748b;">Progress jawaban tersimpan di form. Menutup browser akan menghapus jawaban sementara.</div>
-                </div>
-            </div>
-            <div class="peraturan-item">
-                <div class="peraturan-num">5</div>
-                <div>
-                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Kerjakan dengan jujur dan mandiri</div>
-                    <div style="font-size:.82rem;color:#64748b;">Hasil ujian Anda akan digunakan untuk menentukan kelulusan. Kecurangan dapat mengakibatkan diskualifikasi.</div>
+                    <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">Timer Berjalan Otomatis</div>
+                    <div style="font-size:.82rem;color:#64748b;">Setelah klik mulai, durasi {{ $ujian->durasi_menit }} menit akan dihitung mundur.</div>
                 </div>
             </div>
         </div>
@@ -180,63 +136,27 @@
 
     {{-- Tombol Mulai --}}
     <div class="glass-card fade-up delay-2" style="border-top:3px solid #10b981;">
-        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;">
-            <div style="width:44px;height:44px;background:linear-gradient(135deg,#10b981,#059669);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🚀</div>
-            <div>
-                <div style="font-weight:800;color:#0f172a;font-size:1rem;">Siap Memulai Ujian?</div>
-                <div style="font-size:.82rem;color:#64748b;margin-top:.1rem;">Pastikan Anda sudah membaca semua peraturan di atas.</div>
-            </div>
-        </div>
-
-        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;">
-            <span style="font-size:1.25rem;">⚠️</span>
-            <p style="margin:0;font-size:.82rem;color:#166534;line-height:1.5;">Dengan menekan <strong>Mulai Ujian</strong>, Anda menyatakan <strong>siap</strong> dan <strong>setuju</strong> untuk mengikuti ujian sesuai peraturan di atas. Timer akan langsung berjalan.</p>
-        </div>
-
-        <a href="{{ route('siswa.ujian') }}" class="btn-primary"
-           onclick="return confirm('⚠️ KONFIRMASI MULAI UJIAN\n\nSetelah menekan OK, timer {{ $ujian->durasi_menit }} menit langsung berjalan.\nUjian tidak dapat diulang setelah submit.\n\nYakin ingin mulai?')"
-           style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1rem 2rem;font-size:1rem;font-weight:800;border-radius:14px;background:linear-gradient(135deg,#10b981,#059669);width:100%;box-sizing:border-box;text-decoration:none;">
-            🚀 Mulai Ujian Sekarang
-        </a>
-        <p style="text-align:center;font-size:.75rem;color:#94a3b8;margin:.75rem 0 0;">Ujian hanya dapat dikerjakan 1 kali. Tidak dapat diulang.</p>
+        <form action="{{ route('siswa.ujian.mulai') }}" method="POST">
+            @csrf
+            <button type="submit" onclick="return confirm('Mulai ujian sekarang?')" class="btn-primary" 
+                    style="width:100%; padding:1rem; font-size:1.1rem; background:linear-gradient(135deg,#10b981,#059669); border:none; border-radius:14px; color:white; cursor:pointer;">
+                🚀 Mulai Ujian Sekarang
+            </button>
+        </form>
     </div>
 
-{{-- ══════════════ LOLOS ADMIN — UJIAN BELUM BUKA ══════════════ --}}
-@elseif($s === 'lolos_admin' && $ujianAda && $periodeBelum)
-<div class="glass-card fade-up" style="text-align:center;padding:2.5rem 2rem;">
-    <div style="font-size:3rem;margin-bottom:1rem;">🗓️</div>
-    <h2 style="font-size:1.4rem;font-weight:800;color:#0f172a;margin:0 0 .75rem;">Ujian Belum Dimulai</h2>
-    <p style="color:#64748b;margin:0 0 1.5rem;">Anda sudah lolos verifikasi! Ujian CBT akan dibuka pada:</p>
-    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:1.25rem;display:inline-block;margin-bottom:1.5rem;">
-        <div style="font-size:1.2rem;font-weight:800;color:#1e40af;">📅 {{ \Carbon\Carbon::parse($ujian->jadwal_mulai)->isoFormat('dddd, D MMMM YYYY [pukul] HH:mm') }}</div>
-    </div>
-    <div class="countdown-box" id="countdown-main" style="margin-bottom:1.5rem;">
-        <div class="countdown-unit"><span class="countdown-num" id="cd-days">--</span><span class="countdown-label">Hari</span></div>
-        <span class="countdown-sep">:</span>
-        <div class="countdown-unit"><span class="countdown-num" id="cd-hours">--</span><span class="countdown-label">Jam</span></div>
-        <span class="countdown-sep">:</span>
-        <div class="countdown-unit"><span class="countdown-num" id="cd-mins">--</span><span class="countdown-label">Menit</span></div>
-    </div>
-    <p style="font-size:.82rem;color:#94a3b8;margin:0;">Silakan kembali pada waktu yang tertera untuk mengerjakan ujian CBT.</p>
-</div>
-
-{{-- ══════════════ SEMUA STATUS LAIN ══════════════ --}}
+{{-- ══════════════ STATUS LAIN / DIBATASI ══════════════ --}}
 @else
-<div class="glass-card fade-up" style="padding:2.5rem 2rem;">
-    <div style="display:flex;gap:1.25rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:1.5rem;">
-        <div style="width:56px;height:56px;border-radius:14px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:1.75rem;flex-shrink:0;">
-            @php
-                $ikonMap = ['draft'=>'📝','menunggu_verifikasi'=>'⏳','ditolak_admin'=>'❌','tidak_mengikuti_ujian'=>'🚫','siap_finalisasi'=>'🔄','siap_diumumkan'=>'📢','gugur'=>'😔'];
-                echo $ikonMap[$s] ?? '🔒';
-            @endphp
-        </div>
-        <div>
-            <h2 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0 0 .4rem;">Ujian Online CBT</h2>
-            <p style="color:#64748b;font-size:.9rem;margin:0;">{{ $pesan ?? 'Ujian belum dapat diakses saat ini.' }}</p>
-        </div>
+<div class="glass-card fade-up" style="padding:3rem 2rem; text-align:center;">
+    <div style="font-size:3.5rem;margin-bottom:1rem;">🔒</div>
+    <h2 style="font-size:1.4rem;font-weight:800;color:#0f172a;margin:0 0 1rem;">Akses Ujian Dibatasi</h2>
+    <div style="background:#f8fafc; border-radius:16px; padding:1.5rem; margin-bottom:2rem; border:1px solid #e2e8f0; display:inline-block; max-width:500px;">
+        <p style="color:#475569; font-size:.95rem; font-weight:600; margin:0; line-height:1.6;">
+            {{ $pesan ?? 'Ujian belum dapat diakses saat ini.' }}
+        </p>
     </div>
 
-    {{-- Info Ujian Jika Ada --}}
+    {{-- Info ujian hanya jika $ujian tersedia --}}
     @if($ujianAda)
     <div style="background:#f8fafc;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;border:1px solid #e2e8f0;">
         <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.875rem;">ℹ️ Informasi Ujian CBT</div>
@@ -249,7 +169,7 @@
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.2rem;">Durasi</div>
                 <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ $ujian->durasi_menit }} menit</div>
             </div>
-            @if($ujian->jadwal_mulai)
+            @if($ujian->jadwal_mulai ?? null)
             <div>
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.2rem;">Periode Mulai</div>
                 <div style="font-weight:600;color:#0f172a;font-size:.9rem;">{{ \Carbon\Carbon::parse($ujian->jadwal_mulai)->isoFormat('D MMM YYYY, HH:mm') }}</div>
@@ -270,7 +190,7 @@
         <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
             <div>
                 <div style="font-size:.78rem;color:#94a3b8;margin-bottom:.2rem;">Mulai</div>
-                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ \Carbon\Carbon::parse($tglMulaiGlobal)->translatedFormat('d M Y') }}</div>
+                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ $tglMulaiGlobal->translatedFormat('d M Y') }}</div>
             </div>
             <div style="color:#cbd5e1;font-size:1.5rem;">→</div>
             <div>
@@ -278,14 +198,9 @@
                 <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ $tglSelesaiGlobal->translatedFormat('d M Y') }}</div>
             </div>
             <div style="margin-left:auto;">
-                @php
-                    $nowCheck = now();
-                    $isPeriodActiveInfo = $nowCheck->between(\Carbon\Carbon::parse($tglMulaiGlobal), $tglSelesaiGlobal);
-                    $isBeforePeriodInfo = $nowCheck->lt(\Carbon\Carbon::parse($tglMulaiGlobal));
-                @endphp
-                @if($isPeriodActiveInfo)
+                @if($periodeAktif)
                     <span style="background:#dcfce7;color:#166534;padding:.3rem .75rem;border-radius:999px;font-size:.8rem;font-weight:700;">🟢 Sedang Berlangsung</span>
-                @elseif($isBeforePeriodInfo)
+                @elseif($now->lt($startCbt))
                     <span style="background:#fef9c3;color:#92400e;padding:.3rem .75rem;border-radius:999px;font-size:.8rem;font-weight:700;">⏳ Belum Dimulai</span>
                 @else
                     <span style="background:#fee2e2;color:#991b1b;padding:.3rem .75rem;border-radius:999px;font-size:.8rem;font-weight:700;">🔴 Sudah Berakhir</span>
@@ -311,7 +226,7 @@
     </div>
     @endif
 
-    <div style="display:flex;gap:.875rem;flex-wrap:wrap;">
+    <div style="display:flex;gap:.875rem;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('siswa.dashboard') }}" class="btn-outline" style="min-width:140px;text-align:center;">🏠 Dashboard</a>
         @if($belumVerif)
         <a href="{{ route('siswa.pendaftaran') }}" class="btn-primary" style="min-width:140px;text-align:center;">📋 Form Pendaftaran</a>
@@ -324,14 +239,29 @@
 
 </div>
 
-@if($selesaiTs || $mulaiTs)
+@if($bisaUjian && $ujianAda && ($selesaiTs || $mulaiTs))
 <script>
-    const targetTs = {{ $periodeAktif ? $selesaiTs : ($mulaiTs ?? 'null') }};
-    if (targetTs) {
+    // Only run countdown when the countdown elements are on the page
+    const countdownEl = document.getElementById('cd-days');
+    if (countdownEl) {
+        const targetTs = {{ $periodeAktif ? $selesaiTs : $mulaiTs }};
         function updateCountdown() {
             const now = new Date().getTime();
             const diff = targetTs - now;
-            if (diff <= 0) { location.reload(); return; }
+            if (diff <= 0) {
+                // Prevent infinite reload: only reload once
+                const reloadKey = 'cbt_reloaded_' + targetTs;
+                if (!sessionStorage.getItem(reloadKey)) {
+                    sessionStorage.setItem(reloadKey, '1');
+                    location.reload();
+                }
+                // Show zeros instead of keep reloading
+                ['days','hours','mins','secs'].forEach(id => {
+                    const el = document.getElementById('cd-' + id);
+                    if (el) el.textContent = '00';
+                });
+                return;
+            }
             const days  = Math.floor(diff / (1000*60*60*24));
             const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
             const mins  = Math.floor((diff % (1000*60*60)) / (1000*60));

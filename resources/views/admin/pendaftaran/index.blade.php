@@ -77,10 +77,16 @@
                     </td>
                     <td style="padding:.875rem 1rem;font-size:.875rem;color:#475569;white-space:nowrap;">{{ $p->jurusan->nama }}</td>
                     <td style="padding:.875rem 1rem;text-align:center;">
-                        @if(in_array($p->status, ['menunggu_verifikasi', 'pending']))
+                        @php
+                            $isRevision = $p->status == 'menunggu_verifikasi' && $p->berkas->where('status_verifikasi', 'valid')->count() > 0;
+                        @endphp
+
+                        @if($isRevision)
+                             <span style="background:#fef3c7;color:#d97706;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">🔄 REVISI MASUK</span>
+                        @elseif(in_array($p->status, ['menunggu_verifikasi', 'pending']))
                             <span style="background:#e0f2fe;color:#0284c7;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">⏳ PENDING</span>
                         @elseif($p->status == 'revisi')
-                            <span style="background:#fef3c7;color:#d97706;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">⚠️ REVISI</span>
+                            <span style="background:#fef3c7;color:#d97706;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">⚠️ PERLU REVISI</span>
                         @elseif(in_array($p->status, ['lolos_admin', 'lolos_administrasi']))
                             <span style="background:#d1fae5;color:#059669;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:700;">✅ LOLOS</span>
                         @else

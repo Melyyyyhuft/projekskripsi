@@ -91,6 +91,9 @@ class PendaftaranController extends Controller
             'alamat.required'           => 'Alamat rumah wajib diisi.',
         ]);
 
+        // Simpan status lama untuk keperluan notifikasi
+        $oldStatus = $existingPendaftaran ? $existingPendaftaran->status : null;
+
         // Validasi double submit (mencegah edit jika status sudah diproses)
         if ($existingPendaftaran && in_array($existingPendaftaran->status, ['lolos_admin', 'sudah_ujian', 'diterima', 'tidak_diterima'])) {
             return redirect()->route('siswa.dashboard')->with('error', 'Data pendaftaran Anda sudah diproses dan tidak dapat diubah lagi.');
@@ -127,46 +130,49 @@ class PendaftaranController extends Controller
         // Jangan hapus berkas lama, biarkan tersimpan sebagai riwayat
         // Berkas::where('pendaftaran_id', $pendaftaran->id)->delete();
 
-        // Simpan SKL
+        // Simpan SKL (Update jika sudah ada)
         if($request->hasFile('skl')) {
             $file = $request->file('skl');
             $path = $file->store('berkas_pendaftaran/skl', 'public');
-            Berkas::create([
-                'pendaftaran_id' => $pendaftaran->id,
-                'jenis_berkas' => 'skl',
-                'file_path' => $path,
-                'nama_file' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientOriginalExtension(),
-                'status_verifikasi' => 'pending'
-            ]);
+            Berkas::updateOrCreate(
+                ['pendaftaran_id' => $pendaftaran->id, 'jenis_berkas' => 'skl'],
+                [
+                    'file_path' => $path,
+                    'nama_file' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientOriginalExtension(),
+                    'status_verifikasi' => 'pending'
+                ]
+            );
         }
 
-        // Simpan Rapor
+        // Simpan Rapor (Update jika sudah ada)
         if($request->hasFile('rapor')) {
             $file = $request->file('rapor');
             $path = $file->store('berkas_pendaftaran/rapor', 'public');
-            Berkas::create([
-                'pendaftaran_id' => $pendaftaran->id,
-                'jenis_berkas' => 'rapor',
-                'file_path' => $path,
-                'nama_file' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientOriginalExtension(),
-                'status_verifikasi' => 'pending'
-            ]);
+            Berkas::updateOrCreate(
+                ['pendaftaran_id' => $pendaftaran->id, 'jenis_berkas' => 'rapor'],
+                [
+                    'file_path' => $path,
+                    'nama_file' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientOriginalExtension(),
+                    'status_verifikasi' => 'pending'
+                ]
+            );
         }
 
-        // Simpan Pas Foto
+        // Simpan Pas Foto (Update jika sudah ada)
         if($request->hasFile('pasfoto')) {
             $file = $request->file('pasfoto');
             $path = $file->store('berkas_pendaftaran/pasfoto', 'public');
-            Berkas::create([
-                'pendaftaran_id' => $pendaftaran->id,
-                'jenis_berkas' => 'pasfoto',
-                'file_path' => $path,
-                'nama_file' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientOriginalExtension(),
-                'status_verifikasi' => 'pending'
-            ]);
+            Berkas::updateOrCreate(
+                ['pendaftaran_id' => $pendaftaran->id, 'jenis_berkas' => 'pasfoto'],
+                [
+                    'file_path' => $path,
+                    'nama_file' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientOriginalExtension(),
+                    'status_verifikasi' => 'pending'
+                ]
+            );
         }
 
         // Simpan Sertifikat Prestasi (Multiple)
@@ -192,62 +198,76 @@ class PendaftaranController extends Controller
             }
         }
 
+        // Tentukan jenis notifikasi berdasarkan status sebelumnya
+        $isRevision = (isset($oldStatus) && $oldStatus == 'revisi');
+
         // Kirim Notifikasi ke Admin
         $admins = \App\Models\User::where('role', 'admin')->get();
-        \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranBaruNotification($pendaftaran));
+        if ($isRevision) {
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranRevisiNotification($pendaftaran));
+        } else {
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranBaruNotification($pendaftaran));
+        }
 
         return redirect()->route('siswa.dashboard')->with('success', 'Pendaftaran dan berkas berhasil disimpan!');
     }
 
-    public function reuploadBerkas(Request $request)
+    public function reuploadMass(Request $request)
     {
         $pendaftaran = Pendaftaran::where('user_id', Auth::id())->firstOrFail();
         
         if (in_array($pendaftaran->status, ['lolos_admin', 'sudah_ujian', 'siap_finalisasi', 'siap_diumumkan', 'diterima', 'ditolak'])) {
-            return back()->with('error', 'Pendaftaran sudah dikunci, tidak bisa re-upload berkas.');
+            return back()->with('error', 'Pendaftaran sudah dikunci, tidak bisa memperbarui berkas.');
         }
 
         $request->validate([
-            'jenis_berkas' => 'required|string|in:kk,akta,skl,rapor,pasfoto,sertifikat',
-            'file_reupload' => 'required|file|max:2048',
-            'berkas_id_lama' => 'required|exists:berkas,id'
+            'skl'     => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
+            'rapor'   => 'nullable|mimes:pdf|max:2048',
+            'pasfoto' => 'nullable|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $filesUploaded = 0;
+        $fields = ['skl', 'rapor', 'pasfoto'];
 
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
-            $file = $request->file('file_reupload');
-            $jenis = $request->jenis_berkas;
+            foreach ($fields as $field) {
+                if ($request->hasFile($field)) {
+                    $file = $request->file($field);
+                    $path = $file->store('berkas_pendaftaran/' . $field, 'public');
 
-            $path = $file->store('berkas_pendaftaran/'.$jenis, 'public');
+                    Berkas::updateOrCreate(
+                        ['pendaftaran_id' => $pendaftaran->id, 'jenis_berkas' => $field],
+                        [
+                            'file_path' => $path,
+                            'nama_file' => $file->getClientOriginalName(),
+                            'file_type' => $file->getClientOriginalExtension(),
+                            'status_verifikasi' => 'pending'
+                        ]
+                    );
+                    $filesUploaded++;
+                }
+            }
 
-            // Simpan sebagai baris baru untuk menjaga riwayat
-            $berkasLama = Berkas::find($request->berkas_id_lama);
+            if ($filesUploaded > 0) {
+                // Mengembalikan status ke menunggu_verifikasi
+                $pendaftaran->update(['status' => 'menunggu_verifikasi']);
 
-            Berkas::create([
-                'pendaftaran_id' => $pendaftaran->id,
-                'jenis_berkas' => $jenis,
-                'file_path' => $path,
-                'nama_file' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientOriginalExtension(),
-                'status_verifikasi' => 'pending',
-                'jenis_prestasi' => $berkasLama ? $berkasLama->jenis_prestasi : null,
-                'tingkat_prestasi' => $berkasLama ? $berkasLama->tingkat_prestasi : null
-            ]);
+                // Kirim Notifikasi ke Admin
+                $admins = \App\Models\User::where('role', 'admin')->get();
+                \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranRevisiNotification($pendaftaran));
 
-            // Mengembalikan status ke menunggu_verifikasi agar admin tahu ada berkas baru yang masuk
-            $pendaftaran->update(['status' => 'menunggu_verifikasi']);
+                \Illuminate\Support\Facades\DB::commit();
+                return redirect()->route('siswa.dashboard')->with('success', $filesUploaded . ' berkas berhasil diunggah ulang. Menunggu verifikasi ulang oleh admin.');
+            }
 
-            // Kirim Notifikasi ke Admin
-            $admins = \App\Models\User::where('role', 'admin')->get();
-            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\PendaftaranRevisiNotification($pendaftaran));
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'Tidak ada berkas yang dipilih untuk diunggah.');
 
-            \Illuminate\Support\Facades\DB::commit();
-
-            return back()->with('success', 'Berkas ' . strtoupper($jenis) . ' berhasil diupload ulang. Menunggu verifikasi ulang oleh admin.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            return back()->with('error', 'Gagal mengunggah berkas: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses unggahan: ' . $e->getMessage());
         }
     }
 }

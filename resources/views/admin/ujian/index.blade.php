@@ -8,93 +8,124 @@
         ✅ {{ session('success') }}
     </div>
 @endif
-@if(session('error'))
-    <div style="background:#fee2e2;color:#dc2626;padding:.875rem 1.25rem;border-radius:12px;margin-bottom:1.5rem;font-weight:600;display:flex;align-items:center;gap:.5rem;border:1px solid #fca5a5;">
-        ⚠️ {{ session('error') }}
-    </div>
-@endif
 
 {{-- ─── Page Header ─── --}}
 <div style="margin-bottom:2rem;">
     <h1 style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0 0 .25rem;">Modul Ujian CBT</h1>
-    <p style="color:#64748b;font-size:.9rem;margin:0;">Kelola sesi ujian online untuk calon siswa PPDB.</p>
+    <p style="color:#64748b;font-size:.9rem;margin:0;">Kelola periode global dan modul ujian per jurusan.</p>
 </div>
 
-{{-- ─── Daftar Ujian ─── --}}
-<div class="glass-card" style="margin-bottom:2rem;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
-        <h3 style="margin:0;font-size:1.1rem;font-weight:700;color:#0f172a;">📋 Daftar Sesi Ujian</h3>
-        <button onclick="toggleForm()" class="btn-primary" style="padding:.6rem 1.25rem;font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-            <span>➕</span> Buat Sesi Baru
-        </button>
+{{-- ─── Card Pengaturan CBT (Glassmorphism Gradient) ─── --}}
+<div style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); border-radius: 24px; padding: 2rem; margin-bottom: 2.5rem; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); backdrop-filter: blur(10px);">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+        <div style="background:white; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">⚙️</div>
+        <div>
+            <h3 style="margin:0; font-size:1.25rem; font-weight:800; color:#1e1b4b;">Pengaturan Global CBT</h3>
+            <p style="margin:0; font-size:.875rem; color:#4338ca; font-weight:500;">Tentukan periode aktif untuk seluruh sistem CBT.</p>
+        </div>
     </div>
 
-    {{-- Tabel responsif --}}
-    <div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;">
-        <table style="width:100%;border-collapse:collapse;min-width:600px;">
+    <form action="{{ route('admin.ujian.cbt_settings') }}" method="POST">
+        @csrf
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.5rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="color:#312e81; font-weight:700;">📅 Tanggal Mulai</label>
+                <input type="datetime-local" name="cbt_tgl_mulai" class="form-control" style="background:rgba(255,255,255,0.7); border-color:#c7d2fe;" value="{{ \Carbon\Carbon::parse($settings['cbt_tgl_mulai'] ?? now())->format('Y-m-d\TH:i') }}" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="color:#312e81; font-weight:700;">📅 Tanggal Selesai</label>
+                <input type="datetime-local" name="cbt_tgl_selesai" class="form-control" style="background:rgba(255,255,255,0.7); border-color:#c7d2fe;" value="{{ \Carbon\Carbon::parse($settings['cbt_tgl_selesai'] ?? now()->addDays(3))->format('Y-m-d\TH:i') }}" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="color:#312e81; font-weight:700;">⏱️ Durasi Default (Menit)</label>
+                <input type="number" name="cbt_durasi_default" class="form-control" style="background:rgba(255,255,255,0.7); border-color:#c7d2fe;" value="{{ $settings['cbt_durasi_default'] ?? 60 }}" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="color:#312e81; font-weight:700;">🔄 Maks. Percobaan</label>
+                <input type="number" name="cbt_max_percobaan" class="form-control" style="background:rgba(255,255,255,0.7); border-color:#c7d2fe;" value="{{ $settings['cbt_max_percobaan'] ?? 1 }}" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" style="color:#312e81; font-weight:700;">🚦 Status CBT</label>
+                <select name="cbt_status" class="form-control" style="background:rgba(255,255,255,0.7); border-color:#c7d2fe; font-weight:600;">
+                    <option value="aktif" {{ ($settings['cbt_status'] ?? '') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                    <option value="ditutup" {{ ($settings['cbt_status'] ?? '') == 'ditutup' ? 'selected' : '' }}>Ditutup</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-top:2rem; display:flex; justify-content:flex-end;">
+            <button type="submit" class="btn-primary" style="padding:.75rem 2.5rem; background:linear-gradient(to right, #4f46e5, #7c3aed); border:none; box-shadow: 0 4px 15px rgba(79,70,229,0.3);">
+                💾 Simpan Pengaturan
+            </button>
+        </div>
+    </form>
+</div>
+
+{{-- ─── Daftar Ujian Per Jurusan ─── --}}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+    <h2 style="font-size:1.25rem; font-weight:800; color:#1e293b; margin:0;">📋 Daftar Ujian Per Jurusan</h2>
+    <button onclick="toggleForm()" class="btn-primary" style="padding:.6rem 1.25rem; font-size:.875rem;">
+        ➕ Buat Modul Baru
+    </button>
+</div>
+
+<div class="glass-card" style="padding:0; overflow:hidden;">
+    <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
             <thead>
-                <tr style="background:#f8fafc;">
-                    <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Judul Ujian</th>
-                    <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Durasi</th>
-                    <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Jadwal</th>
-                    <th style="padding:.875rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Status</th>
-                    <th style="padding:.875rem 1rem;text-align:right;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Aksi</th>
+                <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                    <th style="padding:1rem 1.5rem; text-align:left; font-size:.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Jurusan</th>
+                    <th style="padding:1rem 1.5rem; text-align:center; font-size:.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Jumlah Soal</th>
+                    <th style="padding:1rem 1.5rem; text-align:center; font-size:.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Durasi</th>
+                    <th style="padding:1rem 1.5rem; text-align:center; font-size:.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
+                    <th style="padding:1rem 1.5rem; text-align:right; font-size:.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($ujians as $u)
-                <tr style="border-bottom:1px solid #f1f5f9;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                    <td style="padding:.875rem 1rem;">
-                        <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">{{ $u->judul }}</div>
-                        <div style="font-size:.75rem;color:#94a3b8;">
-                            @if($u->acak_soal) <span style="background:#eef2ff;color:#4f46e5;padding:.1rem .4rem;border-radius:4px;margin-right:.25rem;">🔀 Soal</span> @endif
-                            @if($u->acak_jawaban) <span style="background:#eef2ff;color:#4f46e5;padding:.1rem .4rem;border-radius:4px;">🔀 Jawaban</span> @endif
-                        </div>
+                <tr style="border-bottom:1px solid #f1f5f9; transition:all 0.2s;" onmouseover="this.style.background='rgba(248,250,252,0.8)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:1rem 1.5rem;">
+                        <div style="font-weight:700; color:#0f172a; font-size:.95rem;">{{ $u->jurusan->nama ?? 'Umum / Semua Jurusan' }}</div>
+                        <div style="font-size:.75rem; color:#94a3b8; margin-top:2px;">{{ $u->judul }}</div>
                     </td>
-                    <td style="padding:.875rem 1rem;">
-                        <span style="font-weight:600;color:#0f172a;">{{ $u->durasi_menit }}</span>
-                        <span style="color:#64748b;font-size:.875rem;"> menit</span>
+                    <td style="padding:1rem 1.5rem; text-align:center;">
+                        <span style="background:#f0f9ff; color:#0369a1; padding:.25rem .75rem; border-radius:999px; font-weight:700; font-size:.8rem;">
+                            {{ $u->soals_count }} Soal
+                        </span>
                     </td>
-                    <td style="padding:.875rem 1rem;font-size:.8rem;color:#475569;">
-                        @if($u->jadwal_mulai)
-                            <div>▶ {{ \Carbon\Carbon::parse($u->jadwal_mulai)->format('d M Y, H:i') }}</div>
-                            <div>⏹ {{ \Carbon\Carbon::parse($u->jadwal_selesai)->format('d M Y, H:i') }}</div>
-                        @else
-                            <span style="color:#cbd5e1;">—</span>
-                        @endif
+                    <td style="padding:1rem 1.5rem; text-align:center; color:#475569; font-weight:600; font-size:.9rem;">
+                        {{ $u->durasi_menit }} Menit
                     </td>
-                    <td style="padding:.875rem 1rem;text-align:center;">
-                        @if($u->is_tutup)
-                            <span style="background:#fee2e2;color:#dc2626;padding:.3rem .75rem;border-radius:999px;font-weight:700;font-size:.75rem;display:inline-flex;align-items:center;gap:.25rem;">🔒 Ditutup</span>
-                        @elseif($u->is_active)
-                            <span style="background:#d1fae5;color:#059669;padding:.3rem .75rem;border-radius:999px;font-weight:700;font-size:.75rem;display:inline-flex;align-items:center;gap:.25rem;">✅ Aktif</span>
-                        @else
-                            <span style="background:#f1f5f9;color:#94a3b8;padding:.3rem .75rem;border-radius:999px;font-size:.75rem;">Nonaktif</span>
-                        @endif
+                    <td style="padding:1rem 1.5rem; text-align:center;">
+                        <form action="{{ route('admin.ujian.toggle', $u->id) }}" method="POST">
+                            @csrf
+                            <button type="submit" style="background:none; border:none; cursor:pointer; padding:0;">
+                                @if($u->is_active)
+                                    <span style="background:#d1fae5; color:#059669; padding:.3rem .75rem; border-radius:999px; font-weight:700; font-size:.75rem; display:inline-flex; align-items:center; gap:4px;">
+                                        <span style="width:6px; height:6px; background:#10b981; border-radius:50%;"></span> Aktif
+                                    </span>
+                                @else
+                                    <span style="background:#f1f5f9; color:#64748b; padding:.3rem .75rem; border-radius:999px; font-weight:700; font-size:.75rem; display:inline-flex; align-items:center; gap:4px;">
+                                        <span style="width:6px; height:6px; background:#94a3b8; border-radius:50%;"></span> Nonaktif
+                                    </span>
+                                @endif
+                            </button>
+                        </form>
                     </td>
-                    <td style="padding:.875rem 1rem;text-align:right;">
-                        <div style="display:flex;gap:.5rem;justify-content:flex-end;align-items:center;">
-                            <a href="{{ route('admin.ujian.show', $u->id) }}" style="background:#3b82f6;color:white;padding:.45rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;">
-                                📝 Kelola
+                    <td style="padding:1rem 1.5rem; text-align:right;">
+                        <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+                            <a href="{{ route('admin.ujian.show', $u->id) }}" class="btn-primary" style="padding:.45rem .9rem; font-size:.8rem; border-radius:8px; display:inline-flex; align-items:center; gap:4px;">
+                                📝 Kelola Soal
                             </a>
-                            @if(!$u->is_tutup)
-                                <form action="{{ route('admin.ujian.tutup', $u->id) }}" method="POST" onsubmit="return confirm('Tutup ujian? Siswa yang belum ujian akan otomatis berstatus Tidak Mengikuti.');">
-                                    @csrf
-                                    <button type="submit" style="background:#ef4444;color:white;padding:.45rem .9rem;border-radius:8px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;white-space:nowrap;">
-                                        🔒 Tutup
-                                    </button>
-                                </form>
-                            @else
-                                <span style="font-size:.75rem;color:#94a3b8;white-space:nowrap;">Sudah ditutup</span>
-                            @endif
                         </div>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" style="padding:3rem;text-align:center;color:#94a3b8;">
-                        <div style="font-size:2rem;margin-bottom:.5rem;">📭</div>
-                        Belum ada sesi ujian. Klik <strong>Buat Sesi Baru</strong> untuk memulai.
+                    <td colspan="5" style="padding:4rem; text-align:center; color:#94a3b8;">
+                        <div style="font-size:3rem; margin-bottom:1rem;">📂</div>
+                        <p style="margin:0; font-weight:600;">Belum ada modul ujian per jurusan.</p>
+                        <p style="margin:0.5rem 0 0; font-size:.875rem;">Klik "Buat Modul Baru" untuk memulai.</p>
                     </td>
                 </tr>
                 @endforelse
@@ -103,50 +134,48 @@
     </div>
 </div>
 
-{{-- ─── Form Tambah (Collapsible) ─── --}}
-<div id="formContainer" class="glass-card" style="display:none;border-top:3px solid var(--primary);">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-        <h3 style="margin:0;color:var(--primary);font-size:1.1rem;font-weight:700;">➕ Buat Sesi Ujian Baru</h3>
-        <button onclick="toggleForm()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:#94a3b8;padding:.25rem;" title="Tutup">✕</button>
+{{-- ─── Form Tambah Modul (Collapsible) ─── --}}
+<div id="formContainer" class="glass-card" style="display:none; margin-top:2rem; border-top:4px solid #4f46e5;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h3 style="margin:0; font-weight:800; color:#1e293b;">➕ Buat Modul Ujian Baru</h3>
+        <button onclick="toggleForm()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:1.25rem;">✕</button>
     </div>
 
     <form action="{{ route('admin.ujian.store') }}" method="POST">
         @csrf
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" for="judul">Judul/Materi Ujian</label>
-                <input type="text" name="judul" id="judul" class="form-control" required placeholder="Contoh: Tes Skolastik & Jurusan">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1.5rem;">
+            <div class="form-group">
+                <label class="form-label">Nama/Judul Modul</label>
+                <input type="text" name="judul" class="form-control" placeholder="Contoh: Tes Skolastik Jurusan RPL" required>
             </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" for="durasi_menit">Durasi (Menit)</label>
-                <input type="number" name="durasi_menit" id="durasi_menit" class="form-control" required placeholder="Contoh: 60">
+            <div class="form-group">
+                <label class="form-label">Tentukan Jurusan</label>
+                <select name="jurusan_id" class="form-control" required>
+                    <option value="">-- Pilih Jurusan --</option>
+                    @foreach($jurusans as $j)
+                        <option value="{{ $j->id }}">{{ $j->nama }}</option>
+                    @endforeach
+                </select>
+                <small style="color:#64748b; font-size:.75rem;">Siswa jurusan ini hanya akan melihat modul ini.</small>
             </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" for="jadwal_mulai">📅 Tanggal Mulai</label>
-                <input type="datetime-local" name="jadwal_mulai" id="jadwal_mulai" class="form-control">
-                <small style="color:var(--gray-text);font-size:.75rem;">Kosongkan jika tanpa batas waktu.</small>
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" for="jadwal_selesai">📅 Tanggal Selesai</label>
-                <input type="datetime-local" name="jadwal_selesai" id="jadwal_selesai" class="form-control">
-                <small style="color:var(--gray-text);font-size:.75rem;">Setelah ini siswa tidak bisa akses.</small>
+            <div class="form-group">
+                <label class="form-label">Durasi (Menit)</label>
+                <input type="number" name="durasi_menit" class="form-control" value="{{ $settings['cbt_durasi_default'] ?? 60 }}" required>
             </div>
         </div>
 
-        <div style="background:#f8fafc;padding:1rem;border-radius:10px;border:1px solid #e2e8f0;margin-top:1.25rem;display:flex;gap:2rem;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;font-size:.9rem;">
-                <input type="checkbox" name="acak_soal" id="acak_soal" value="1" style="width:18px;height:18px;accent-color:var(--primary);">
-                🔀 Acak Urutan Soal
+        <div style="background:#f8fafc; padding:1.25rem; border-radius:12px; border:1px solid #e2e8f0; margin-top:1rem; display:flex; gap:2rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:600; font-size:.9rem; color:#475569;">
+                <input type="checkbox" name="acak_soal" value="1" style="width:18px; height:18px; accent-color:#4f46e5;"> Acak Soal
             </label>
-            <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-weight:600;font-size:.9rem;">
-                <input type="checkbox" name="acak_jawaban" id="acak_jawaban" value="1" style="width:18px;height:18px;accent-color:var(--primary);">
-                🔀 Acak Pilihan Jawaban
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:600; font-size:.9rem; color:#475569;">
+                <input type="checkbox" name="acak_jawaban" value="1" style="width:18px; height:18px; accent-color:#4f46e5;"> Acak Jawaban
             </label>
         </div>
 
-        <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
+        <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
             <button type="button" onclick="toggleForm()" class="btn-outline">Batal</button>
-            <button type="submit" class="btn-primary" style="padding:.75rem 2rem;">✅ Simpan Sesi Ujian</button>
+            <button type="submit" class="btn-primary" style="padding:.75rem 2rem;">🚀 Buat Modul Ujian</button>
         </div>
     </form>
 </div>
@@ -155,7 +184,10 @@
     function toggleForm() {
         const fc = document.getElementById('formContainer');
         fc.style.display = fc.style.display === 'none' ? 'block' : 'none';
-        if (fc.style.display === 'block') fc.scrollIntoView({behavior: 'smooth', block: 'start'});
+        if(fc.style.display === 'block') {
+            fc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 </script>
+
 @endsection

@@ -27,10 +27,37 @@ class HasilController extends Controller
         $hasilUjian = HasilUjian::where('user_id', Auth::id())->first();
 
         // Ambil pengaturan sekolah
-        $settingRows = Pengaturan::whereIn('key', ['nama_sekolah', 'logo_sekolah', 'tahun_ajaran', 'tgl_pengumuman'])
-            ->pluck('value', 'key');
-        $settings = $settingRows->toArray();
+        $settings = Pengaturan::pluck('value', 'key')->toArray();
 
         return view('siswa.hasil', compact('pendaftaran', 'hasil', 'hasilUjian', 'settings'));
+    }
+
+    /**
+     * Download Surat Hasil PDF
+     */
+    public function downloadSurat()
+    {
+        $pendaftaran = Pendaftaran::with(['user', 'jurusan'])
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $hasil = HasilSeleksi::where('pendaftaran_id', $pendaftaran->id)
+            ->where('is_finalisasi', true)
+            ->firstOrFail();
+
+        if ($hasil->kategori_kelulusan !== 'DITERIMA') {
+            return back()->with('error', 'Surat hasil hanya tersedia untuk siswa yang diterima.');
+        }
+
+        $settings = Pengaturan::pluck('value', 'key')->toArray();
+
+        // Jika package belum terinstall di env agent, kita beri pesan error yang baik
+        if (!class_exists('\Barryvdh\DomPDF\Facade\Pdf')) {
+            return back()->with('error', 'Fitur PDF tidak tersedia. Mohon hubungi administrator untuk menginstal dompdf.');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('siswa.hasil_pdf', compact('pendaftaran', 'hasil', 'settings'));
+        
+        return $pdf->download('Surat_Hasil_PPDB_' . $pendaftaran->nomor_pendaftaran . '.pdf');
     }
 }

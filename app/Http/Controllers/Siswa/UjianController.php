@@ -33,28 +33,33 @@ class UjianController extends Controller
         // Ambil ujian aktif untuk ditampilkan di halaman info
         $ujianAktif = Ujian::where('is_active', true)->where('is_tutup', false)->first();
 
-        // Pengecekan Periode CBT Global dari Pengaturan
+        // Pengecekan Periode CBT Global dari Pengaturan Baru
         $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
-        $tglMulaiGlobal = $settings['tgl_mulai_cbt'] ?? null;
-        $durasiGlobal = (int) ($settings['durasi_cbt'] ?? 0);
+        $start = \Carbon\Carbon::parse($settings['cbt_tgl_mulai'] ?? now());
+        $end   = \Carbon\Carbon::parse($settings['cbt_tgl_selesai'] ?? now()->addDays(3));
+        $statusCbt = $settings['cbt_status'] ?? 'aktif';
         $now = now();
         
-        if ($tglMulaiGlobal) {
-            $start = \Carbon\Carbon::parse($tglMulaiGlobal);
-            $end = (clone $start)->addDays($durasiGlobal)->endOfDay();
-            
-            if ($now->lt($start)) {
-                $pesan = 'Ujian belum dimulai. Periode ujian CBT: ' . $start->format('d M Y') . ' s/d ' . $end->format('d M Y');
-                $ujian = $ujianAktif;
-                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
-            }
-            if ($now->gt($end)) {
-                $pesan = 'Periode ujian CBT telah berakhir pada ' . $end->format('d M Y') . '.';
-                $ujian = $ujianAktif;
-                return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
-            }
+        // 1. Cek Status Global
+        if ($statusCbt !== 'aktif') {
+            $pesan = 'Sistem ujian CBT saat ini sedang ditutup oleh panitia.';
+            $ujian = null;
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
 
+        // 2. Cek Periode Global
+        if ($now->lt($start)) {
+            $pesan = 'Ujian belum dimulai. Periode CBT: ' . $start->format('d M Y, H:i') . ' s/d ' . $end->format('d M Y, H:i');
+            $ujian = null;
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
+        }
+        if ($now->gt($end)) {
+            $pesan = 'Masa ujian CBT telah berakhir pada ' . $end->format('d M Y, H:i') . '.';
+            $ujian = null;
+            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
+        }
+
+        // 3. Cek Syarat Pendaftaran
         if (!$pendaftaran || !in_array($pendaftaran->status, $statusBisaUjian)) {
             $pesan = 'Anda belum memenuhi syarat untuk mengikuti ujian.';
             if ($pendaftaran) {
@@ -70,26 +75,17 @@ class UjianController extends Controller
                 ];
                 $pesan = $statusPesan[$pendaftaran->status] ?? 'Status pendaftaran: ' . $pendaftaran->status;
             }
-            $ujian = $ujianAktif;
+            $ujian = null;
             return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
 
-        // Ambil ujian aktif (belum ditutup)
-        $ujian = $ujianAktif;
+        // 4. Ambil Ujian Sesuai Jurusan Siswa
+        $ujian = Ujian::where('jurusan_id', $pendaftaran->jurusan_id)
+                      ->where('is_active', true)
+                      ->first();
 
         if (!$ujian) {
-            $pesan = 'Ujian belum tersedia. Silakan tunggu informasi dari panitia.';
-            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
-        }
-
-        // Cek periode jadwal jika diset
-        $now = now();
-        if ($ujian->jadwal_mulai && $now->lt(\Carbon\Carbon::parse($ujian->jadwal_mulai))) {
-            $pesan = 'Ujian belum dimulai. Jadwal mulai: ' . \Carbon\Carbon::parse($ujian->jadwal_mulai)->format('d M Y H:i');
-            return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
-        }
-        if ($ujian->jadwal_selesai && $now->gt(\Carbon\Carbon::parse($ujian->jadwal_selesai))) {
-            $pesan = 'Periode ujian telah berakhir pada ' . \Carbon\Carbon::parse($ujian->jadwal_selesai)->format('d M Y H:i') . '.';
+            $pesan = 'Modul ujian untuk jurusan ' . ($pendaftaran->jurusan->nama ?? 'Anda') . ' belum tersedia atau dinonaktifkan.';
             return view('siswa.ujian_info', compact('pendaftaran', 'pesan', 'hasilUjian', 'ujian', 'settings'));
         }
 

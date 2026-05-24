@@ -10,20 +10,36 @@
             ← Kembali ke Daftar Modul
         </a>
         <h1 style="font-size:1.4rem;font-weight:800;color:#0f172a;margin:.5rem 0 .25rem;">{{ $ujian->judul }}</h1>
+        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+            <span style="background:#e0f2fe; color:#0369a1; padding:.2rem .6rem; border-radius:6px; font-size:.75rem; font-weight:700; text-transform:uppercase;">
+                📍 Jurusan: {{ $ujian->jurusan->nama ?? 'Umum / Semua' }}
+            </span>
+        </div>
         <p style="color:#64748b;font-size:.875rem;margin:0;">Kelola soal dan pengaturan sesi ujian ini.</p>
     </div>
-    @if(!$ujian->is_tutup)
+    @if($ujian->is_tutup || ($ujian->jadwal_selesai && now()->gt($ujian->jadwal_selesai)))
+        <div style="display:flex; gap:.5rem;">
+            <form action="{{ route('admin.ujian.perpanjang', $ujian->id) }}" method="POST">
+                @csrf
+                <button type="submit" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:.65rem 1.25rem;border-radius:12px;font-weight:700;border:none;cursor:pointer;font-size:.875rem;">
+                    ⏳ Tambah 1 Hari
+                </button>
+            </form>
+            <form action="{{ route('admin.ujian.buka', $ujian->id) }}" method="POST">
+                @csrf
+                <button type="submit" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;padding:.65rem 1.25rem;border-radius:12px;font-weight:700;border:none;cursor:pointer;font-size:.875rem;">
+                    🔓 Buka Kembali
+                </button>
+            </form>
+        </div>
+    @else
         <form action="{{ route('admin.ujian.tutup', $ujian->id) }}" method="POST"
               onsubmit="return confirm('🔒 Tutup Ujian?\n\nSiswa yang belum ujian akan otomatis berstatus Tidak Mengikuti Ujian.');">
             @csrf
             <button type="submit" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;padding:.65rem 1.25rem;border-radius:12px;font-weight:700;border:none;cursor:pointer;font-size:.875rem;">
-                🔒 Tutup Ujian
+                🔒 Tutup Ujian Manual
             </button>
         </form>
-    @else
-        <span style="background:#fee2e2;color:#dc2626;padding:.6rem 1.25rem;border-radius:12px;font-weight:700;font-size:.875rem;display:inline-flex;align-items:center;gap:.4rem;">
-            🔒 Ujian Sudah Ditutup
-        </span>
     @endif
 </div>
 
@@ -31,6 +47,17 @@
     <div style="background:#d1fae5;color:#059669;padding:.875rem 1.25rem;border-radius:12px;margin-bottom:1.5rem;font-weight:600;border:1px solid #a7f3d0;">
         ✅ {{ session('success') }}
     </div>
+@endif
+
+@if(!$ujian->is_tutup && $ujian->jadwal_selesai && now()->gt($ujian->jadwal_selesai))
+    <div style="background:#fff7ed;color:#9a3412;padding:1rem 1.5rem;border-radius:12px;margin-bottom:1.5rem;font-weight:700;border:1px solid #fed7aa;display:flex;align-items:center;gap:.75rem;animation:pulse 2s infinite;">
+        <span style="font-size:1.5rem;">⚠️</span>
+        <div>
+            Waktu ujian telah terlewati! 
+            <span style="font-weight:500;display:block;font-size:.85rem;margin-top:.2rem;">Siswa tidak lagi dapat memulai ujian. Silakan perpanjang waktu atau tutup ujian untuk memproses hasil.</span>
+        </div>
+    </div>
+    <style> @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } } </style>
 @endif
 
 {{-- ─── Info Modul ─── --}}
@@ -132,14 +159,28 @@
             <p style="font-size:.8rem;color:var(--gray-text);margin:.35rem 0 0;">Centang soal yang ingin dimasukkan ke modul ini.</p>
         </div>
 
-        <form action="{{ route('admin.ujian.show', $ujian->id) }}" method="GET" style="display:flex;gap:.5rem;align-items:center;">
-            <label style="font-size:.8rem;font-weight:600;color:#475569;">Filter Tahun:</label>
-            <select name="tahun_ajaran" class="form-control" style="padding:.5rem .75rem;font-size:.85rem;height:auto;border-radius:8px;" onchange="this.form.submit()">
-                <option value="">Semua</option>
-                @foreach($tahunAjarans as $ta)
-                    <option value="{{ $ta }}" {{ request('tahun_ajaran') == $ta ? 'selected' : '' }}>{{ $ta }}</option>
-                @endforeach
-            </select>
+        <form action="{{ route('admin.ujian.show', $ujian->id) }}" method="GET" style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+            <div style="display:flex;gap:.4rem;align-items:center;">
+                <label style="font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;">Thn Ajaran:</label>
+                <select name="tahun_ajaran" class="form-control" style="padding:.4rem .75rem;font-size:.85rem;height:auto;border-radius:8px;width:120px;" onchange="this.form.submit()">
+                    <option value="">Semua</option>
+                    @foreach($tahunAjarans as $ta)
+                        <option value="{{ $ta }}" {{ request('tahun_ajaran') == $ta ? 'selected' : '' }}>{{ $ta }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="display:flex;gap:.4rem;align-items:center;">
+                <label style="font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;">Paket File:</label>
+                <select name="nama_paket" class="form-control" style="padding:.4rem .75rem;font-size:.85rem;height:auto;border-radius:8px;width:160px;" onchange="this.form.submit()">
+                    <option value="">Semua</option>
+                    @foreach($namaPakets as $np)
+                        <option value="{{ $np }}" {{ request('nama_paket') == $np ? 'selected' : '' }}>{{ $np }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @if(request('tahun_ajaran') || request('nama_paket'))
+                <a href="{{ route('admin.ujian.show', $ujian->id) }}" style="text-decoration:none;color:#ef4444;font-size:.85rem;font-weight:700;">✕ Reset</a>
+            @endif
         </form>
     </div>
 
@@ -163,7 +204,10 @@
                             <input type="checkbox" name="soal_ids[]" value="{{ $bs->id }}" class="checkSoal" style="width:16px;height:16px;accent-color:var(--primary);">
                         </td>
                         <td style="padding:.75rem 1rem;">
-                            <div style="font-size:.9rem;font-weight:500;color:#0f172a;">{{ Str::limit($bs->teks_soal, 80) }}</div>
+                            <div style="font-size:.9rem;font-weight:500;color:#0f172a;">{{ Str::limit($bs->teks_soal, 100) }}</div>
+                            <div style="font-size:.7rem;color:#94a3b8;margin-top:.2rem;">
+                                📁 Paket: {{ $bs->nama_paket ?? 'Manual Input' }}
+                            </div>
                         </td>
                         <td style="padding:.75rem 1rem;text-align:center;">
                             <span style="background:#f1f5f9;color:#475569;padding:.2rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600;">{{ $bs->tahun_ajaran }}</span>

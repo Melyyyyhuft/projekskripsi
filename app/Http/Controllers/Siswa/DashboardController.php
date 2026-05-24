@@ -9,9 +9,33 @@ use App\Models\Pendaftaran;
 use App\Models\Ujian;
 use App\Models\HasilUjian;
 use App\Models\HasilSeleksi;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
+    /**
+     * Upload / update foto profil siswa (dari modal di layout).
+     */
+    public function updateFoto(Request $request)
+    {
+        $request->validate([
+            'foto' => 'required|image|mimes:jpeg,png,webp|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        // Hapus foto lama jika ada
+        if ($user->foto && Storage::disk('public')->exists($user->foto)) {
+            Storage::disk('public')->delete($user->foto);
+        }
+
+        $path = $request->file('foto')->store('foto-profil', 'public');
+        $user->foto = $path;
+        $user->save();
+
+        return back()->with('success_foto', 'Foto profil berhasil diperbarui!');
+    }
+
     public function index()
     {
         $user_id     = Auth::id();

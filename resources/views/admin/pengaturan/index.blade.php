@@ -29,7 +29,10 @@
         🏫 Umum
     </button>
     <button class="tab-btn" onclick="openTab(event,'tab-periode')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
-        📅 Periode & Bobot
+        📅 Seleksi & CBT
+    </button>
+    <button class="tab-btn" onclick="openTab(event,'tab-sosmed')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
+        📱 Media Sosial
     </button>
     <button class="tab-btn" onclick="openTab(event,'tab-jurusan')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
         🎓 Kuota Jurusan
@@ -42,16 +45,30 @@
         <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">🏫 Informasi Umum Sekolah</h3>
         <form action="{{ route('admin.pengaturan.umum') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;max-width:640px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Nama Sekolah</label>
+                    <input type="text" name="nama_sekolah" class="form-control" value="{{ $settings['nama_sekolah'] ?? 'SMK MITRA BINTARO' }}" required>
+                </div>
                 <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">Tahun Ajaran Aktif</label>
                     <input type="text" name="tahun_ajaran" class="form-control" value="{{ $settings['tahun_ajaran'] ?? '2026/2027' }}" required>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Logo Sekolah</label>
+                    <input type="file" name="logo_sekolah" class="form-control">
+                    @if($settings['logo_sekolah'] ?? '')
+                        <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                            <img src="{{ asset('storage/'.$settings['logo_sekolah']) }}" height="30">
+                            <span style="font-size:0.75rem; color:var(--gray-text);">Logo aktif</span>
+                        </div>
+                    @endif
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">Status PPDB</label>
                     <select name="status_ppdb" class="form-control" required>
-                        <option value="buka" {{ ($settings['status_ppdb'] ?? '') == 'buka' ? 'selected' : '' }}>🟢 Buka</option>
-                        <option value="tutup" {{ ($settings['status_ppdb'] ?? '') == 'tutup' ? 'selected' : '' }}>🔴 Tutup</option>
+                        <option value="buka" {{ ($settings['status_ppdb'] ?? '') == 'buka' ? 'selected' : '' }}>🟢 Buka (Siswa dapat mendaftar)</option>
+                        <option value="tutup" {{ ($settings['status_ppdb'] ?? '') == 'tutup' ? 'selected' : '' }}>🔴 Tutup (Pendaftaran dikunci)</option>
                     </select>
                 </div>
             </div>
@@ -64,7 +81,7 @@
 
 {{-- Tab: Periode & Bobot --}}
 <div id="tab-periode" class="tab-pane" style="display:none;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+    <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:1.5rem;">
         {{-- Periode --}}
         <div class="glass-card">
             <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📅 Periode Pendaftaran</h3>
@@ -72,22 +89,22 @@
                 @csrf
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group">
-                        <label class="form-label">Tanggal Buka Pendaftaran</label>
+                        <label class="form-label">Tgl Buka</label>
                         <input type="date" name="tgl_buka" class="form-control" value="{{ $settings['tgl_buka'] ?? '' }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Tanggal Tutup Pendaftaran</label>
+                        <label class="form-label">Tgl Tutup</label>
                         <input type="date" name="tgl_tutup" class="form-control" value="{{ $settings['tgl_tutup'] ?? '' }}" required>
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group">
-                        <label class="form-label">Tanggal Mulai CBT</label>
+                        <label class="form-label">Tgl Mulai CBT</label>
                         <input type="date" name="tgl_mulai_cbt" class="form-control" value="{{ $settings['tgl_mulai_cbt'] ?? '' }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Durasi Ujian (Hari)</label>
-                        <input type="number" name="durasi_cbt" class="form-control" value="{{ $settings['durasi_cbt'] ?? '' }}" required min="1" placeholder="Contoh: 3">
+                        <label class="form-label">Durasi (Hari)</label>
+                        <input type="number" name="durasi_cbt" class="form-control" value="{{ $settings['durasi_cbt'] ?? '' }}" required min="1">
                     </div>
                 </div>
                 <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Periode</button>
@@ -96,23 +113,56 @@
 
         {{-- Bobot --}}
         <div class="glass-card">
-            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">⚖️ Bobot Nilai Seleksi</h3>
+            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">⚖️ Bobot Nilai & Ambang Batas</h3>
             <form action="{{ route('admin.pengaturan.bobot') }}" method="POST">
                 @csrf
-                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:1rem;margin-bottom:1.25rem;font-size:.82rem;color:#1e40af;">
-                    💡 Total bobot harus berjumlah <strong>100%</strong>. Rumus: <code>(Bobot Ujian × Nilai CBT) + (Bobot Rapor × Nilai Rapor)</code>
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:0.75rem;margin-bottom:1rem;font-size:.78rem;color:#1e40af;">
+                    💡 Rumus: <code>(Bobot Ujian × Nilai CBT) + (Bobot Rapor × Nilai Rapor)</code>. Total bobot harus 100%.
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Bobot Ujian (%)</label>
+                        <input type="number" name="bobot_ujian" class="form-control" value="{{ $settings['bobot_ujian'] ?? 30 }}" required min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bobot Rapor (%)</label>
+                        <input type="number" name="bobot_rapor" class="form-control" value="{{ $settings['bobot_rapor'] ?? 70 }}" required min="0" max="100">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Bobot Ujian Online (%)</label>
-                    <input type="number" name="bobot_ujian" class="form-control" value="{{ $settings['bobot_ujian'] ?? 60 }}" required min="0" max="100">
+                    <label class="form-label">Ambang Batas Kelas Unggulan</label>
+                    <input type="number" step="0.1" name="ambang_unggulan" class="form-control" value="{{ $settings['ambang_unggulan'] ?? 70.0 }}" required>
+                    <small style="color:var(--gray-text);font-size:0.75rem;">Siswa dengan skor akhir di atas nilai ini akan masuk kelas Unggulan.</small>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Bobot Nilai Rapor (%)</label>
-                    <input type="number" name="bobot_rapor" class="form-control" value="{{ $settings['bobot_rapor'] ?? 40 }}" required min="0" max="100">
-                </div>
-                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Bobot</button>
+                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Bobot & Ambang Batas</button>
             </form>
         </div>
+    </div>
+</div>
+
+{{-- Tab: Media Sosial --}}
+<div id="tab-sosmed" class="tab-pane" style="display:none;">
+    <div class="glass-card" style="max-width: 600px;">
+        <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📱 Konfigurasi Media Sosial</h3>
+        <p style="color:var(--gray-text); font-size:0.875rem; margin-bottom:1.5rem;">Link ini akan otomatis ditampilkan pada footer landing page.</p>
+        <form action="{{ route('admin.pengaturan.sosmed') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label class="form-label"><i class="fa-brands fa-tiktok"></i> TikTok URL</label>
+                <input type="url" name="tiktok" class="form-control" value="{{ $settings['tiktok'] ?? '' }}" placeholder="https://tiktok.com/@username">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fa-brands fa-instagram"></i> Instagram URL</label>
+                <input type="url" name="instagram" class="form-control" value="{{ $settings['instagram'] ?? '' }}" placeholder="https://instagram.com/username">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fa-brands fa-youtube"></i> YouTube URL</label>
+                <input type="url" name="youtube" class="form-control" value="{{ $settings['youtube'] ?? '' }}" placeholder="https://youtube.com/@channel">
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+                <button type="submit" class="btn-primary" style="padding:.75rem 2rem;">💾 Simpan Media Sosial</button>
+            </div>
+        </form>
     </div>
 </div>
 

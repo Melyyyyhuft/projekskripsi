@@ -30,10 +30,11 @@
                 $type = $notif->data['type'] ?? 'baru';
                 $isRead = !is_null($notif->read_at);
                 
-                $bgColor = $isRead ? '#f9fafb' : ($type == 'revisi' ? '#fffbeb' : '#f0fdf4');
-                $accentColor = $type == 'revisi' ? '#f59e0b' : '#10b981';
+                // Color mapping: Yellow for revisi, Green for baru
+                $bgColor = $isRead ? '#f9fafb' : ($type == 'revisi' ? '#fefce8' : '#f0fdf4');
+                $accentColor = $type == 'revisi' ? '#eab308' : '#10b981';
                 $icon = $type == 'revisi' ? '🔄' : '🔔';
-                $title = $type == 'revisi' ? 'Revisi Masuk' : 'Pendaftaran Baru';
+                $title = $type == 'revisi' ? 'REVISI PENDAFTARAN' : 'PENDAFTARAN BARU';
             @endphp
             <div style="padding: 1rem; border: 1px solid rgba(0,0,0,0.05); border-radius: var(--radius-md); background: {{ $bgColor }}; border-left: 4px solid {{ $isRead ? '#e5e7eb' : $accentColor }}; display: flex; justify-content: space-between; align-items: center;">
                 <div>

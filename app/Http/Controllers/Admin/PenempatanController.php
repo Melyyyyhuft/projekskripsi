@@ -12,7 +12,7 @@ use App\Models\Jurusan;
 class PenempatanController extends Controller
 {
     // Ambang batas penempatan kelas
-    const AMBANG_UNGGULAN = 85;
+    const AMBANG_UNGGULAN = 70;
 
     // Bonus sertifikat (hanya sertifikat terbaik yang dihitung)
     const BONUS_SERTIFIKAT = [
@@ -20,8 +20,6 @@ class PenempatanController extends Controller
         'Nasional'       => 2,
         'Provinsi'       => 1,
         'Kabupaten/Kota' => 0.5,
-        'Kecamatan'      => 0,
-        'Sekolah'        => 0,
     ];
 
     /**
@@ -32,14 +30,14 @@ class PenempatanController extends Controller
         $jurusans      = Jurusan::orderBy('nama')->get();
         $filterJurusan = $request->get('jurusan_id');
 
-        // Status yang relevan untuk halaman ini
+        // Target: Siswa yang lolos verifikasi (lolos_admin) atau sudah punya hasil
         $statusRelevan = [
             'lolos_admin',
             'sudah_ujian',
-            'tidak_mengikuti_ujian',
             'siap_finalisasi',
             'siap_diumumkan',
             'gugur',
+            'tidak_mengikuti_ujian'
         ];
 
         $query = Pendaftaran::with(['user', 'jurusan', 'berkas', 'hasilSeleksi'])
@@ -51,79 +49,59 @@ class PenempatanController extends Controller
 
         $pendaftarans = $query->orderBy('jurusan_id')->orderBy('created_at')->get();
 
-        // Bangun data rows untuk view
         $rows = $pendaftarans->map(function ($p) {
             $hasilUjian      = HasilUjian::where('user_id', $p->user_id)->first();
             $nilaiCBT        = $hasilUjian ? (float) $hasilUjian->skor : null;
             $nilaiRapor      = (float) $p->nilai_rapor;
 
-            // Cari sertifikat terbaik yang valid
-            $sertifikatTerbaik = null;
-            $bonusSertifikat   = 0;
-            $sertifikats = $p->berkas
-                ->where('jenis_berkas', 'sertifikat')
-                ->where('status_verifikasi', 'valid');
-
-            foreach ($sertifikats as $sert) {
-                $val = self::BONUS_SERTIFIKAT[$sert->tingkat_prestasi] ?? 0;
-                if ($val > $bonusSertifikat) {
-                    $bonusSertifikat   = $val;
-                    $sertifikatTerbaik = $sert->tingkat_prestasi;
-                }
+            // Jika sudah dihitung (sudah ada di hasil_seleksis), gunakan data yang disimpan
+            if ($p->hasilSeleksi) {
+                return [
+                    'pendaftaran'       => $p,
+                    'nama'              => $p->user->name,
+                    'jurusan'           => $p->jurusan->nama,
+                    'nilai_rapor'       => $nilaiRapor,
+                    'nilai_cbt'         => $nilaiCBT,
+                    'bonus_sertifikat'  => (float) $p->hasilSeleksi->bonus_sertifikat,
+                    'skor_akhir'        => (float) $p->hasilSeleksi->skor_akhir,
+                    'penempatan'        => $p->hasilSeleksi->penempatan_kelas,
+                    'status'            => $this->resolveStatusLabel($p, $nilaiCBT),
+                    'hasil_seleksi'     => $p->hasilSeleksi,
+                    'sudah_publish'     => $p->hasilSeleksi->is_finalisasi,
+                ];
             }
 
-            // Hitung skor akhir hanya jika sudah CBT
-            $skorAkhir  = null;
-            $penempatan = null;
-            if ($nilaiCBT !== null) {
-                $skorAkhir  = round((0.7 * $nilaiRapor) + (0.3 * $nilaiCBT) + $bonusSertifikat, 2);
-                $penempatan = $skorAkhir >= self::AMBANG_UNGGULAN ? 'Unggulan' : 'Reguler';
-            }
-
-            // Status tampilan
-            $statusLabel = $this->resolveStatusLabel($p, $nilaiCBT);
-
+            // Jika belum dihitung, hitung sementara untuk tampilan preview (opsional, tapi user minta review sebelum publish)
+            // Namun Hitung Semua akan menyimpan draft. Jadi di sini tampilkan null jika belum proses.
             return [
                 'pendaftaran'       => $p,
                 'nama'              => $p->user->name,
                 'jurusan'           => $p->jurusan->nama,
                 'nilai_rapor'       => $nilaiRapor,
                 'nilai_cbt'         => $nilaiCBT,
-                'sertifikat_level'  => $sertifikatTerbaik,
-                'bonus_sertifikat'  => $bonusSertifikat,
-                'skor_akhir'        => $skorAkhir,
-                'penempatan'        => $penempatan,
-                'status'            => $statusLabel,
-                'hasil_seleksi'     => $p->hasilSeleksi,
-                'sudah_publish'     => $p->hasilSeleksi && $p->hasilSeleksi->is_finalisasi,
+                'bonus_sertifikat'  => 0,
+                'skor_akhir'        => null,
+                'penempatan'        => null,
+                'status'            => $this->resolveStatusLabel($p, $nilaiCBT),
+                'hasil_seleksi'     => null,
+                'sudah_publish'     => false,
             ];
         });
 
-        // Status keseluruhan sistem
-        $sudahPublish     = HasilSeleksi::where('is_finalisasi', true)->exists();
-        $adaDraft         = HasilSeleksi::where('is_finalisasi', false)->exists();
-
-        // Statistik
-        $totalSiswa      = $rows->count();
-        $totalDiterima   = $rows->where('status', 'Diterima')->count();
-        $totalTidakHadir = $rows->where('status', 'Tidak Hadir CBT')->count();
+        // Dashboard Stats
+        $totalSiswa         = $rows->count();
+        $totalDiterima      = $rows->where('status', 'Diterima')->count();
         $totalTidakDiterima = $rows->where('status', 'Tidak Diterima')->count();
-        $sudahDihitung   = $rows->filter(fn($r) => $r['skor_akhir'] !== null && $r['hasil_seleksi'])->count();
+        $totalGugur         = $rows->where('status', 'Tidak Hadir CBT')->count();
+        $sudahDihitung      = $rows->where('skor_akhir', '!==', null)->count();
+        $sudahPublish       = HasilSeleksi::where('is_finalisasi', true)->exists();
 
-        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        // Ambil settings untuk display formula
+        $settings = \App\Models\Pengaturan::whereIn('key', ['bobot_ujian', 'bobot_rapor', 'ambang_unggulan'])->pluck('value', 'key');
 
         return view('admin.penempatan.index', compact(
-            'rows',
-            'jurusans',
-            'filterJurusan',
-            'totalSiswa',
-            'totalDiterima',
-            'totalTidakHadir',
-            'totalTidakDiterima',
-            'sudahDihitung',
-            'sudahPublish',
-            'adaDraft',
-            'settings'
+            'rows', 'jurusans', 'filterJurusan', 'totalSiswa', 'totalDiterima', 
+            'totalTidakDiterima', 'totalGugur', 'sudahDihitung', 'sudahPublish', 'settings'
         ));
     }
 
@@ -132,90 +110,68 @@ class PenempatanController extends Controller
      */
     public function prosesSeleksi(Request $request)
     {
-        if (HasilSeleksi::where('is_finalisasi', true)->exists()) {
-            return redirect()->route('admin.penempatan.index')
-                ->with('error', 'Pengumuman sudah dipublish dan tidak dapat dihitung ulang.');
-        }
+        // Ambil pengaturan dinamis
+        $weights = \App\Models\Pengaturan::whereIn('key', ['bobot_ujian', 'bobot_rapor', 'ambang_unggulan'])->pluck('value', 'key');
+        $wUjian    = (float) ($weights['bobot_ujian'] ?? 30) / 100;
+        $wRapor    = (float) ($weights['bobot_rapor'] ?? 70) / 100;
+        $threshold = (float) ($weights['ambang_unggulan'] ?? 70);
 
-        // Ambil siswa yang sudah ujian CBT (status sudah_ujian atau siap_finalisasi)
+        // Ambil pendaftar lolos admin untuk diseleksi
         $pendaftarans = Pendaftaran::with(['user', 'jurusan', 'berkas'])
-            ->whereIn('status', ['sudah_ujian', 'siap_finalisasi'])
+            ->whereIn('status', ['lolos_admin', 'sudah_ujian', 'siap_finalisasi'])
             ->get();
 
         if ($pendaftarans->isEmpty()) {
-            return redirect()->route('admin.penempatan.index')
-                ->with('error', 'Belum ada siswa yang telah mengikuti CBT untuk dihitung.');
+            return back()->with('error', 'Belum ada pendaftar yang siap diseleksi.');
         }
 
-        // Kelompokkan per jurusan untuk ranking berdasarkan kuota
-        $dataPerJurusan = [];
+        \DB::transaction(function() use ($pendaftarans, $wUjian, $wRapor, $threshold) {
+            foreach ($pendaftarans as $p) {
+                $hasilUjian = HasilUjian::where('user_id', $p->user_id)->first();
+                $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
+                $nilaiRapor = (float) $p->nilai_rapor;
 
-        foreach ($pendaftarans as $p) {
-            $hasilUjian = HasilUjian::where('user_id', $p->user_id)->first();
-            if (!$hasilUjian) continue;
+                // 1. Bonus Sertifikat (Terbaik)
+                $bonusVal = 0;
+                $sertifikats = $p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid');
+                foreach ($sertifikats as $s) {
+                    $bonus = self::BONUS_SERTIFIKAT[$s->tingkat_prestasi] ?? 0;
+                    if ($bonus > $bonusVal) $bonusVal = $bonus;
+                }
 
-            $nilaiCBT   = (float) $hasilUjian->skor;
-            $nilaiRapor = (float) $p->nilai_rapor;
+                // 2. Score Formula
+                $skorAkhir = 0;
+                $statusKelulusan = false;
+                $kategori = 'TIDAK DITERIMA';
+                $penempatan = null;
 
-            // Cari sertifikat terbaik
-            $bonusSertifikat = 0;
-            foreach ($p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid') as $sert) {
-                $val = self::BONUS_SERTIFIKAT[$sert->tingkat_prestasi] ?? 0;
-                if ($val > $bonusSertifikat) $bonusSertifikat = $val;
-            }
-
-            // Formula: (0.7 × Rapor) + (0.3 × CBT) + Bonus
-            $skorAkhir = round((0.7 * $nilaiRapor) + (0.3 * $nilaiCBT) + $bonusSertifikat, 2);
-
-            $dataPerJurusan[$p->jurusan_id][] = [
-                'pendaftaran_id' => $p->id,
-                'skor_akhir'     => $skorAkhir,
-                'skor_cbt'       => $nilaiCBT,
-                'nilai_rapor'    => $nilaiRapor,
-                'waktu_daftar'   => $p->created_at->timestamp,
-            ];
-        }
-
-        $jumlahProses = 0;
-
-        foreach ($dataPerJurusan as $jurusanId => $siswas) {
-            $jurusan = Jurusan::find($jurusanId);
-            $kuota   = $jurusan->kuota ?? 0;
-
-            // Urutkan: skor_akhir DESC → cbt DESC → rapor DESC → waktu_daftar ASC
-            usort($siswas, function ($a, $b) {
-                if ($b['skor_akhir'] != $a['skor_akhir']) return $b['skor_akhir'] <=> $a['skor_akhir'];
-                if ($b['skor_cbt']   != $a['skor_cbt'])   return $b['skor_cbt']   <=> $a['skor_cbt'];
-                if ($b['nilai_rapor']!= $a['nilai_rapor']) return $b['nilai_rapor'] <=> $a['nilai_rapor'];
-                return $a['waktu_daftar'] <=> $b['waktu_daftar'];
-            });
-
-            $rank = 1;
-            foreach ($siswas as $item) {
-                $isLulus  = ($kuota > 0) ? ($rank <= $kuota) : true;
-                $kategori = $isLulus ? 'DITERIMA' : 'TIDAK DITERIMA';
+                if ($nilaiCBT !== null) {
+                    $skorAkhir = round(($wRapor * $nilaiRapor) + ($wUjian * $nilaiCBT) + $bonusVal, 2);
+                    $penempatan = $skorAkhir >= $threshold ? 'Unggulan' : 'Reguler';
+                    $statusKelulusan = true;
+                    $kategori = 'DITERIMA';
+                } else {
+                    $kategori = 'GUGUR'; // Tidak hadir CBT
+                }
 
                 HasilSeleksi::updateOrCreate(
-                    ['pendaftaran_id' => $item['pendaftaran_id']],
+                    ['pendaftaran_id' => $p->id],
                     [
-                        'skor_akhir'         => $item['skor_akhir'],
-                        'ranking'            => $rank,
-                        'status_kelulusan'   => $isLulus,
+                        'skor_akhir'         => $skorAkhir,
+                        'bonus_sertifikat'   => $bonusVal,
+                        'penempatan_kelas'   => $penempatan,
+                        'ranking'            => 0,
+                        'status_kelulusan'   => $statusKelulusan,
                         'kategori_kelulusan' => $kategori,
                         'is_finalisasi'      => false,
                     ]
                 );
 
-                Pendaftaran::where('id', $item['pendaftaran_id'])
-                    ->update(['status' => 'siap_finalisasi']);
-
-                $rank++;
-                $jumlahProses++;
+                $p->update(['status' => 'siap_finalisasi']);
             }
-        }
+        });
 
-        return redirect()->route('admin.penempatan.index')
-            ->with('success', "✅ Berhasil menghitung {$jumlahProses} siswa. Periksa hasilnya sebelum dipublish.");
+        return back()->with('success', '✅ Perhitungan skor dan penempatan selesai menggunakan bobot '.($wRapor*100).'% Rapor & '.($wUjian*100).'% CBT.');
     }
 
     /**
@@ -225,34 +181,24 @@ class PenempatanController extends Controller
     {
         $hasilDraft = HasilSeleksi::where('is_finalisasi', false)->get();
 
-        // Tandai siswa tidak hadir CBT sebagai GUGUR
-        $tidakIkut = Pendaftaran::where('status', 'tidak_mengikuti_ujian')->get();
-        foreach ($tidakIkut as $p) {
-            $p->update(['status' => 'gugur']);
-            HasilSeleksi::updateOrCreate(
-                ['pendaftaran_id' => $p->id],
-                [
-                    'skor_akhir'         => 0,
-                    'ranking'            => 0,
-                    'status_kelulusan'   => false,
-                    'kategori_kelulusan' => 'GUGUR',
-                    'is_finalisasi'      => true,
-                ]
-            );
+        if ($hasilDraft->isEmpty()) {
+            return back()->with('error', 'Belum ada hasil yang dihitung atau sudah dipublish.');
         }
 
-        if ($hasilDraft->isEmpty() && $tidakIkut->isEmpty()) {
-            return redirect()->route('admin.penempatan.index')
-                ->with('error', 'Belum ada hasil seleksi yang dapat dipublish. Klik "Hitung Semua" terlebih dahulu.');
-        }
+        \DB::transaction(function() use ($hasilDraft) {
+            foreach ($hasilDraft as $hasil) {
+                $hasil->update(['is_finalisasi' => true]);
 
-        foreach ($hasilDraft as $hasil) {
-            $hasil->update(['is_finalisasi' => true]);
-            $hasil->pendaftaran->update(['status' => 'siap_diumumkan']);
-        }
+                // Update status pendaftaran
+                if ($hasil->kategori_kelulusan === 'GUGUR') {
+                    $hasil->pendaftaran->update(['status' => 'gugur']);
+                } else {
+                    $hasil->pendaftaran->update(['status' => 'siap_diumumkan']);
+                }
+            }
+        });
 
-        return redirect()->route('admin.penempatan.index')
-            ->with('success', '🎉 Hasil seleksi berhasil dipublish! Siswa sekarang dapat melihat hasilnya.');
+        return back()->with('success', '🎉 Hasil seleksi berhasil dipublish! Siswa sekarang dapat melihat hasil di dashboard mereka.');
     }
 
     /**
@@ -260,28 +206,24 @@ class PenempatanController extends Controller
      */
     private function resolveStatusLabel(Pendaftaran $p, ?float $nilaiCBT): string
     {
-        // Finalisasi → ambil dari hasil seleksi
-        if ($p->hasilSeleksi && $p->hasilSeleksi->is_finalisasi) {
-            return match($p->hasilSeleksi->kategori_kelulusan) {
+        $hs = $p->hasilSeleksi;
+
+        // Jika sudah ada hasil tersimpan
+        if ($hs) {
+            return match($hs->kategori_kelulusan) {
                 'DITERIMA'       => 'Diterima',
                 'TIDAK DITERIMA' => 'Tidak Diterima',
                 'GUGUR'          => 'Tidak Hadir CBT',
-                default          => 'Tidak Diterima',
+                default          => 'Terdaftar',
             };
         }
 
-        // Draft hasil seleksi
-        if ($p->hasilSeleksi) {
-            return $p->hasilSeleksi->kategori_kelulusan === 'DITERIMA' ? 'Diterima' : 'Tidak Diterima';
-        }
-
-        // Tidak hadir CBT
-        if (in_array($p->status, ['tidak_mengikuti_ujian', 'gugur'])) {
+        // Cek status pendaftaran
+        if ($p->status === 'tidak_mengikuti_ujian' || $p->status === 'gugur') {
             return 'Tidak Hadir CBT';
         }
 
-        // Belum CBT
-        if ($nilaiCBT === null) {
+        if ($nilaiCBT === null && !in_array($p->status, ['lolos_admin'])) {
             return 'Belum CBT';
         }
 
