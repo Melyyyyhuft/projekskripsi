@@ -71,17 +71,17 @@
     {{-- ─── Info Jalur Kelulusan ─── --}}
     <div class="glass-card fade-up delay-1" style="margin-bottom:1.5rem;flex-shrink:0;">
         <h4 style="color:#0f172a;margin:0 0 .5rem;font-size:.95rem;font-weight:700;">🏆 Ketentuan Jalur Kelulusan</h4>
-        <p style="font-size:.82rem;color:#64748b;margin:0 0 1rem;">Penentuan jalur ditetapkan secara resmi oleh panitia berdasarkan nilai ujian CBT Anda.</p>
+        <p style="font-size:.82rem;color:#64748b;margin:0 0 1rem;">Penentuan jalur ditetapkan berdasarkan <strong>Skor Akhir</strong> (Akumulasi Nilai Rapor + CBT + Bonus Sertifikat).</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
             <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:1.25rem;text-align:center;">
                 <div style="font-size:1.5rem;margin-bottom:.5rem;">⭐</div>
                 <div style="font-weight:900;color:#d97706;font-size:1.05rem;margin-bottom:.3rem;">Jalur Unggulan</div>
-                <div style="font-size:.82rem;color:#92400e;font-weight:600;">Skor Ujian CBT ≥ 85</div>
+                <div style="font-size:.82rem;color:#92400e;font-weight:600;">Skor Akhir Seleksi ≥ 70</div>
             </div>
             <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:14px;padding:1.25rem;text-align:center;">
                 <div style="font-size:1.5rem;margin-bottom:.5rem;">✅</div>
                 <div style="font-weight:900;color:#059669;font-size:1.05rem;margin-bottom:.3rem;">Jalur Reguler</div>
-                <div style="font-size:.82rem;color:#065f46;font-weight:600;">Skor Ujian CBT &lt; 85</div>
+                <div style="font-size:.82rem;color:#065f46;font-weight:600;">Skor Akhir Seleksi &lt; 70</div>
             </div>
         </div>
     </div>

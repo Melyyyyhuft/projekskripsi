@@ -16,12 +16,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class PenempatanController extends Controller
 {
     const THRESHOLD_UNGGULAN = 70;
-    const BONUS_MAP = [
-        'Internasional'  => 3,
-        'Nasional'       => 2,
-        'Provinsi'       => 1,
-        'Kabupaten/Kota' => 0.5,
-    ];
 
     public function index(Request $request)
     {
@@ -37,8 +31,7 @@ class PenempatanController extends Controller
             'siap_diumumkan', 'gugur', 'tidak_mengikuti_ujian',
         ];
 
-        $query = Pendaftaran::with(['user', 'jurusan', 'berkas', 'hasilSeleksi'])
-            ->whereIn('status', $statusRelevan);
+        $query = Pendaftaran::with(['user', 'user.hasilUjian', 'jurusan', 'berkas', 'hasilSeleksi']);
 
         if ($fJurusan) $query->where('jurusan_id', $fJurusan);
         if ($search) {
@@ -64,7 +57,7 @@ class PenempatanController extends Controller
         $pendaftarans = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
         // Stats
-        $allData = Pendaftaran::whereIn('status', $statusRelevan)->with('hasilSeleksi')->get();
+        $allData = Pendaftaran::with('hasilSeleksi')->get();
         $hasHasil = $allData->filter(fn($p) => $p->hasilSeleksi !== null);
 
         $stats = [
@@ -118,44 +111,13 @@ class PenempatanController extends Controller
      */
     private function calculateStudent(Pendaftaran $p): array
     {
+        $hs = $p->calculateSelectionResult();
+        
         $hasilUjian = HasilUjian::where('user_id', $p->user_id)->first();
         $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
         $nilaiRapor = (float) $p->nilai_rapor;
 
-        // Bonus: highest certificate only
-        $bonusVal        = 0;
-        $sertTingkat     = null;
-        $sertNama        = null;
-        $validCerts = $p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid');
-        foreach ($validCerts as $s) {
-            $b = self::BONUS_MAP[$s->tingkat_prestasi] ?? 0;
-            if ($b > $bonusVal) {
-                $bonusVal    = $b;
-                $sertTingkat = $s->tingkat_prestasi;
-                $sertNama    = $s->nama_berkas ?? $s->tingkat_prestasi;
-            }
-        }
-
-        // Formula
-        $skorAkhir   = 0;
-        $kategori    = 'TIDAK DITERIMA';
-        $penempatan  = null;
-        $hasCBT      = $nilaiCBT !== null;
-
-        if ($hasCBT) {
-            $raporPart = round(0.7 * $nilaiRapor, 2);
-            $cbtPart   = round(0.3 * $nilaiCBT, 2);
-            $skorAkhir = round($raporPart + $cbtPart + $bonusVal, 2);
-
-            $kategori   = $skorAkhir >= 70 ? 'DITERIMA' : 'TIDAK DITERIMA';
-            $penempatan = $skorAkhir > 70 ? 'Kelas Unggulan' : 'Kelas Reguler';
-        } else {
-            $kategori = 'TIDAK HADIR CBT';
-        }
-
-        // Existing result?
-        $hs = $p->hasilSeleksi;
-
+        // For display in the index table and modals
         return [
             'pendaftaran_id' => $p->id,
             'nama'           => $p->user->name,
@@ -163,19 +125,18 @@ class PenempatanController extends Controller
             'jurusan'        => $p->jurusan->nama ?? '-',
             'rapor'          => $nilaiRapor,
             'cbt'            => $nilaiCBT,
-            'has_cbt'        => $hasCBT,
-            'sertifikat'     => $sertTingkat,
-            'sertifikat_nama'=> $sertNama,
-            'bonus'          => $bonusVal,
-            'formula'        => $hasCBT
-                ? "((0.7 × {$nilaiRapor}) + (0.3 × {$nilaiCBT})) + {$bonusVal} = {$skorAkhir}"
+            'has_cbt'        => $nilaiCBT !== null,
+            'sertifikat'     => $hs->bonus_sertifikat > 0 ? $hs->pendaftaran->berkas->where('status_verifikasi','valid')->where('jenis_berkas','sertifikat')->sortByDesc(fn($s) => \App\Models\Pendaftaran::BONUS_MAP[$s->tingkat_prestasi] ?? 0)->first()->tingkat_prestasi : null,
+            'bonus'          => (float) $hs->bonus_sertifikat,
+            'formula'        => $nilaiCBT !== null
+                ? "((0.7 × {$nilaiRapor}) + (0.3 × {$nilaiCBT})) + {$hs->bonus_sertifikat} = {$hs->skor_akhir}"
                 : 'Tidak ada data CBT',
-            'skor_akhir'     => $skorAkhir,
-            'penempatan'     => $penempatan,
-            'kategori'       => $kategori,
-            'sudah_dihitung' => $hs !== null,
-            'sudah_publish'  => $hs ? (bool) $hs->is_finalisasi : false,
-            'is_override'    => $hs ? (bool) $hs->is_manual_override : false,
+            'skor_akhir'     => (float) $hs->skor_akhir,
+            'penempatan'     => $hs->penempatan_kelas,
+            'kategori'       => $hs->kategori_kelulusan,
+            'sudah_dihitung' => true,
+            'sudah_publish'  => (bool) $hs->is_finalisasi,
+            'is_override'    => (bool) $hs->is_manual_override,
         ];
     }
 

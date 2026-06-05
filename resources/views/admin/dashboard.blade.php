@@ -5,10 +5,9 @@
 
 @php
     // Hitung tambahan statistik dari data yang sudah ada
-    $totalSudahUjian   = \App\Models\Pendaftaran::where('status', 'sudah_ujian')->count()
-                       + \App\Models\Pendaftaran::where('status', 'siap_finalisasi')->count()
-                       + \App\Models\Pendaftaran::where('status', 'siap_diumumkan')->count();
+    $totalSudahUjian   = \App\Models\Pendaftaran::whereIn('status', ['sudah_ujian', 'siap_finalisasi', 'siap_diumumkan'])->count();
     $totalLolosAdmin   = \App\Models\Pendaftaran::where('status', 'lolos_admin')->count();
+    $totalHasilFinal   = \App\Models\Pendaftaran::whereIn('status', ['diterima', 'tidak_diterima', 'gugur', 'tidak_mengikuti_ujian'])->count();
 @endphp
 
 {{-- ─── Greeting ─── --}}
@@ -18,42 +17,46 @@
 </div>
 
 {{-- ─── Stats Cards ─── --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.25rem;margin-bottom:2rem;">
 
-    {{-- Card 1 --}}
-    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.5rem; position:relative; overflow:hidden;">
+    {{-- Card 1: Total --}}
+    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.25rem; position:relative; overflow:hidden;">
         <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:0 16px 0 100%;opacity:.08;"></div>
-        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1rem;color:white;"><i class="fa-solid fa-users"></i></div>
-        <p style="color:var(--gray-text);font-size:.8rem;font-weight:600;margin:0 0 .35rem;text-transform:uppercase;letter-spacing:.05em;">Total Pendaftar</p>
-        <p style="font-size:2.2rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalPendaftar }}</p>
-        <p style="font-size:.75rem;color:#94a3b8;margin:.35rem 0 0;">Seluruh pendaftar PPDB</p>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;font-size:.9rem;color:white;"><i class="fa-solid fa-users"></i></div>
+        <p style="color:var(--gray-text);font-size:.7rem;font-weight:700;margin:0 0 .2rem;text-transform:uppercase;letter-spacing:.05em;">Total Pendaftar</p>
+        <p style="font-size:1.8rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalPendaftar }}</p>
     </a>
 
-    {{-- Card 2 --}}
-    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'baru', 'status' => 'menunggu_verifikasi']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.5rem; position:relative; overflow:hidden;">
+    {{-- Card 2: Menunggu --}}
+    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'baru', 'status' => 'menunggu_verifikasi']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.25rem; position:relative; overflow:hidden;">
         <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:0 16px 0 100%;opacity:.08;"></div>
-        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#fbbf24);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1rem;color:white;"><i class="fa-solid fa-clock"></i></div>
-        <p style="color:var(--gray-text);font-size:.8rem;font-weight:600;margin:0 0 .35rem;text-transform:uppercase;letter-spacing:.05em;">Menunggu Verifikasi</p>
-        <p style="font-size:2.2rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $menungguVerifikasi }}</p>
-        <p style="font-size:.75rem;color:#94a3b8;margin:.35rem 0 0;">Perlu tindakan admin</p>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#fbbf24);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;font-size:.9rem;color:white;"><i class="fa-solid fa-clock"></i></div>
+        <p style="color:var(--gray-text);font-size:.7rem;font-weight:700;margin:0 0 .2rem;text-transform:uppercase;letter-spacing:.05em;">Menunggu</p>
+        <p style="font-size:1.8rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $menungguVerifikasi }}</p>
     </a>
 
-    {{-- Card 3 --}}
-    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip', 'status' => 'lolos_admin']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.5rem; position:relative; overflow:hidden;">
+    {{-- Card 3: Lolos Admin --}}
+    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip', 'status' => 'lolos_admin']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.25rem; position:relative; overflow:hidden;">
         <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:linear-gradient(135deg,#10b981,#34d399);border-radius:0 16px 0 100%;opacity:.08;"></div>
-        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#10b981,#34d399);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1rem;color:white;"><i class="fa-solid fa-circle-check"></i></div>
-        <p style="color:var(--gray-text);font-size:.8rem;font-weight:600;margin:0 0 .35rem;text-transform:uppercase;letter-spacing:.05em;">Lolos Administrasi</p>
-        <p style="font-size:2.2rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalLolosAdmin }}</p>
-        <p style="font-size:.75rem;color:#94a3b8;margin:.35rem 0 0;">Siap mengikuti ujian</p>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#10b981,#34d399);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;font-size:.9rem;color:white;"><i class="fa-solid fa-circle-check"></i></div>
+        <p style="color:var(--gray-text);font-size:.7rem;font-weight:700;margin:0 0 .2rem;text-transform:uppercase;letter-spacing:.05em;">Lolos Admin</p>
+        <p style="font-size:1.8rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalLolosAdmin }}</p>
     </a>
 
-    {{-- Card 4 --}}
-    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip', 'status' => 'sudah_ujian']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.5rem; position:relative; overflow:hidden;">
+    {{-- Card 4: Sudah Ujian --}}
+    <a href="{{ route('admin.pendaftaran.index', ['tab' => 'arsip', 'status' => 'sudah_ujian']) }}" class="glass-card" style="text-decoration:none; display:block; padding:1.25rem; position:relative; overflow:hidden;">
         <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:linear-gradient(135deg,#3b82f6,#60a5fa);border-radius:0 16px 0 100%;opacity:.08;"></div>
-        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#60a5fa);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1rem;color:white;"><i class="fa-solid fa-laptop-code"></i></div>
-        <p style="color:var(--gray-text);font-size:.8rem;font-weight:600;margin:0 0 .35rem;text-transform:uppercase;letter-spacing:.05em;">Sudah Ujian</p>
-        <p style="font-size:2.2rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalSudahUjian }}</p>
-        <p style="font-size:.75rem;color:#94a3b8;margin:.35rem 0 0;">Selesai CBT</p>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#60a5fa);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;font-size:.9rem;color:white;"><i class="fa-solid fa-laptop-code"></i></div>
+        <p style="color:var(--gray-text);font-size:.7rem;font-weight:700;margin:0 0 .2rem;text-transform:uppercase;letter-spacing:.05em;">Sudah Ujian</p>
+        <p style="font-size:1.8rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalSudahUjian }}</p>
+    </a>
+
+    {{-- Card 5: Hasil Final --}}
+    <a href="{{ route('admin.penempatan.index') }}" class="glass-card" style="text-decoration:none; display:block; padding:1.25rem; position:relative; overflow:hidden;">
+        <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:linear-gradient(135deg,#ec4899,#f472b6);border-radius:0 16px 0 100%;opacity:.08;"></div>
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#ec4899,#f472b6);display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;font-size:.9rem;color:white;"><i class="fa-solid fa-flag-checkered"></i></div>
+        <p style="color:var(--gray-text);font-size:.7rem;font-weight:700;margin:0 0 .2rem;text-transform:uppercase;letter-spacing:.05em;">Hasil Final</p>
+        <p style="font-size:1.8rem;font-weight:900;color:var(--dark);margin:0;line-height:1;">{{ $totalHasilFinal }}</p>
     </a>
 
 </div>

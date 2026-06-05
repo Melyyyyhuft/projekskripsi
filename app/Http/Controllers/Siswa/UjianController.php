@@ -155,6 +155,7 @@ class UjianController extends Controller
             $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
             if ($pendaftaran) {
                 $pendaftaran->update(['status' => 'sudah_ujian']);
+                $pendaftaran->calculateSelectionResult();
             }
         }
 
@@ -202,6 +203,8 @@ class UjianController extends Controller
         $pendaftaran = Pendaftaran::where('user_id', $user_id)->first();
         if ($pendaftaran) {
             $pendaftaran->update(['status' => 'sudah_ujian']);
+            // Trigger automatic selection calculation
+            $pendaftaran->calculateSelectionResult();
         }
 
         return redirect()->route('siswa.dashboard')->with('success', 'Ujian selesai! Skor Anda telah disimpan dan Anda siap masuk ke tahap seleksi perangkingan.');

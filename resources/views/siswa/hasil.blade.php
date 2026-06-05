@@ -175,6 +175,16 @@
                 </div>
             </div>
 
+            {{-- Small Ketentuan Info --}}
+            <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; opacity: 0.8; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                <span style="background: rgba(255,255,255,0.1); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    🏆 Skor ≥ 70 : Unggulan
+                </span>
+                <span style="background: rgba(255,255,255,0.1); padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    ✅ Skor < 70 : Reguler
+                </span>
+            </div>
+
             @if($isAccepted)
                 <a href="{{ route('siswa.hasil.download') }}" class="btn-download">
                     <i class="fa-solid fa-file-pdf"></i> Download Surat Kelulusan (PDF)

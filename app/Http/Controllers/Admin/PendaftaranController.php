@@ -44,6 +44,11 @@ class PendaftaranController extends Controller
         
         try {
             $pendaftaran->update(['status' => $request->status]);
+            
+            if ($request->status === 'lolos_admin') {
+                $pendaftaran->calculateSelectionResult();
+            }
+
             $msg = $request->status == 'revisi' ? 'Permintaan revisi telah dikirim ke siswa.' : 'Siswa telah diloloskan verifikasi administrasi.';
             return redirect()->route('admin.pendaftaran.index', ['tab' => 'baru'])->with('success', $msg);
         } catch (\Exception $e) {
@@ -63,6 +68,14 @@ class PendaftaranController extends Controller
             'status_verifikasi' => $request->status_verifikasi,
             'catatan_admin' => $request->status_verifikasi == 'tidak_valid' ? $request->catatan_admin : null
         ]);
+
+        // Automatically recalculate selection if it's a certificate
+        if ($berkas->jenis_berkas === 'sertifikat') {
+            $pendaftaran = \App\Models\Pendaftaran::find($berkas->pendaftaran_id);
+            if ($pendaftaran) {
+                $pendaftaran->calculateSelectionResult();
+            }
+        }
         
         return back()->with('success', 'Status berkas berhasil diperbarui.');
     }

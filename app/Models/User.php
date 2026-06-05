@@ -48,4 +48,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the CBT result for the user.
+     */
+    public function hasilUjian()
+    {
+        return $this->hasOne(HasilUjian::class);
+    }
 }

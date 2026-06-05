@@ -226,13 +226,20 @@ input:checked + .slider:before { transform:translateX(20px); }
                             $hs = $p->hasilSeleksi;
                             $nilaiCBT = $p->user->hasilUjian->skor ?? null;
                             $sp = $hs ? ($hs->status_proses ?: ($hs->is_finalisasi ? 'Sudah Dipublish' : 'Sudah Dihitung')) : 'Belum Dihitung';
-                            $cert = $p->berkas->where('jenis_berkas','sertifikat')->where('status_verifikasi','valid')
-                                ->sortByDesc(fn($s) => \App\Http\Controllers\Admin\PenempatanController::BONUS_MAP[$s->tingkat_prestasi] ?? 0)->first();
+                            
+                            // Ambil semua sertifikat (untuk ditampilkan)
+                            $allCerts = $p->berkas->where('jenis_berkas','sertifikat');
+                            // Sertifikat valid tertinggi (untuk bonus)
+                            $validCert = $allCerts->where('status_verifikasi','valid')
+                                ->sortByDesc(fn($s) => \App\Models\Pendaftaran::BONUS_MAP[$s->tingkat_prestasi] ?? 0)->first();
                             
                             $currentBonus = 0;
-                            if ($cert) {
-                                $currentBonus = \App\Http\Controllers\Admin\PenempatanController::BONUS_MAP[$cert->tingkat_prestasi] ?? 0;
+                            if ($validCert) {
+                                $currentBonus = \App\Models\Pendaftaran::BONUS_MAP[$validCert->tingkat_prestasi] ?? 0;
                             }
+                            
+                            // Sertifikat untuk ditampilkan di tabel (prioritas valid, lalu pending/lainnya)
+                            $displayCert = $validCert ?: $allCerts->first();
                         @endphp
                         <tr>
                             <td style="text-align:center;"><input type="checkbox" class="form-checkbox student-cb" value="{{ $p->id }}"></td>
@@ -249,13 +256,21 @@ input:checked + .slider:before { transform:translateX(20px); }
                             <td style="text-align:center; font-weight:800; font-size:.82rem;">{{ number_format($p->nilai_rapor,1) }}</td>
                             <td style="text-align:center; font-weight:800; color:var(--primary); font-size:.82rem;">{{ $nilaiCBT !== null ? number_format($nilaiCBT,1) : '-' }}</td>
                             <td>
-                                @if($cert)
-                                    <span class="badge-m" style="background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;">{{ $cert->tingkat_prestasi }}</span>
+                                @if($displayCert)
+                                    @if($displayCert->status_verifikasi == 'valid')
+                                        <span class="badge-m" style="background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;" title="Terverifikasi: {{ $displayCert->tingkat_prestasi }}">{{ $displayCert->tingkat_prestasi }}</span>
+                                    @else
+                                        <span class="badge-m" style="background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;" title="Menunggu Verifikasi: {{ $displayCert->tingkat_prestasi }}">
+                                            <i class="fa-solid fa-clock" style="font-size:.5rem;"></i> {{ $displayCert->tingkat_prestasi }}
+                                        </span>
+                                    @endif
                                 @else <span style="color:#cbd5e1;">-</span> @endif
                             </td>
                             <td style="text-align:center; font-weight:800;">
                                 @if($currentBonus > 0)
                                     <span style="color:var(--success);">+{{ (float)$currentBonus }}</span>
+                                @elseif($allCerts->isNotEmpty() && !$validCert)
+                                    <span style="color:#94a3b8; font-size:.65rem; font-weight:700;">WAIT</span>
                                 @else <span style="color:#cbd5e1;">0</span> @endif
                             </td>
                             <td style="text-align:center;">
