@@ -19,17 +19,40 @@ class BankSoalController extends Controller
         $filterPaket = $request->nama_paket;
         
         if (!$filterTahun && !$filterPaket && $tahunAjarans->isNotEmpty()) {
-            // Default ambil tahun ajaran pertama atau yang aktif
             $filterTahun = Pengaturan::where('key', 'tahun_ajaran_aktif')->first()->value ?? '2024/2025';
         }
 
-        $soals = Soal::when($filterTahun, function ($q) use ($filterTahun) {
-            return $q->where('tahun_ajaran', $filterTahun);
-        })->when($filterPaket, function ($q) use ($filterPaket) {
-            return $q->where('nama_paket', $filterPaket);
-        })->get();
+        $query = Soal::query();
 
-        return view('admin.bank_soal.index', compact('soals', 'tahunAjarans', 'namaPakets', 'filterTahun', 'filterPaket'));
+        if ($filterTahun) $query->where('tahun_ajaran', $filterTahun);
+        if ($filterPaket) $query->where('nama_paket', $filterPaket);
+        
+        if ($request->search) {
+            $query->where('teks_soal', 'like', '%' . $request->search . '%');
+        }
+        if ($request->mapel) {
+            $query->where('mapel', $request->mapel);
+        }
+        if ($request->status) {
+            if ($request->status === 'Digunakan') {
+                $query->whereIn('id', \DB::table('modul_ujian_soal')->pluck('soal_id'));
+            } else {
+                $query->where('status', $request->status);
+            }
+        }
+
+        // Get all items for scrolling
+        $soals = $query->latest()->get();
+
+        // Statistics
+        $stats = [
+            'total' => Soal::count(),
+            'aktif' => Soal::where('status', 'Aktif')->count(),
+            'draft' => Soal::where('status', 'Draft')->count(),
+            'digunakan' => \DB::table('modul_ujian_soal')->distinct('soal_id')->count()
+        ];
+
+        return view('admin.bank_soal.index', compact('soals', 'tahunAjarans', 'namaPakets', 'filterTahun', 'filterPaket', 'stats'));
     }
 
     public function store(Request $request)
@@ -42,11 +65,20 @@ class BankSoalController extends Controller
             'opsi_c' => 'required|string',
             'opsi_d' => 'required|string',
             'jawaban_benar' => 'required|in:A,B,C,D',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        Soal::create($request->all());
+        $data = $request->except(['gambar']);
+        $data['sumber'] = 'Input Manual';
 
-        return back()->with('success', 'Soal berhasil ditambahkan ke Bank Soal!');
+        if ($request->hasFile('gambar')) {
+            $path = $request->file('gambar')->store('bank_soal', 'public');
+            $data['gambar'] = $path;
+        }
+
+        Soal::updateOrCreate(['id' => $request->id], $data);
+
+        return back()->with('success', 'Soal berhasil disimpan!');
     }
 
     public function destroy($id)
@@ -56,14 +88,16 @@ class BankSoalController extends Controller
         return back()->with('success', 'Soal berhasil dihapus!');
     }
 
-    public function downloadTemplate()
+    public function toggleStatus($id)
     {
-        $content = "Tahun Ajaran|Pertanyaan|Opsi A|Opsi B|Opsi C|Opsi D|Jawaban Benar\n2024/2025|Berapakah 1+1?|1|2|3|4|B\n2024/2025|Siapakah penemu gaya gravitasi?|Isaac Newton|Albert Einstein|Nikola Tesla|Thomas Edison|A\n";
-        $headers = [
-            'Content-type' => 'text/plain', 
-            'Content-Disposition' => sprintf('attachment; filename="%s"', 'template_bank_soal.txt')
-        ];
-        return response()->make($content, 200, $headers);
+        $soal = Soal::findOrFail($id);
+        $soal->status = $soal->status === 'Aktif' ? 'Draft' : 'Aktif';
+        $soal->save();
+
+        return response()->json([
+            'success' => true,
+            'new_status' => $soal->status,
+        ]);
     }
 
     public function downloadTemplateExcel()
@@ -92,112 +126,129 @@ class BankSoalController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file_soal' => 'required|file|max:10240', // max 10MB
+            'file_soal' => 'required|file|mimes:csv,xlsx,xls|max:10240',
         ]);
 
         $file = $request->file('file_soal');
         $fileName = $file->getClientOriginalName();
         $filePath = $file->getRealPath();
         
-        $handle = fopen($filePath, 'r');
-        if (!$handle) {
-            return back()->with('error', 'Gagal membuka file.');
-        }
-
-        // Baca header
-        $headerLine = fgets($handle);
-        if (!$headerLine) {
-            fclose($handle);
-            return back()->with('error', 'File kosong.');
-        }
-
-        // Deteksi delimiter
-        $delimiters = ["|", ";", ","];
-        $delimiter = "|"; // Default
-        $maxCount = 0;
-        foreach ($delimiters as $d) {
-            $count = substr_count($headerLine, $d);
-            if ($count > $maxCount) {
-                $maxCount = $count;
-                $delimiter = $d;
-            }
-        }
-
-        rewind($handle);
-        $headerData = fgetcsv($handle, 0, $delimiter);
-        
-        // Validasi Kolom Header Secara Ketat
-        $requiredHeaders = ['Tahun Ajaran', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar'];
-        $actualHeaders = array_map('trim', $headerData);
-
-        // Cari index kolom
-        $colMap = [];
-        foreach ($requiredHeaders as $req) {
-            $found = false;
-            foreach ($actualHeaders as $idx => $act) {
-                if (strcasecmp($act, $req) === 0 || str_contains(strtolower($act), strtolower($req))) {
-                    $colMap[$req] = $idx;
-                    $found = true;
-                    break;
-                }
-            }
-            if (!$found) {
-                fclose($handle);
-                return back()->with('error', "Format file tidak sesuai! Kolom [$req] tidak ditemukan. Silakan gunakan template yang benar.");
-            }
-        }
-
         $validSoal = [];
         $errorCount = 0;
-        $rowCount = 0;
 
-        while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
-            $rowCount++;
-            if (empty(array_filter($data))) continue;
+        if ($file->getClientOriginalExtension() === 'csv') {
+            $handle = fopen($filePath, 'r');
+            // SKIP HEADER
+            fgetcsv($handle, 0, "|"); // assuming | as template uses it mostly, but let's be smarter
+            
+            // Re-detect delimiter
+            rewind($handle);
+            $headerLine = fgets($handle);
+            $delimiters = ["|", ";", ","];
+            $delimiter = "|";
+            $maxCount = 0;
+            foreach ($delimiters as $d) {
+                $count = substr_count($headerLine, $d);
+                if ($count > $maxCount) { $maxCount = $count; $delimiter = $d; }
+            }
+            rewind($handle);
+            fgetcsv($handle, 0, $delimiter); // skip header
 
-            try {
-                $tahun    = trim($data[$colMap['Tahun Ajaran']] ?? '');
-                $soal     = trim($data[$colMap['Pertanyaan']] ?? '');
-                $oa       = trim($data[$colMap['Opsi A']] ?? '');
-                $ob       = trim($data[$colMap['Opsi B']] ?? '');
-                $oc       = trim($data[$colMap['Opsi C']] ?? '');
-                $od       = trim($data[$colMap['Opsi D']] ?? '');
-                $jawaban  = strtoupper(trim($data[$colMap['Jawaban Benar']] ?? ''));
-
-                if ($tahun && $soal && $oa && $ob && $oc && $od && in_array($jawaban, ['A', 'B', 'C', 'D'])) {
-                    $validSoal[] = [
-                        'tahun_ajaran' => $tahun,
-                        'nama_paket'   => $fileName,
-                        'teks_soal'    => $soal,
-                        'opsi_a'       => $oa,
-                        'opsi_b'       => $ob,
-                        'opsi_c'       => $oc,
-                        'opsi_d'       => $od,
-                        'jawaban_benar' => $jawaban,
-                        'created_at'   => now(),
-                        'updated_at'   => now(),
-                    ];
-                } else {
-                    $errorCount++;
+            while (($data = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+                if (count($data) < 7) continue;
+                $validSoal[] = $this->mapRow($data, $fileName);
+            }
+            fclose($handle);
+        } else {
+            // Excel
+            require_once app_path('Libraries/SimpleXLSX.php');
+            if ($xlsx = \Shuchkin\SimpleXLSX::parse($filePath)) {
+                $rows = $xlsx->rows();
+                array_shift($rows); // skip header
+                foreach ($rows as $row) {
+                    if (count($row) < 7) continue;
+                    $validSoal[] = $this->mapRow($row, $fileName);
                 }
-            } catch (\Exception $e) {
-                $errorCount++;
+            } else {
+                return back()->with('error', \Shuchkin\SimpleXLSX::parseError());
             }
         }
-        fclose($handle);
 
         if (count($validSoal) == 0) {
-            return back()->with('error', 'Tidak ada soal valid yang ditemukan dalam file. Periksa format data dan kunci jawaban (A,B,C,D).');
+            return back()->with('error', 'Tidak ada soal valid yang ditemukan.');
         }
 
-        // Chunk insert if many
         foreach (array_chunk($validSoal, 100) as $chunk) {
             Soal::insert($chunk);
         }
         
-        $msg = count($validSoal) . ' soal berhasil diimport ke paket "' . $fileName . '".';
-        if ($errorCount > 0) $msg .= " ({$errorCount} baris bermasalah diabaikan).";
+        return back()->with('success', count($validSoal) . ' soal berhasil diimport.');
+    }
 
-        return back()->with('success', $msg);
+    public function export(Request $request)
+    {
+        $format = $request->format ?? 'excel';
+        $soals = Soal::all();
+        
+        $data = [
+            ['Tahun Ajaran', 'Pertanyaan', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Jawaban Benar', 'Sumber', 'Status']
+        ];
+        
+        foreach ($soals as $s) {
+            $data[] = [
+                $s->tahun_ajaran,
+                $s->teks_soal,
+                $s->opsi_a,
+                $s->opsi_b,
+                $s->opsi_c,
+                $s->opsi_d,
+                $s->jawaban_benar,
+                $s->sumber,
+                $s->status
+            ];
+        }
+
+        if ($format === 'csv') {
+            $filename = "export_bank_soal_" . date('Ymd_His') . ".csv";
+            $handle = fopen('php://memory', 'w');
+            foreach ($data as $row) {
+                fputcsv($handle, $row, "|");
+            }
+            rewind($handle);
+            $content = stream_get_contents($handle);
+            fclose($handle);
+            
+            return response()->make($content, 200, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+        } else {
+            require_once app_path('Libraries/SimpleXLSXGen.php');
+            $xlsx = \Shuchkin\SimpleXLSXGen::fromArray($data);
+            $output = (string) $xlsx;
+            
+            return response()->make($output, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="export_bank_soal_' . date('Ymd_His') . '.xlsx"',
+            ]);
+        }
+    }
+
+    private function mapRow($row, $sumber)
+    {
+        return [
+            'tahun_ajaran' => $row[0] ?? '2024/2025',
+            'nama_paket'   => 'Imported',
+            'teks_soal'    => $row[1] ?? '',
+            'opsi_a'       => $row[2] ?? '',
+            'opsi_b'       => $row[3] ?? '',
+            'opsi_c'       => $row[4] ?? '',
+            'opsi_d'       => $row[5] ?? '',
+            'jawaban_benar' => strtoupper(trim($row[6] ?? 'A')),
+            'sumber'       => $sumber,
+            'status'       => 'Aktif',
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ];
     }
 }

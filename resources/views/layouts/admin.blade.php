@@ -54,9 +54,11 @@
                 <span>Modul Ujian</span>
             </a>
             <a href="{{ route('admin.penempatan.index') }}" class="sidebar-item {{ request()->is('admin/penempatan*') ? 'active' : '' }}">
-                <i class="fa-solid fa-school"></i>
-                <span>Seleksi & Penempatan</span>
+                <i class="fa-solid fa-square-poll-vertical"></i>
+                <span>Hasil Seleksi</span>
             </a>
+
+
 
             <!-- Profile Widget at the bottom -->
             <div class="sidebar-profile-card" style="cursor: default;" title="Administrator">

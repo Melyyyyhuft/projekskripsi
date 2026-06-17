@@ -80,18 +80,5 @@ class PengaturanController extends Controller
         return back()->with('success', 'Pengaturan Bobot & Ambang Batas berhasil diperbarui!');
     }
 
-    public function updateSosmed(Request $request)
-    {
-        $request->validate([
-            'tiktok'    => 'nullable|url',
-            'instagram' => 'nullable|url',
-            'youtube'   => 'nullable|url',
-        ]);
 
-        Pengaturan::updateOrCreate(['key' => 'tiktok'], ['value' => $request->tiktok]);
-        Pengaturan::updateOrCreate(['key' => 'instagram'], ['value' => $request->instagram]);
-        Pengaturan::updateOrCreate(['key' => 'youtube'], ['value' => $request->youtube]);
-
-        return back()->with('success', 'Pengaturan Media Sosial berhasil diperbarui!');
-    }
 }

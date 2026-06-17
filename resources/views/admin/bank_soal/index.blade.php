@@ -2,618 +2,753 @@
 @section('title', 'Bank Soal CBT')
 
 @section('content')
+<!-- Import Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
 <style>
-    /* ─── Modern SaaS Design Tokens ─── */
+    /* ─── Premium Modern SaaS Design Tokens ─── */
     :root {
         --primary: #6366f1;
-        --primary-soft: rgba(99, 102, 241, 0.1);
+        --primary-light: #818cf8;
         --secondary: #a855f7;
-        --secondary-soft: rgba(168, 85, 247, 0.1);
         --accent: #f43f5e;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --info: #0ea5e9;
         --bg-body: #f8fafc;
-        --glass-bg: rgba(255, 255, 255, 0.75);
-        --glass-border: rgba(255, 255, 255, 0.5);
-        --radius-lg: 24px;
-        --radius-md: 16px;
-        --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.04);
-        --shadow-glow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        --glass-border: rgba(226, 232, 240, 0.8);
+        --radius-xl: 24px;
+        --radius-lg: 16px;
+        --radius-md: 12px;
+        --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
+        --shadow-premium: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+        --text-main: #1e293b;
+        --text-muted: #64748b;
     }
 
-    /* ─── Scrollbar ─── */
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-    .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); }
+    [data-theme='dark'] {
+        --glass-bg: rgba(15, 23, 42, 0.9);
+        --glass-border: rgba(51, 65, 85, 0.8);
+        --bg-body: #020617;
+        --text-main: #f1f5f9;
+        --text-muted: #94a3b8;
+    }
 
-    /* ─── Animations ─── */
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
-
-    .animate-slide-up { animation: slideUp 0.5s ease-out forwards; }
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-
-    /* ─── Layout ─── */
-    .dashboard-wrapper {
+    .bank-soal-wrapper {
+        animation: fadeIn 0.6s cubic-bezier(0.2, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
-        gap: 2rem;
-        padding-bottom: 2rem;
+        gap: 1.5rem;
+        padding: 0.5rem 0.5rem 2rem;
+        font-family: 'Inter', sans-serif;
+        max-width: 1440px;
+        margin: 0 auto;
     }
 
-    /* ─── Components ─── */
-    .premium-card {
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ─── Stats Section ─── */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-card {
         background: var(--glass-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(8px);
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-soft);
-        padding: 2rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    /* ─── Form Elements ─── */
-    .form-group-modern { margin-bottom: 1.5rem; }
-    .label-modern {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #64748b;
-        margin-bottom: 0.6rem;
-        letter-spacing: 0.01em;
-    }
-    .input-modern {
-        width: 100%;
-        background: white;
-        border: 1px solid #e2e8f0;
         padding: 0.75rem 1rem;
-        border-radius: 14px;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #1e293b;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .input-modern:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        outline: none;
-        transform: translateY(-1px);
-    }
-    .input-modern::placeholder { color: #94a3b8; font-weight: 500; }
-
-    .textarea-modern {
-        min-height: 120px;
-        resize: none;
-    }
-
-    .btn-gradient {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-        border: none;
-        padding: 0.75rem 1.75rem;
-        border-radius: 14px;
-        font-weight: 800;
-        font-size: 0.925rem;
-        cursor: pointer;
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: 0.6rem;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow-glow);
+        gap: 1rem;
+        box-shadow: var(--shadow-soft);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-gradient:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(99, 102, 241, 0.3);
-        filter: brightness(1.1);
-    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-premium); border-color: var(--primary-light); }
+    .stat-card.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); transform: translateY(-3px); box-shadow: var(--shadow-premium); }
 
-    .btn-outline-soft {
-        background: transparent;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
-        padding: 0.75rem 1.5rem;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 0.875rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s;
-    }
-    .btn-outline-soft:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-        color: #1e293b;
-    }
-
-    /* ─── Table ─── */
-    .table-wrapper {
-        position: relative;
-        overflow: hidden;
-        border-radius: var(--radius-md);
-        background: rgba(255, 255, 255, 0.3);
-    }
-    .internal-scroll {
-        max-height: 600px;
-        overflow-y: auto;
-    }
-    .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-    .modern-table thead th {
-        position: sticky;
-        top: 0;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        z-index: 10;
-        padding: 1.25rem 1.5rem;
-        text-align: left;
-        font-size: 0.75rem;
-        font-weight: 800;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 2px solid #f1f5f9;
-        white-space: nowrap;
-    }
-    .modern-table tbody tr { transition: all 0.2s; }
-    .modern-table tbody tr:hover { background: rgba(99, 102, 241, 0.02) !important; }
-    .modern-table tbody td {
-        padding: 1.25rem 1.5rem;
-        font-size: 0.9rem;
-        color: #1e293b;
-        border-bottom: 1px solid #f1f5f9;
-        vertical-align: middle;
-    }
-
-    /* ─── Badges ─── */
-    .badge-soft {
-        padding: 0.4rem 0.8rem;
-        border-radius: 10px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        letter-spacing: 0.02em;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .badge-rpl { background: #e0e7ff; color: #4338ca; }
-    .badge-tkj { background: #f3e8ff; color: #7e22ce; }
-    .badge-mm { background: #fce7f3; color: #be185d; }
-    .badge-mplb { background: #ffedd5; color: #c2410c; }
-    
-    .badge-answer {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #d1fae5;
-        color: #059669;
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 900;
-        font-size: 0.85rem;
-        border: 2px solid #a7f3d0;
-    }
-
-    /* ─── Tooltip Custom (Simplest) ─── */
-    .tooltip-container { position: relative; }
-    .tooltip-text {
-        visibility: hidden;
-        background: #1e293b;
         color: white;
-        text-align: center;
-        padding: 4px 10px;
-        border-radius: 6px;
-        position: absolute;
-        z-index: 100;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.7rem;
-        white-space: nowrap;
-        opacity: 0;
-        transition: opacity 0.2s;
+        font-size: 1.2rem;
+        flex-shrink: 0;
     }
-    .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+    .stat-info .stat-value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); line-height: 1.2; margin: 0; }
+    .stat-info .stat-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
 
-    /* ─── Loading Skeleton ─── */
-    .skeleton-line {
-        height: 12px;
-        width: 100%;
-        background: #f1f5f9;
-        background-image: linear-gradient(90deg, #f1f5f9 0px, #e2e8f0 40px, #f1f5f9 80px);
-        background-size: 600px 100%;
-        animation: shimmer 2s infinite linear;
-        border-radius: 6px;
+    /* ─── Main Grid Layout ─── */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 1rem;
     }
+
+    .premium-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: border-color 0.3s;
+    }
+
+    .card-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .card-header h3 { margin: 0; font-size: 0.9rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+    .card-body { padding: 1.25rem; flex: 1; }
+
+    /* ─── Advanced Form Controls ─── */
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .form-group-modern { display: flex; flex-direction: column; gap: 0.4rem; }
+    .label-modern { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .input-modern {
+        background: rgba(248, 250, 252, 0.5);
+        border: 1.5px solid var(--glass-border);
+        padding: 0.6rem 0.8rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-main);
+        transition: all 0.2s;
+    }
+    .input-modern:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); outline: none; }
+    
+    /* Options Tiles Styling - Fixed for longer text */
+    .options-grid-modern {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .option-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        background: rgba(248, 250, 252, 0.4);
+        padding: 0.45rem 0.65rem;
+        border-radius: 10px;
+        border: 1.5px solid var(--glass-border);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .option-item:focus-within { border-color: var(--primary); background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .option-prefix { 
+        width: 32px; height: 32px; 
+        background: white; 
+        border-radius: 8px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-weight: 800; font-size: 0.8rem; 
+        color: var(--text-muted); 
+        border: 1px solid var(--glass-border);
+        transition: all 0.2s;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .option-item:focus-within .option-prefix { background: var(--primary); color: white; border-color: var(--primary); }
+    .option-input { flex: 1; border: none; background: transparent; font-size: 0.82rem; font-weight: 600; outline: none; color: var(--text-main); min-height: 30px; padding: 6px 0; }
+    .option-check { cursor: pointer; display: flex; align-items: center; justify-content: center; margin-top: 6px; }
+    .option-check input { 
+        width: 20px; height: 20px; 
+        cursor: pointer; 
+        accent-color: var(--success); 
+        border-radius: 50%;
+    }
+
+    /* ─── Preview Section ─── */
+    .preview-container-mockup {
+        background: #f1f5f9;
+        border-radius: 20px;
+        padding: 1rem;
+        border: 4px solid #e2e8f0;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        position: relative;
+    }
+    .preview-soal-card { 
+        background: white; 
+        border-radius: 14px; 
+        padding: 1.25rem; 
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); 
+    }
+    .preview-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .preview-badge { padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+    .preview-teks { font-size: 0.95rem; font-weight: 700; color: #1e293b; line-height: 1.5; margin-bottom: 1rem; }
+    .preview-gambar { margin-bottom: 1rem; border-radius: 10px; overflow: hidden; border: 1px solid #f1f5f9; cursor: zoom-in; display: none; }
+    .preview-gambar img { width: 100%; height: auto; display: block; }
+    .preview-option { 
+        padding: 0.75rem 1rem; 
+        border-radius: 10px; 
+        border: 1.5px solid #f1f5f9; 
+        margin-bottom: 0.5rem; 
+        display: flex; 
+        align-items: center; 
+        gap: 0.75rem; 
+        transition: all 0.2s; 
+        background: #fcfcfc;
+    }
+    .preview-option.correct { border-color: var(--success); background: #f0fdf4; color: #15803d; }
+    .preview-opt-prefix { 
+        width: 24px; height: 24px; 
+        border-radius: 50%; 
+        border: 1.5px solid #e2e8f0; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 0.7rem; font-weight: 900; 
+    }
+    .preview-option.correct .preview-opt-prefix { background: var(--success); color: white; border-color: var(--success); }
+    .preview-opt-text { font-size: 0.85rem; font-weight: 600; }
+
+    /* ─── Table Section ─── */
+    .table-premium-container { 
+        border: 1px solid var(--glass-border); 
+        border-radius: var(--radius-lg); 
+        overflow-y: auto; 
+        background: white; 
+        margin-bottom: 1rem; 
+        max-height: 480px;
+        position: relative;
+    }
+    
+    /* Custom Scrollbar */
+    .table-premium-container::-webkit-scrollbar { width: 8px; }
+    .table-premium-container::-webkit-scrollbar-track { background: #f8fafc; }
+    .table-premium-container::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; border: 2px solid #f8fafc; }
+    .table-premium-container::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+    .table-modern { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .table-modern thead { position: sticky; top: 0; z-index: 10; }
+    .table-modern thead th { 
+        background: #f8fafc; 
+        padding: 1rem 1.25rem; 
+        text-align: left; 
+        font-size: 0.65rem; 
+        font-weight: 800; 
+        color: var(--text-muted); 
+        text-transform: uppercase; 
+        letter-spacing: 0.05rem; 
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .table-modern tbody tr { border-bottom: 1px solid #f8fafc; transition: all 0.2s; }
+    .table-modern tbody tr:hover { background: #fdfdfd; }
+    .table-modern td { padding: 0.85rem 1.25rem; vertical-align: middle; }
+
+
+    /* Status Badge Toggle */
+    .status-toggle-btn {
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        outline: none;
+    }
+    .status-toggle-btn:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .status-toggle-btn:active { transform: scale(0.96); }
+    .status-toggle-btn.is-aktif { background: #dcfce7; color: #15803d; }
+    .status-toggle-btn.is-aktif:hover { background: #bbf7d0; }
+    .status-toggle-btn.is-draft { background: #fef3c7; color: #92400e; }
+    .status-toggle-btn.is-draft:hover { background: #fde68a; }
+    .status-toggle-btn.is-loading { opacity: 0.6; cursor: wait; pointer-events: none; }
+
+    /* Modal Overlay */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(2, 6, 23, 0.6); z-index:1000; backdrop-filter:blur(4px); align-items:center; justify-content:center; }
 </style>
 
-<div class="dashboard-wrapper">
-    {{-- ─── Header Section ─── --}}
-    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-        <div>
-            <h1 style="font-size:1.75rem; font-weight:900; color:#0f172a; margin:0 0 .25rem; letter-spacing:-.03em;">Bank Soal CBT</h1>
-            <p style="color:#64748b; font-size:1rem; margin:0; font-weight:500;">Kelola seluruh database soal ujian CBT PPDB</p>
+<div class="bank-soal-wrapper">
+    {{-- ─── Stats row ─── --}}
+    <div class="stats-container">
+        <div class="stat-card {{ !request('status') ? 'active' : '' }}" style="cursor:pointer" onclick="filterTable('all')">
+            <div class="stat-icon" style="background:rgba(99, 102, 241, 0.1); color:var(--primary);"><i data-lucide="folder-open"></i></div>
+            <div class="stat-info">
+                <p class="stat-value">{{ $stats['total'] }}</p>
+                <p class="stat-label">Total Soal</p>
+            </div>
         </div>
-        <div style="display:flex; gap:1rem;">
-            <button class="btn-outline-soft" onclick="document.getElementById('import_container').scrollIntoView({behavior: 'smooth'})">
-                <i class="fa-solid fa-file-excel"></i> Import Excel
-            </button>
-            <button class="btn-gradient" onclick="document.getElementById('teks_soal').focus()">
-                <i class="fa-solid fa-plus"></i> Tambah Soal
-            </button>
+        <div class="stat-card {{ request('status') == 'Aktif' ? 'active' : '' }}" style="cursor:pointer" onclick="filterTable('Aktif')">
+            <div class="stat-icon" style="background:rgba(16, 185, 129, 0.1); color:var(--success);"><i data-lucide="check-circle-2"></i></div>
+            <div class="stat-info">
+                <p class="stat-value">{{ $stats['aktif'] }}</p>
+                <p class="stat-label">Soal Aktif</p>
+            </div>
+        </div>
+        <div class="stat-card {{ request('status') == 'Draft' ? 'active' : '' }}" style="cursor:pointer" onclick="filterTable('Draft')">
+            <div class="stat-icon" style="background:rgba(245, 158, 11, 0.1); color:var(--warning);"><i data-lucide="file-edit"></i></div>
+            <div class="stat-info">
+                <p class="stat-value">{{ $stats['draft'] }}</p>
+                <p class="stat-label">Soal Draft</p>
+            </div>
+        </div>
+        <div class="stat-card {{ request('status') == 'Digunakan' ? 'active' : '' }}" style="cursor:pointer" onclick="filterTable('Digunakan')">
+            <div class="stat-icon" style="background:rgba(168, 85, 247, 0.1); color:var(--secondary);"><i data-lucide="layout"></i></div>
+            <div class="stat-info">
+                <p class="stat-value">{{ $stats['digunakan'] }}</p>
+                <p class="stat-label">Digunakan</p>
+            </div>
         </div>
     </div>
 
-    {{-- ─── Form Tambah Soal ─── --}}
-    <section class="premium-card animate-slide-up">
-        <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:2rem; color:var(--primary);">
-            <i class="fa-solid fa-list-check" style="font-size:1.25rem;"></i>
-            <h3 style="margin:0; font-size:1.2rem; font-weight:800; color:#1e293b;">Tambah Soal Baru</h3>
-        </div>
-
-        <form action="{{ route('admin.bank_soal.store') }}" method="POST" id="formSoal">
-            @csrf
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1.5fr; gap:2rem;">
-                {{-- Column 1 --}}
-                <div>
-                    <div class="form-group-modern">
-                        <label class="label-modern">Tahun Ajaran</label>
-                        <select name="tahun_ajaran" class="input-modern" required>
-                            @php $years = ['2023/2024', '2024/2025', '2025/2026']; @endphp
-                            @foreach($years as $y)
-                                <option value="{{ $y }}" {{ ($filterTahun ?? '2024/2025') == $y ? 'selected' : '' }}>{{ $y }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="label-modern">Paket Ujian / Mapel</label>
-                        <select name="nama_paket" class="input-modern">
-                            @php $pakets = ['Paket RPL', 'Paket TKJ', 'Paket Multimedia', 'Paket MPLB', 'Umum']; @endphp
-                            @foreach($pakets as $p)
-                                <option value="{{ $p }}">{{ $p }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+    {{-- ─── Input & Preview Grid ─── --}}
+    <div class="content-grid">
+        {{-- Left: Input Form --}}
+        <section class="premium-card">
+            <div class="card-header">
+                <h3><i data-lucide="plus-circle" style="width:18px;"></i> Input / Edit Soal</h3>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn-lux btn-lux-ghost" style="padding:0.4rem 0.8rem; font-size:0.75rem;" onclick="openModal('importModal')">
+                        <i data-lucide="file-up" style="width:14px;"></i> Import
+                    </button>
                 </div>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('admin.bank_soal.store') }}" method="POST" id="formSoal" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="id" id="soal_id">
+                    <div class="form-row" style="grid-template-columns: 1fr;">
+                        <div class="form-group-modern">
+                            <label class="label-modern">Mata Pelajaran</label>
+                            <select name="mapel" id="form_mapel" class="input-modern" required onchange="updatePreview()">
+                                <option value="Matematika">Matematika</option>
+                                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                                <option value="Bahasa Inggris">Bahasa Inggris</option>
+                                <option value="Umum">Umum</option>
+                            </select>
+                        </div>
+                    </div>
 
-                {{-- Column 2 (Options Grid inside) --}}
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <div class="form-group-modern">
-                        <label class="label-modern">Opsi A</label>
-                        <input type="text" name="opsi_a" class="input-modern" placeholder="Ketik opsi A" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="label-modern">Opsi C</label>
-                        <input type="text" name="opsi_c" class="input-modern" placeholder="Ketik opsi C" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="label-modern">Opsi B</label>
-                        <input type="text" name="opsi_b" class="input-modern" placeholder="Ketik opsi B" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label class="label-modern">Opsi D</label>
-                        <input type="text" name="opsi_d" class="input-modern" placeholder="Ketik opsi D" required>
-                    </div>
-                </div>
-
-                {{-- Column 3 (Textarea) --}}
-                <div style="position:relative;">
-                    <div class="form-group-modern" style="margin-bottom:0;">
+                    <div class="form-group-modern" style="margin-bottom:0.75rem;">
                         <label class="label-modern">Pertanyaan</label>
-                        <textarea name="teks_soal" id="teks_soal" class="input-modern textarea-modern" 
-                                  placeholder="Ketik pertanyaan di sini..." required oninput="updateCharCount(this)"></textarea>
-                        <div id="char_counter" style="position:absolute; bottom:12px; right:15px; font-size:0.75rem; color:#94a3b8; font-weight:700;">0 / 1000</div>
+                        <textarea name="teks_soal" id="teks_soal" class="input-modern" style="min-height:72px; resize:vertical; line-height:1.4;" placeholder="Masukkan redaksi pertanyaan..." required oninput="updatePreview()"></textarea>
                     </div>
-                    <div class="form-group-modern" style="margin-top:1.5rem;">
-                        <label class="label-modern">Jawaban Benar</label>
-                        <select name="jawaban_benar" class="input-modern" required>
-                            <option value="" disabled selected>Pilih jawaban benar</option>
-                            <option value="A">Opsi A</option>
-                            <option value="B">Opsi B</option>
-                            <option value="C">Opsi C</option>
-                            <option value="D">Opsi D</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
 
-            {{-- Footer Form --}}
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:1.5rem; border-top:1px solid #f1f5f9;">
-                <div style="display:flex; align-items:center; gap:0.75rem; color:#64748b; background:rgba(226, 232, 240, 0.3); padding:.6rem 1.25rem; border-radius:14px; font-size:0.8rem; font-weight:600;">
-                    <i class="fa-solid fa-circle-info" style="color:var(--primary);"></i>
-                    Setelah disimpan, form akan otomatis dikosongkan dan cursor kembali ke pertanyaan.
-                </div>
-                <div style="display:flex; gap:1.5rem; align-items:center;">
-                    <div style="text-align:right;">
-                        <button type="button" class="btn-outline-soft" style="height:48px;" onclick="resetForm()">
-                            <i class="fa-solid fa-rotate-right"></i> Reset
+                    <div class="options-grid-modern">
+                        <div class="option-item">
+                            <span class="option-prefix">A</span>
+                            <textarea name="opsi_a" class="option-input" placeholder="Opsi A" oninput="updatePreview()" required></textarea>
+                            <label class="option-check">
+                                <input type="radio" name="jawaban_benar" value="A" onchange="updatePreview()" required>
+                            </label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-prefix">B</span>
+                            <textarea name="opsi_b" class="option-input" placeholder="Opsi B" oninput="updatePreview()" required></textarea>
+                            <label class="option-check">
+                                <input type="radio" name="jawaban_benar" value="B" onchange="updatePreview()">
+                            </label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-prefix">C</span>
+                            <textarea name="opsi_c" class="option-input" placeholder="Opsi C" oninput="updatePreview()" required></textarea>
+                            <label class="option-check">
+                                <input type="radio" name="jawaban_benar" value="C" onchange="updatePreview()">
+                            </label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-prefix">D</span>
+                            <textarea name="opsi_d" class="option-input" placeholder="Opsi D" oninput="updatePreview()" required></textarea>
+                            <label class="option-check">
+                                <input type="radio" name="jawaban_benar" value="D" onchange="updatePreview()">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:0.75rem; margin-bottom:0.75rem;">
+                        <div class="form-group-modern">
+                            <label class="label-modern">Gambar (JPG/PNG)</label>
+                            <div id="drop_zone" style="border:1.5px dashed var(--glass-border); border-radius:10px; padding:0.75rem; text-align:center; cursor:pointer; background:rgba(248, 250, 252, 0.4); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--glass-border)'" onclick="document.getElementById('gambar_input').click()">
+                                <i data-lucide="image" style="width:20px; color:var(--text-muted); margin:0 auto 0.4rem; display:block;"></i>
+                                <span id="file_name_label" style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">Click to upload</span>
+                                <input type="file" id="gambar_input" name="gambar" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImagePreview(this)">
+                            </div>
+                        </div>
+                        <div class="form-group-modern">
+                            <label class="label-modern">Penjelasan (Opsional)</label>
+                            <textarea name="penjelasan" id="form_penjelasan" class="input-modern" style="min-height:68px; resize:none;" placeholder="Mengapa jawaban ini benar?"></textarea>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="tahun_ajaran" value="{{ $filterTahun ?? '2024/2025' }}">
+                    <input type="hidden" name="nama_paket" value="{{ $filterPaket ?? 'Paket Umum' }}">
+
+                    <div style="display:flex; gap:0.5rem; border-top:1px solid var(--glass-border); padding-top:1rem; margin-top:0.25rem;">
+                        <button type="button" onclick="resetForm()" style="flex:1; display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.55rem 0.75rem; border-radius:10px; border:none; cursor:pointer; font-size:0.72rem; font-weight:800; background:#f1f5f9; color:#64748b; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                            <i data-lucide="rotate-ccw" style="width:13px;"></i> Reset
                         </button>
-                        <p style="margin:.25rem 0 0; font-size:0.65rem; color:#94a3b8; font-weight:700;">Kosongkan form</p>
+                        <button type="submit" name="status" value="Draft" style="flex:1; display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.55rem 0.75rem; border-radius:10px; border:none; cursor:pointer; font-size:0.72rem; font-weight:800; background:#fef3c7; color:#92400e; transition:all 0.2s;" onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fef3c7'">
+                            <i data-lucide="file-edit" style="width:13px;"></i> Draft
+                        </button>
+                        <button type="submit" name="status" value="Aktif" style="flex:1.5; display:flex; align-items:center; justify-content:center; gap:0.4rem; padding:0.55rem 1rem; border-radius:10px; border:none; cursor:pointer; font-size:0.72rem; font-weight:800; background:linear-gradient(135deg, var(--primary), var(--secondary)); color:white; box-shadow:0 4px 12px rgba(99,102,241,0.3); transition:all 0.2s;" onmouseover="this.style.boxShadow='0 6px 16px rgba(99,102,241,0.45)'" onmouseout="this.style.boxShadow='0 4px 12px rgba(99,102,241,0.3)'">
+                            <i data-lucide="save" style="width:13px;"></i> Simpan Aktif
+                        </button>
                     </div>
-                    <button type="submit" class="btn-gradient" style="height:48px; min-width:180px;">
-                        <i class="fa-solid fa-floppy-disk"></i> Simpan Soal
-                    </button>
-                </div>
-            </div>
-        </form>
-    </section>
-
-    {{-- ─── Database Section ─── --}}
-    <section class="premium-card animate-slide-up" style="animation-delay: 0.1s;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
-            <div style="display:flex; align-items:center; gap:.75rem;">
-                <h3 style="margin:0; font-size:1.2rem; font-weight:800; color:#1e293b;">Database Pertanyaan</h3>
-                <span style="font-size:0.75rem; font-weight:800; color:var(--primary); background:var(--primary-soft); padding:0.35rem 0.85rem; border-radius:99px;">
-                    {{ $soals->count() }} Data
-                </span>
-            </div>
-            
-            <div style="display:flex; gap:1rem; align-items:center;">
-                {{-- Search --}}
-                <div style="position:relative; min-width:300px;">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.9rem;"></i>
-                    <input type="text" id="searchInput" class="input-modern" placeholder="Cari pertanyaan..." style="padding-left:2.75rem;">
-                </div>
-
-                {{-- Filters --}}
-                <form action="{{ route('admin.bank_soal.index') }}" method="GET" style="display:flex; gap:0.75rem; align-items:center;">
-                    <select name="tahun_ajaran" class="input-modern" style="padding:.75rem 2rem .75rem 1rem;" onchange="this.form.submit()">
-                        <option value="">Tahun: Semua</option>
-                        @foreach($tahunAjarans as $ta)
-                            <option value="{{ $ta }}" {{ $filterTahun == $ta ? 'selected' : '' }}>Tahun: {{ $ta }}</option>
-                        @endforeach
-                    </select>
-                    <select name="nama_paket" class="input-modern" style="padding:.75rem 2rem .75rem 1rem;" onchange="this.form.submit()">
-                        <option value="">Paket: Semua</option>
-                        @foreach($namaPakets as $np)
-                            <option value="{{ $np }}" {{ $filterPaket == $np ? 'selected' : '' }}>{{ $np }}</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="btn-outline-soft" style="height:48px;">
-                        <i class="fa-solid fa-filter"></i> Filter
-                    </button>
                 </form>
             </div>
-        </div>
+        </section>
 
-        <div class="table-wrapper">
-            <div class="internal-scroll custom-scrollbar" id="tableScrollArea">
-                <table class="modern-table" id="soalTable">
+        {{-- Right: Tampilan Siswa Preview --}}
+        <section class="premium-card" style="background: rgba(241, 245, 249, 0.3);">
+            <div class="card-header" style="background:transparent;">
+                <h3><i data-lucide="eye" style="width:18px;"></i> Preview Siswa</h3>
+                <div style="display:flex; gap:.25rem; align-items:center;">
+                   <span style="font-size:0.6rem; font-weight:800; color:var(--primary); background:rgba(99, 102, 241, 0.1); padding:0.2rem 0.5rem; border-radius:4px;">LIVE PREVIEW</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="preview-container-mockup">
+                    <div class="preview-soal-card">
+                        <div class="preview-meta">
+                            <span class="preview-badge" id="preview_mapel_badge" style="background:#e0e7ff; color:#4338ca;">Matematika</span>
+                        </div>
+                        <div class="preview-teks" id="preview_teks">
+                            Tampilan pertanyaan akan muncul di sini...
+                        </div>
+
+                        <div class="preview-gambar" id="preview_gambar_container" onclick="window.open(this.querySelector('img').src, '_blank')">
+                            <img src="" id="img_preview" alt="Preview Soal">
+                        </div>
+                        
+                        <div id="preview_options">
+                            <div class="preview-option" id="prev_opt_A">
+                                <div class="preview-opt-prefix">A</div>
+                                <div class="preview-opt-text" id="prev_text_A">Pilihan A</div>
+                            </div>
+                            <div class="preview-option" id="prev_opt_B">
+                                <div class="preview-opt-prefix">B</div>
+                                <div class="preview-opt-text" id="prev_text_B">Pilihan B</div>
+                            </div>
+                            <div class="preview-option" id="prev_opt_C">
+                                <div class="preview-opt-prefix">C</div>
+                                <div class="preview-opt-text" id="prev_text_C">Pilihan C</div>
+                            </div>
+                            <div class="preview-option" id="prev_opt_D">
+                                <div class="preview-opt-prefix">D</div>
+                                <div class="preview-opt-text" id="prev_text_D">Pilihan D</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:1.25rem; padding:0.75rem; background:#f0fdf4; border-radius:10px; display:flex; align-items:center; gap:0.5rem; border:1px solid #dcfce7; color:#15803d; font-size:0.75rem; font-weight:800;">
+                            <i data-lucide="check-circle" style="width:14px;"></i> Jawaban Benar: <span id="preview_correct_label">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    {{-- ─── Database Table Row ─── --}}
+    <section class="premium-card">
+        <div class="card-header">
+            <h3><i data-lucide="database" style="width:18px;"></i> Daftar Bank Soal</h3>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <div style="position:relative;">
+                    <i data-lucide="search" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); width:14px; color:var(--text-muted);"></i>
+                    <input type="text" id="searchInput" class="input-modern" placeholder="Cari..." style="padding-left:2.25rem; border-radius:99px; width:200px; font-size:0.75rem;">
+                </div>
+                
+                <form action="{{ route('admin.bank_soal.index') }}" method="GET" id="filterForm" style="display:flex; gap:0.4rem;">
+                    <select name="status" class="input-modern" id="filterStatus" style="padding:0.4rem 0.75rem; border-radius:99px; font-size:0.7rem;" onchange="this.form.submit()">
+                        <option value="">Semua Status</option>
+                        <option value="Aktif" {{ request('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="Draft" {{ request('status') == 'Draft' ? 'selected' : '' }}>Draft</option>
+                    </select>
+                </form>
+
+                <div style="width:1px; height:20px; background:var(--glass-border); margin:0 0.25rem;"></div>
+
+                <div style="position:relative;">
+                    <button class="btn-lux btn-lux-ghost" style="padding:0.4rem 0.8rem; border-radius:99px; font-size:0.7rem;" onclick="document.getElementById('exportMenu').style.display = document.getElementById('exportMenu').style.display === 'block' ? 'none' : 'block'">
+                        <i data-lucide="file-spreadsheet" style="width:14px; color:var(--success);"></i> Export
+                    </button>
+                    <div id="exportMenu" style="display:none; position:absolute; right:0; top:110%; background:white; border:1px solid var(--glass-border); border-radius:12px; box-shadow:var(--shadow-premium); z-index:100; width:120px; padding:0.5rem;">
+                         <a href="{{ route('admin.bank_soal.export') }}?format=excel" class="dropdown-item" style="display:flex; align-items:center; gap:8px; padding:8px; font-size:0.75rem; text-decoration:none; color:var(--text-main); font-weight:700;">
+                            <i data-lucide="file-text" style="width:14px; color:#107c41;"></i> Excel
+                         </a>
+                         <a href="{{ route('admin.bank_soal.export') }}?format=csv" class="dropdown-item" style="display:flex; align-items:center; gap:8px; padding:8px; font-size:0.75rem; text-decoration:none; color:var(--text-main); font-weight:700;">
+                            <i data-lucide="file-type" style="width:14px; color:#1e293b;"></i> CSV
+                         </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-premium-container">
+                <table class="table-modern" id="soalTable">
                     <thead>
                         <tr>
-                            <th style="min-width:300px;">Pertanyaan</th>
-                            <th>Paket / Mapel</th>
-                            <th>Tahun Ajaran</th>
-                            <th style="text-align:center;">Kunci</th>
-                            <th>Sumber Data</th>
-                            <th style="text-align:right;">Aksi</th>
+                            <th style="padding-left:1.5rem; width:50px;">No</th>
+                            <th style="width:35%;">Pertanyaan</th>
+                            <th>Sumber</th>
+                            <th>Tanggal Dibuat</th>
+                            <th style="width:100px;">Status</th>
+                            <th style="text-align:right; padding-right:1.5rem;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($soals as $s)
-                        @php
-                            $paketClass = 'badge-rpl';
-                            if(str_contains($s->nama_paket, 'TKJ')) $paketClass = 'badge-tkj';
-                            if(str_contains($s->nama_paket, 'Multimedia')) $paketClass = 'badge-mm';
-                            if(str_contains($s->nama_paket, 'MPLB')) $paketClass = 'badge-mplb';
-                        @endphp
-                        <tr>
+                        @forelse($soals as $idx => $s)
+                        <tr data-status="{{ $s->status }}">
+                            <td style="padding-left:1.5rem; font-weight:700; color:var(--text-muted); font-size:0.75rem;">{{ $idx + 1 }}</td>
                             <td>
-                                <div style="font-weight:700; line-height:1.5; color:#1e293b; max-width:400px;">{{ $s->teks_soal }}</div>
-                                <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
-                                    <span style="font-size:0.725rem; font-weight:800; color:var(--primary); background:var(--primary-soft); padding:0.15rem 0.5rem; border-radius:6px;">4 Opsi</span>
-                                </div>
+                                <div style="font-weight:700; color:var(--text-main); line-height:1.4; font-size:0.85rem;">{{ Str::limit($s->teks_soal, 120) }}</div>
+                                @if($s->gambar)
+                                    <span style="font-size:0.6rem; color:var(--info); font-weight:800; display:flex; align-items:center; gap:4px; margin-top:2px;">
+                                        <i data-lucide="image" style="width:10px;"></i> Berisi Gambar
+                                    </span>
+                                @endif
                             </td>
+                            <td><span style="font-weight:700; color:var(--text-muted); font-size:0.8rem;">{{ $s->sumber ?? 'Input Manual' }}</span></td>
+                            <td><span style="font-weight:700; color:var(--text-muted); font-size:0.8rem;">{{ $s->created_at->format('d/m/Y') }}</span></td>
                             <td>
-                                <span class="badge-soft {{ $paketClass }}">{{ $s->nama_paket ?? 'General' }}</span>
+                                <button
+                                    class="status-toggle-btn {{ $s->status == 'Aktif' ? 'is-aktif' : 'is-draft' }}"
+                                    data-id="{{ $s->id }}"
+                                    onclick="toggleSoalStatus(this)"
+                                    title="Klik untuk ubah status">
+                                    <span style="width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block; flex-shrink:0;"></span>
+                                    <span class="status-label">{{ $s->status }}</span>
+                                </button>
                             </td>
-                            <td>
-                                <span style="font-weight:700; color:#475569;">{{ $s->tahun_ajaran }}</span>
-                            </td>
-                            <td style="text-align:center;">
-                                <div style="display:inline-flex;" class="badge-answer">{{ $s->jawaban_benar }}</div>
-                            </td>
-                            <td>
-                                <span style="font-weight:600; color:#64748b; font-size:0.85rem;">
-                                    {{ $s->sumber_data ?? (str_contains($s->nama_paket ?? '', '.') ? 'Import Excel' : 'Manual') }}
-                                </span>
-                            </td>
-                            <td style="text-align:right;">
+                            <td style="text-align:right; padding-right:1.5rem;">
                                 <div style="display:flex; gap:0.4rem; justify-content:flex-end;">
-                                    <div class="tooltip-container">
-                                        <button class="btn-action-icon" style="color:var(--primary); background:var(--primary-soft);" onclick="editSoal({{ $s->id }})">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </button>
-                                        <span class="tooltip-text">Edit</span>
-                                    </div>
-                                    <div class="tooltip-container">
-                                        <button class="btn-action-icon" style="color:#64748b; background:#f1f5f9;">
-                                            <i class="fa-solid fa-copy"></i>
-                                        </button>
-                                        <span class="tooltip-text">Duplicate</span>
-                                    </div>
-                                    <div class="tooltip-container">
-                                        <button class="btn-action-icon" style="color:var(--accent); background:rgba(244, 63, 94, 0.1);" onclick="confirmDelete({{ $s->id }})">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                        </button>
-                                        <span class="tooltip-text">Delete</span>
-                                    </div>
+                                    <button class="btn-lux btn-lux-ghost" style="padding:0; border-radius:8px; height:32px; width:32px; color:var(--primary);" 
+                                            onclick="editSoal({{ json_encode($s) }})">
+                                        <i data-lucide="edit-3" style="width:14px;"></i>
+                                    </button>
+                                    <button class="btn-lux btn-lux-ghost" style="padding:0; border-radius:8px; height:32px; width:32px; color:var(--accent);" onclick="confirmDelete({{$s->id}})">
+                                        <i data-lucide="trash-2" style="width:14px;"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" style="padding:4rem 2rem; text-align:center;">
-                                <div style="width:120px; height:120px; background:#f8fafc; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; color:#cbd5e1; font-size:3rem; border:2px dashed #e2e8f0;">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </div>
-                                <h4 style="margin:0; font-weight:900; color:#1e293b; font-size:1.1rem;">Belum Ada Soal CBT</h4>
-                                <p style="margin:0.25rem 0 1.5rem; color:#94a3b8; font-weight:600;">Mulai tambahkan pertanyaan pertama untuk paket ujian ini.</p>
-                                <button class="btn-gradient" onclick="document.getElementById('teks_soal').focus()">
-                                    <i class="fa-solid fa-plus"></i> Tambah Soal
-                                </button>
+                            <td colspan="6" style="padding:3rem; text-align:center;">
+                                <div style="opacity:0.2; margin-bottom:0.75rem;"><i data-lucide="folder-search" style="width:48px; height:48px; margin:0 auto;"></i></div>
+                                <h4 style="font-weight:800; color:var(--text-main); font-size:0.9rem;">Belum ada data</h4>
+                                <p style="color:var(--text-muted); font-size:0.75rem;">Silakan tambahkan soal baru atau import file.</p>
                             </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        {{-- Pagination info simplified --}}
-        <div style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center;">
-            <p style="margin:0; font-size:0.85rem; font-weight:700; color:#94a3b8;">
-                Menampilkan 1 - {{ $soals->count() }} dari {{ $soals->count() }} soal
-            </p>
-            <div id="pagination_placeholder" style="display:flex; gap:0.5rem;">
-                {{-- Mock pagination dots for pure CSS look --}}
-                <div style="width:32px; height:32px; border-radius:8px; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem;">1</div>
-            </div>
         </div>
     </section>
-    
-    {{-- ─── Hidden Components for Logic ─── --}}
-    <div id="import_container" style="padding-top:1rem;">
-        <section class="premium-card" style="background:rgba(245, 158, 11, 0.04); border-color:rgba(245, 158, 11, 0.2);">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; gap:1rem; align-items:center;">
-                    <i class="fa-solid fa-file-export" style="color:#d97706; font-size:1.25rem;"></i>
-                    <h3 style="margin:0; font-size:1rem; font-weight:800; color:#92400e;">Import Database Soal</h3>
-                </div>
-                <form action="{{ route('admin.bank_soal.import') }}" method="POST" enctype="multipart/form-data" id="importForm" style="display:flex; gap:1rem; align-items:center;">
-                    @csrf
-                    <input type="file" name="file_soal" class="input-modern" style="padding:.5rem; background:white; font-size:0.85rem;" accept=".csv,.txt" required>
-                    <button type="submit" class="btn-gradient" style="background:linear-gradient(135deg, #f59e0b, #d97706); height:40px;">
-                        <i class="fa-solid fa-upload"></i> Proses Import
-                    </button>
-                    <div style="display:flex; gap:0.4rem;">
-                        <a href="{{ route('admin.bank_soal.template') }}" class="btn-outline-soft" style="padding:.5rem .75rem; height:40px;"><i class="fa-solid fa-file-lines"></i></a>
-                        <a href="{{ route('admin.bank_soal.template_excel') }}" class="btn-outline-soft" style="padding:.5rem .75rem; height:40px;"><i class="fa-solid fa-file-excel"></i></a>
-                    </div>
-                </form>
-            </div>
-        </section>
-    </div>
 </div>
 
-{{-- ─── Action Components (Toasts & Modals) ─── --}}
-
-{{-- Delete Modal --}}
-<div id="deleteModal" style="display:none; position:fixed; z-index:1000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
-    <div class="premium-card" style="width:400px; text-align:center; padding:2.5rem;">
-        <div style="width:64px; height:64px; background:rgba(244, 63, 94, 0.1); color:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; font-size:1.75rem;">
-            <i class="fa-solid fa-circle-exclamation"></i>
+{{-- ─── Import Modal ─── --}}
+<div id="importModal" class="modal-overlay">
+    <div class="premium-card" style="width:480px; padding:1.5rem; border-radius:24px;">
+        <div class="card-header" style="border:none; padding:0 0 1rem 0;">
+            <h3><i data-lucide="file-up" style="width:20px;"></i> Import Massal Soal</h3>
+            <button onclick="closeModal('importModal')" style="border:none; background:none; cursor:pointer;"><i data-lucide="x" style="width:20px; color:var(--text-muted);"></i></button>
         </div>
-        <h3 style="margin:0 0 .5rem; font-weight:900; color:#1e293b;">Hapus soal ini?</h3>
-        <p style="margin:0 0 2rem; color:#64748b; font-weight:600; font-size:0.9rem;">Tindakan ini tidak dapat dibatalkan.</p>
-        <div style="display:flex; gap:1rem;">
-            <button class="btn-outline-soft" style="flex:1;" onclick="closeModal()">Batal</button>
-            <form id="deleteForm" method="POST" style="flex:1;">
+        <div style="background:rgba(14, 165, 233, 0.05); border:1px dashed var(--info); border-radius:16px; padding:1.5rem;">
+            <p style="margin-bottom:1.5rem; font-size:0.8rem; color:var(--text-muted); font-weight:600;">Unggah file CSV atau Excel untuk memuat banyak soal sekaligus. Gunakan template yang telah disediakan.</p>
+            <form action="{{ route('admin.bank_soal.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-gradient" style="background:var(--accent); width:100%; box-shadow:0 8px 20px rgba(244, 63, 94, 0.2);">Hapus</button>
+                <div style="border:1.5px dashed var(--glass-border); border-radius:12px; padding:1.5rem; text-align:center; cursor:pointer; background:white;" onclick="document.getElementById('file_import_input').click()">
+                    <i data-lucide="upload-cloud" style="width:32px; color:var(--info); margin:0 auto 0.5rem; display:block;"></i>
+                    <span id="import_file_label" style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Click to select CSV/Excel</span>
+                    <input type="file" id="file_import_input" name="file_soal" accept=".csv, .xlsx, .xls" style="display:none;" onchange="document.getElementById('import_file_label').innerText = this.files[0].name">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:2rem;">
+                    <a href="{{ route('admin.bank_soal.template_excel') }}" class="btn-lux btn-lux-ghost" style="font-size:0.7rem;"><i data-lucide="download" style="width:14px;"></i> Template</a>
+                    <button type="submit" class="btn-lux btn-lux-primary">Mulai Import</button>
+                </div>
             </form>
         </div>
     </div>
 </div>
 
-{{-- Success Toast --}}
-@if(session('success'))
-<div id="statusToast" style="position:fixed; top:2rem; right:2rem; z-index:1100; background:rgba(255,255,255,0.9); backdrop-filter:blur(10px); border:1px solid #d1fae5; border-left:6px solid #10b981; border-radius:16px; padding:1.25rem 2rem; box-shadow:0 15px 40px rgba(0,0,0,0.1); display:flex; align-items:center; gap:1rem; animation: slideUp 0.3s ease-out;">
-    <div style="width:32px; height:32px; background:#d1fae5; color:#059669; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.9rem;">
-        <i class="fa-solid fa-check"></i>
+{{-- ─── Delete Modal ─── --}}
+<div id="deleteModal" class="modal-overlay">
+    <div class="premium-card" style="width:340px; padding:1.5rem; text-align:center; border-radius:24px;">
+        <div style="width:56px; height:56px; background:#fee2e2; border-radius:50%; margin:0 auto 1.25rem; display:flex; align-items:center; justify-content:center; color:var(--accent);">
+            <i data-lucide="alert-circle" style="width:28px; height:28px;"></i>
+        </div>
+        <h3 style="margin-bottom:0.4rem; font-weight:800; font-size:1.1rem;">Hapus Soal?</h3>
+        <p style="color:var(--text-muted); margin-bottom:1.5rem; font-weight:600; font-size:0.85rem;">Tindakan ini tidak dapat dibatalkan.</p>
+        <div style="display:flex; gap:0.75rem;">
+            <button class="btn-lux btn-lux-ghost" style="flex:1;" onclick="closeModal('deleteModal')">Batal</button>
+            <form id="deleteForm" method="POST" style="flex:1;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn-lux btn-lux-primary" style="background:var(--accent); width:100%; box-shadow:0 8px 16px rgba(244, 63, 94, 0.2);">Hapus</button>
+            </form>
+        </div>
     </div>
-    <div style="flex:1;">
-        <p style="margin:0; font-weight:800; color:#064e3b; font-size:0.9rem;">{{ session('success') }}</p>
-    </div>
-    <button onclick="this.parentElement.remove()" style="background:transparent; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer;">&times;</button>
 </div>
-@endif
-
-<style>
-    .btn-action-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .btn-action-icon:hover { transform: scale(1.1); filter: brightness(0.9); }
-</style>
 
 <script>
-    // ─── Realtime Search ───
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        let value = this.value.toLowerCase();
-        let rows = document.querySelectorAll('#soalTable tbody tr');
-        let hasResult = false;
+    // Initialize Lucide Icons
+    lucide.createIcons();
 
-        rows.forEach(row => {
-            let text = row.querySelector('td:first-child').textContent.toLowerCase();
-            if (text.includes(value)) {
-                row.style.display = '';
-                hasResult = true;
-            } else {
-                row.style.display = 'none';
-            }
+    // ─── Live Preview Logic ───
+    function updatePreview() {
+        const teks = document.getElementById('teks_soal').value;
+        document.getElementById('preview_teks').innerText = teks || "Tampilan pertanyaan akan muncul di sini...";
+
+        ['A', 'B', 'C', 'D'].forEach(opt => {
+            const optVal = document.querySelector(`textarea[name="opsi_${opt.toLowerCase()}"]`).value;
+            document.getElementById(`prev_text_${opt}`).innerText = optVal || `Pilihan ${opt}`;
         });
 
-        // Toggle Empty State for search if needed
-        // (For simplicity I'll just rely on CSS Display)
-    });
+        const mapel = document.getElementById('form_mapel').value;
+        document.getElementById('preview_mapel_badge').innerText = mapel;
 
-    // ─── Textarea Auto-Resize ───
-    function autoResizeTextarea(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight) + 'px';
+        const correct = document.querySelector('input[name="jawaban_benar"]:checked')?.value;
+        document.getElementById('preview_correct_label').innerText = correct || "-";
+
+        document.querySelectorAll('.preview-option').forEach(el => el.classList.remove('correct'));
+        if(correct) {
+            const activeEl = document.getElementById(`prev_opt_${correct}`);
+            if(activeEl) activeEl.classList.add('correct');
+        }
     }
 
-    // ─── Character Counter ───
-    function updateCharCount(textarea) {
-        let count = textarea.value.length;
-        document.getElementById('char_counter').innerText = count + ' / 1000';
+    function handleImagePreview(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgContainer = document.getElementById('preview_gambar_container');
+                const img = document.getElementById('img_preview');
+                img.src = e.target.result;
+                imgContainer.style.display = 'block';
+                
+                document.getElementById('file_name_label').innerText = input.files[0].name;
+                document.getElementById('file_name_label').style.color = "var(--success)";
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
-    // ─── Form Reset ───
     function resetForm() {
         document.getElementById('formSoal').reset();
-        document.getElementById('char_counter').innerText = '0 / 1000';
-        document.getElementById('teks_soal').focus();
+        document.getElementById('soal_id').value = '';
+        document.getElementById('preview_gambar_container').style.display = 'none';
+        document.getElementById('file_name_label').innerText = 'Click to upload';
+        document.getElementById('file_name_label').style.color = "var(--text-muted)";
+        updatePreview();
     }
 
-    // ─── Delete Confirmation ───
-    function confirmDelete(id) {
-        const modal = document.getElementById('deleteModal');
-        const form = document.getElementById('deleteForm');
-        form.action = `/admin/bank_soal/${id}`;
-        modal.style.display = 'flex';
-    }
-    function closeModal() {
-        document.getElementById('deleteModal').style.display = 'none';
-    }
-
-    // ─── Auto Close Toast ───
-    window.onload = () => {
-        const toast = document.getElementById('statusToast');
-        if(toast) {
-            setTimeout(() => {
-                toast.style.transition = 'opacity 0.5s ease-out';
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
+    function editSoal(soal) {
+        document.getElementById('soal_id').value = soal.id;
+        document.getElementById('form_mapel').value = soal.mapel || 'Umum';
+        document.getElementById('teks_soal').value = soal.teks_soal;
+        document.querySelector('textarea[name="opsi_a"]').value = soal.opsi_a;
+        document.querySelector('textarea[name="opsi_b"]').value = soal.opsi_b;
+        document.querySelector('textarea[name="opsi_c"]').value = soal.opsi_c;
+        document.querySelector('textarea[name="opsi_d"]').value = soal.opsi_d;
+        document.getElementById('form_penjelasan').value = soal.penjelasan || '';
         
-        // Final focus as requested
-        @if(session('success'))
-            document.getElementById('teks_soal').focus();
-        @endif
+        const radio = document.querySelector(`input[name="jawaban_benar"][value="${soal.jawaban_benar}"]`);
+        if(radio) radio.checked = true;
+
+        if(soal.gambar) {
+            const imgContainer = document.getElementById('preview_gambar_container');
+            const img = document.getElementById('img_preview');
+            img.src = '/storage/' + soal.gambar;
+            imgContainer.style.display = 'block';
+        } else {
+            document.getElementById('preview_gambar_container').style.display = 'none';
+        }
+
+        updatePreview();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // ─── Modal Logic ───
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // ─── Toggle Status (AJAX) ───
+    function toggleSoalStatus(btn) {
+        const id = btn.dataset.id;
+        btn.classList.add('is-loading');
+
+        fetch(`/admin/bank_soal/${id}/toggle-status`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const newStatus = data.new_status;
+                const label = btn.querySelector('.status-label');
+                label.innerText = newStatus;
+                btn.classList.remove('is-aktif', 'is-draft', 'is-loading');
+                btn.classList.add(newStatus === 'Aktif' ? 'is-aktif' : 'is-draft');
+            }
+        })
+        .catch(() => {
+            btn.classList.remove('is-loading');
+        });
+    }
+
+    // ─── Filtering Logic ───
+    function filterTable(status) {
+        if(status === 'all') {
+            window.location.href = "{{ route('admin.bank_soal.index') }}";
+        } else if(status === 'Digunakan') {
+             // Logic for 'Digunakan' might require a separate filter or just showing all for now
+             // User asked: "munvculin yang 51 digunakan saja"
+             // For simplicity, let's just use the status filter if available
+             window.location.href = "{{ route('admin.bank_soal.index') }}?status=" + status;
+        } else {
+            window.location.href = "{{ route('admin.bank_soal.index') }}?status=" + status;
+        }
+    }
+
+    function confirmDelete(id) {
+        document.getElementById('deleteForm').action = `/admin/bank_soal/${id}`;
+        openModal('deleteModal');
+    }
+
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const val = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#soalTable tbody tr');
+        rows.forEach(row => {
+            if(row.innerText.toLowerCase().includes(val)) row.style.display = '';
+            else row.style.display = 'none';
+        });
+    });
+
+    window.onclick = function(event) {
+        const modals = ['importModal', 'deleteModal'];
+        modals.forEach(id => {
+            if (event.target == document.getElementById(id)) closeModal(id);
+        });
+        if (!event.target.closest('.btn-lux-ghost')) {
+            document.getElementById('exportMenu').style.display = 'none';
+        }
+    }
+
+    window.onload = updatePreview;
 </script>
+
 @endsection

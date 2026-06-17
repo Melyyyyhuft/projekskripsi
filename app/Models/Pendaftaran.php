@@ -43,6 +43,10 @@ class Pendaftaran extends Model
         return $this->hasOne(HasilSeleksi::class);
     }
 
+    public function hasilUjian() {
+        return $this->hasOne(HasilUjian::class, 'user_id', 'user_id');
+    }
+
     /**
      * Calculate and sync selection result for this registration.
      */

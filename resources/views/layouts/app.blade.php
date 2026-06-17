@@ -36,8 +36,8 @@
                 <a href="#" class="nav-item">Menu Akses <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i></a>
                 <div class="dropdown-content">
                     <a href="{{ url('/login') }}"><i class="fa-solid fa-right-to-bracket"></i> Login / Daftar</a>
-                    <a href="{{ url('/ppdb/ujian-online') }}"><i class="fa-solid fa-laptop-code"></i> Ujian Online</a>
-                    <a href="{{ url('/ppdb/hasil-seleksi') }}"><i class="fa-solid fa-bullhorn"></i> Hasil Seleksi</a>
+                    <a href="{{ url('/siswa/ujian') }}"><i class="fa-solid fa-laptop-code"></i> Ujian Online</a>
+                    <a href="{{ url('/siswa/hasil') }}"><i class="fa-solid fa-bullhorn"></i> Hasil Seleksi</a>
                 </div>
             </div>
             
@@ -64,11 +64,7 @@
                     <i class="fa-solid fa-graduation-cap"></i> PPDB Online
                 </div>
                 <p>Mewujudkan generasi cerdas, berkarakter, dan berdaya saing global melalui sistem pendidikan yang modern dan transparan.</p>
-                <div class="social-links">
-                    <a href="https://tiktok.com/@smk.mitrabintaro" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
-                    <a href="https://instagram.com/mitrabintaro" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://youtube.com/@smkmitrabintaro-real?si=XbGJnuRTiMQs6RvR" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
-                </div>
+
             </div>
             
             <div>

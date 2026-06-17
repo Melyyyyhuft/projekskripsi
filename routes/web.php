@@ -49,7 +49,9 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     
     Route::get('bank_soal/template', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplate'])->name('admin.bank_soal.template');
     Route::get('bank_soal/template-excel', [\App\Http\Controllers\Admin\BankSoalController::class, 'downloadTemplateExcel'])->name('admin.bank_soal.template_excel');
+    Route::get('bank_soal/export', [\App\Http\Controllers\Admin\BankSoalController::class, 'export'])->name('admin.bank_soal.export');
     Route::post('bank_soal/import', [\App\Http\Controllers\Admin\BankSoalController::class, 'import'])->name('admin.bank_soal.import');
+    Route::post('bank_soal/{bank_soal}/toggle-status', [\App\Http\Controllers\Admin\BankSoalController::class, 'toggleStatus'])->name('admin.bank_soal.toggle_status');
     Route::resource('bank_soal', \App\Http\Controllers\Admin\BankSoalController::class)->names('admin.bank_soal')->except(['show', 'edit', 'update']);
     
     Route::get('/seleksi', [\App\Http\Controllers\Admin\SeleksiController::class, 'index'])->name('admin.seleksi.index');
@@ -73,7 +75,7 @@ Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::post('/pengaturan/umum', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateUmum'])->name('admin.pengaturan.umum');
     Route::post('/pengaturan/periode', [\App\Http\Controllers\Admin\PengaturanController::class, 'updatePeriode'])->name('admin.pengaturan.periode');
     Route::post('/pengaturan/bobot', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateBobot'])->name('admin.pengaturan.bobot');
-    Route::post('/pengaturan/sosmed', [\App\Http\Controllers\Admin\PengaturanController::class, 'updateSosmed'])->name('admin.pengaturan.sosmed');
+
     
     Route::resource('jurusan-setting', \App\Http\Controllers\Admin\JurusanController::class)->names('admin.jurusan-setting');
 });

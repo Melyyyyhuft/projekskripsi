@@ -31,9 +31,7 @@
     <button class="tab-btn" onclick="openTab(event,'tab-periode')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
         📅 Seleksi & CBT
     </button>
-    <button class="tab-btn" onclick="openTab(event,'tab-sosmed')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
-        📱 Media Sosial
-    </button>
+
     <button class="tab-btn" onclick="openTab(event,'tab-jurusan')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
         🎓 Kuota Jurusan
     </button>
@@ -140,31 +138,7 @@
     </div>
 </div>
 
-{{-- Tab: Media Sosial --}}
-<div id="tab-sosmed" class="tab-pane" style="display:none;">
-    <div class="glass-card" style="max-width: 600px;">
-        <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📱 Konfigurasi Media Sosial</h3>
-        <p style="color:var(--gray-text); font-size:0.875rem; margin-bottom:1.5rem;">Link ini akan otomatis ditampilkan pada footer landing page.</p>
-        <form action="{{ route('admin.pengaturan.sosmed') }}" method="POST">
-            @csrf
-            <div class="form-group">
-                <label class="form-label"><i class="fa-brands fa-tiktok"></i> TikTok URL</label>
-                <input type="url" name="tiktok" class="form-control" value="{{ $settings['tiktok'] ?? '' }}" placeholder="https://tiktok.com/@username">
-            </div>
-            <div class="form-group">
-                <label class="form-label"><i class="fa-brands fa-instagram"></i> Instagram URL</label>
-                <input type="url" name="instagram" class="form-control" value="{{ $settings['instagram'] ?? '' }}" placeholder="https://instagram.com/username">
-            </div>
-            <div class="form-group">
-                <label class="form-label"><i class="fa-brands fa-youtube"></i> YouTube URL</label>
-                <input type="url" name="youtube" class="form-control" value="{{ $settings['youtube'] ?? '' }}" placeholder="https://youtube.com/@channel">
-            </div>
-            <div style="display:flex;justify-content:flex-end;">
-                <button type="submit" class="btn-primary" style="padding:.75rem 2rem;">💾 Simpan Media Sosial</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 {{-- Tab: Jurusan --}}
 <div id="tab-jurusan" class="tab-pane" style="display:none;">

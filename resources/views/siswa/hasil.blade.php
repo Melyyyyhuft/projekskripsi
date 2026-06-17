@@ -162,6 +162,10 @@
 
             <div class="stats-overlay">
                 <div class="stat-item">
+                    <div class="stat-lbl">No. Pendaftaran</div>
+                    <div class="stat-val" style="font-size:1.1rem;">{{ $pendaftaran->nomor_pendaftaran }}</div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-lbl">Skor Akhir</div>
                     <div class="stat-val">{{ number_format($hasil->skor_akhir, 2) }}</div>
                 </div>

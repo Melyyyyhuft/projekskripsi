@@ -9,14 +9,14 @@
     
     <div class="hero-content">
         <div class="badge">
-            <i class="fa-solid fa-star"></i> Pendaftaran Tahun Ajaran Baru Telah Dibuka
+            Pendaftaran Tahun Ajaran Baru Telah Dibuka
         </div>
         <h1 class="hero-title">Wujudkan Masa Depan Gemilang Bersama Kami<span class="text-gradient"></span></h1>
         <p class="hero-subtitle">Sistem Penerimaan Peserta Didik Baru yang dirancang khusus untuk memberikan pengalaman pendaftaran yang Cepat, Transparan, dan Modern.</p>
         <div class="hero-actions">
             @if(($settings['status_ppdb'] ?? 'tutup') == 'buka')
                 <a href="{{ url('/login') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
-                    Daftar Sekarang <i class="fa-solid fa-arrow-right"></i>
+                    Daftar Sekarang
                 </a>
             @else
                 <button class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; background: #94a3b8; cursor: not-allowed; border: none;" disabled title="Pendaftaran telah ditutup">
@@ -134,8 +134,8 @@
         Jangan lewatkan kesempatan untuk menjadi bagian dari komunitas belajar terbaik.
     </p>
     @if(($settings['status_ppdb'] ?? 'tutup') == 'buka')
-        <a href="{{ url('/login') }}" class="btn-outline" style="border-color: var(--white); color: var(--white); padding: 1rem 3rem; font-size: 1.125rem;">
-            Mulai Pendaftaran
+        <a href="{{ url('/login') }}" class="btn-primary" style="background: var(--white); color: #000; padding: 1rem 3rem; font-size: 1.125rem; border: none;">
+            Login
         </a>
     @else
         <button class="btn-outline" style="border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.7); padding: 1rem 3rem; font-size: 1.125rem; cursor: not-allowed;" disabled>

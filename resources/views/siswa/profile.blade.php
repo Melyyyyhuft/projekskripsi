@@ -427,14 +427,14 @@
                     <div class="profile-info-icon" style="background:#fef9c3;color:#b45309;"><i class="fa-solid fa-phone"></i></div>
                     <div>
                         <p class="profile-info-label">Nomor Telepon</p>
-                        <p class="profile-info-value">{{ $user->no_hp ?: '—' }}</p>
+                        <p class="profile-info-value">{{ $user->no_hp ?: ($pendaftaran->no_hp ?? '—') }}</p>
                     </div>
                 </div>
                 <div class="profile-info-row">
                     <div class="profile-info-icon" style="background:#fce7f3;color:#db2777;"><i class="fa-solid fa-location-dot"></i></div>
                     <div>
                         <p class="profile-info-label">Alamat</p>
-                        <p class="profile-info-value">{{ $user->alamat ?: '—' }}</p>
+                        <p class="profile-info-value">{{ $user->alamat ?: ($pendaftaran->alamat ?? '—') }}</p>
                     </div>
                 </div>
                 <div class="profile-info-row">
@@ -478,14 +478,14 @@
                     <div class="pf-form-group">
                         <label class="pf-form-label">Nomor Telepon</label>
                         <input type="text" name="no_hp" class="pf-form-input @error('no_hp') is-invalid @enderror"
-                               value="{{ old('no_hp', $user->no_hp) }}" placeholder="08xxxxxxxxxx">
+                               value="{{ old('no_hp', $user->no_hp ?: ($pendaftaran->no_hp ?? '')) }}" placeholder="08xxxxxxxxxx">
                         @error('no_hp') <div class="pf-form-error">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="pf-form-group">
                         <label class="pf-form-label">Alamat</label>
                         <textarea name="alamat" class="pf-form-input pf-form-textarea @error('alamat') is-invalid @enderror"
-                                  placeholder="Masukkan alamat lengkap">{{ old('alamat', $user->alamat) }}</textarea>
+                                  placeholder="Masukkan alamat lengkap">{{ old('alamat', $user->alamat ?: ($pendaftaran->alamat ?? '')) }}</textarea>
                         @error('alamat') <div class="pf-form-error">{{ $message }}</div> @enderror
                     </div>
 
@@ -558,6 +558,10 @@
 
         @if($pendaftaran)
         <div class="ppdb-info-grid">
+            <div class="ppdb-info-item">
+                <p class="ppdb-label"><i class="fa-solid fa-hashtag" style="margin-right:.3rem;"></i> No. Pendaftaran</p>
+                <p class="ppdb-value" style="color:var(--primary);">{{ $pendaftaran->nomor_pendaftaran ?? '—' }}</p>
+            </div>
             <div class="ppdb-info-item">
                 <p class="ppdb-label"><i class="fa-solid fa-id-card" style="margin-right:.3rem;"></i> NISN</p>
                 <p class="ppdb-value">{{ $pendaftaran->nisn ?? '—' }}</p>

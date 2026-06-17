@@ -120,22 +120,45 @@ class PendaftaranController extends Controller
             }
         }
 
-        // Update nama user jika diubah
-        Auth::user()->update(['name' => $request->nama]);
+        // Update data user agar sinkron dengan profil
+        Auth::user()->update([
+            'name'   => $request->nama,
+            'no_hp'  => $request->no_hp,
+            'alamat' => $request->alamat,
+        ]);
+
+        $pendaftaranData = [
+            'jurusan_id'    => $request->jurusan_id,
+            'nisn'          => $request->nisn,
+            'asal_sekolah'  => $request->asal_sekolah,
+            'no_hp'         => $request->no_hp,
+            'nilai_rapor'   => $request->nilai_rapor,
+            'tempat_lahir'  => $request->tempat_lahir,
+            'tanggal_lahir' => $request->tanggal_lahir,
+            'alamat'        => $request->alamat,
+            'status'        => 'menunggu_verifikasi',
+        ];
+
+        // Generate nomor pendaftaran hanya jika data baru
+        if (!$existingPendaftaran) {
+            $year = date('Y');
+            $latest = Pendaftaran::whereNotNull('nomor_pendaftaran')
+                                ->where('nomor_pendaftaran', 'like', "PPDB-{$year}-%")
+                                ->orderBy('nomor_pendaftaran', 'desc')
+                                ->first();
+            
+            $nextNum = 1;
+            if ($latest) {
+                $lastNum = (int) substr($latest->nomor_pendaftaran, -4);
+                $nextNum = $lastNum + 1;
+            }
+            
+            $pendaftaranData['nomor_pendaftaran'] = "PPDB-{$year}-" . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+        }
 
         $pendaftaran = Pendaftaran::updateOrCreate(
             ['user_id' => Auth::id()],
-            [
-                'jurusan_id'    => $request->jurusan_id,
-                'nisn'          => $request->nisn,
-                'asal_sekolah'  => $request->asal_sekolah,
-                'no_hp'         => $request->no_hp,
-                'nilai_rapor'   => $request->nilai_rapor,
-                'tempat_lahir'  => $request->tempat_lahir,
-                'tanggal_lahir' => $request->tanggal_lahir,
-                'alamat'        => $request->alamat,
-                'status'        => 'menunggu_verifikasi',
-            ]
+            $pendaftaranData
         );
 
         // Jangan hapus berkas lama, biarkan tersimpan sebagai riwayat
@@ -175,6 +198,9 @@ class PendaftaranController extends Controller
         if($request->hasFile('pasfoto')) {
             $file = $request->file('pasfoto');
             $path = $file->store('berkas_pendaftaran/pasfoto', 'public');
+            // Sync ke foto profil user
+            Auth::user()->update(['foto' => $path]);
+            
             Berkas::updateOrCreate(
                 ['pendaftaran_id' => $pendaftaran->id, 'jenis_berkas' => 'pasfoto'],
                 [

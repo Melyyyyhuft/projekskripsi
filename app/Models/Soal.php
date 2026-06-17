@@ -13,12 +13,18 @@ class Soal extends Model
         'tahun_ajaran', 
         'nama_paket',
         'mapel',
+        'kategori',
+        'kesulitan',
+        'bobot',
+        'gambar',
         'teks_soal', 
+        'penjelasan',
         'opsi_a', 
         'opsi_b', 
         'opsi_c', 
         'opsi_d', 
-        'jawaban_benar'
+        'jawaban_benar',
+        'status'
     ];
 
     public function ujians()

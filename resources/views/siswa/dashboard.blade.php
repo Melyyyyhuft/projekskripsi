@@ -152,7 +152,12 @@
 </div>
 
 {{-- ─── Welcome Card ─── --}}
-<div class="glass-card animate-slide-up" style="margin-bottom:2.5rem;padding:2.5rem;background:#ffffff;border-left:4px solid var(--primary);border-radius:12px;">
+<div class="glass-card animate-slide-up" style="margin-bottom:2.5rem;padding:2.5rem;background:#ffffff;border-left:4px solid var(--primary);border-radius:12px;position:relative;">
+    @if($pendaftaran && $pendaftaran->nomor_pendaftaran)
+        <div style="position:absolute; top:1.5rem; right:1.5rem; background:rgba(59,130,246,0.1); color:var(--primary); padding:0.4rem 1rem; border-radius:999px; font-size:0.75rem; font-weight:800; border:1px solid rgba(59,130,246,0.2);">
+            <i class="fa-solid fa-hashtag"></i> {{ $pendaftaran->nomor_pendaftaran }}
+        </div>
+    @endif
     <h2 style="font-size:1.8rem;margin-bottom:.5rem;color:var(--dark);">Selamat Datang, {{ Auth::user()->name }}! 👋</h2>
     <p style="color:var(--gray-text);font-size:1.1rem;max-width:700px;position:relative;z-index:1;">
         Portal pendaftaran peserta didik baru SMK. Ikuti tahapan di bawah ini secara berurutan untuk menyelesaikan proses pendaftaran Anda.
