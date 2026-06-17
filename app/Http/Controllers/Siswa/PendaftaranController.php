@@ -14,11 +14,8 @@ class PendaftaranController extends Controller
 {
     public function create()
     {
-        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
-        $statusPPDB = $settings['status_ppdb'] ?? 'tutup';
-        
-        if ($statusPPDB != 'buka') {
-            return redirect()->route('siswa.dashboard')->with('error', 'Mohon maaf, pendaftaran PPDB saat ini sedang ditutup.');
+        if (!\App\Models\Pengaturan::isOpen()) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Mohon maaf, pengisian data pendaftaran PPDB saat ini sedang ditutup.');
         }
 
         // Menghitung jumlah pendaftar secara efisien
@@ -55,9 +52,8 @@ class PendaftaranController extends Controller
 
     public function store(Request $request)
     {
-        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
-        if (($settings['status_ppdb'] ?? 'tutup') != 'buka') {
-            return redirect()->route('siswa.dashboard')->with('error', 'Pendaftaran gagal! PPDB telah ditutup.');
+        if (!\App\Models\Pengaturan::isOpen()) {
+            return redirect()->route('siswa.dashboard')->with('error', 'Pendaftaran gagal! Periode pendaftaran PPDB telah ditutup.');
         }
 
         $existingPendaftaran = Pendaftaran::where('user_id', Auth::id())->first();

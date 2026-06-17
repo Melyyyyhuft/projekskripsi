@@ -7,7 +7,9 @@ use App\Models\Jurusan;
 Route::get('/', function () {
     $jurusans = \App\Models\Jurusan::all();
     $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
-    return view('landing', compact('jurusans', 'settings'));
+    $isPPDBOpen = \App\Models\Pengaturan::isOpen();
+
+    return view('landing', compact('jurusans', 'settings', 'isPPDBOpen'));
 });
 
 // Authentication Routes

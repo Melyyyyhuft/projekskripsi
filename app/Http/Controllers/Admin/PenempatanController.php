@@ -54,7 +54,8 @@ class PenempatanController extends Controller
             }
         }
 
-        $pendaftarans = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        // Get all items for scrolling
+        $pendaftarans = $query->orderBy('created_at', 'desc')->get();
 
         // Stats
         $allData = Pendaftaran::with('hasilSeleksi')->get();

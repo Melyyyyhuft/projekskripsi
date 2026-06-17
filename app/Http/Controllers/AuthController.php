@@ -12,15 +12,14 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        $statusPPDB = \App\Models\Pengaturan::where('key', 'status_ppdb')->value('value') ?? 'tutup';
-        return view('auth.login', compact('statusPPDB'));
+        $isPPDBOpen = \App\Models\Pengaturan::isOpen();
+        return view('auth.login', compact('isPPDBOpen'));
     }
 
     public function showRegister()
     {
-        $statusPPDB = \App\Models\Pengaturan::where('key', 'status_ppdb')->first();
-        if ($statusPPDB && $statusPPDB->value != 'buka') {
-            return redirect('/login')->with('error', 'Pendaftaran PPDB saat ini sedang ditutup.');
+        if (!\App\Models\Pengaturan::isOpen()) {
+            return redirect('/login')->with('error', 'Mohon maaf, pendaftaran PPDB saat ini sedang ditutup.');
         }
         return view('auth.register');
     }
@@ -45,9 +44,8 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $statusPPDB = \App\Models\Pengaturan::where('key', 'status_ppdb')->first();
-        if ($statusPPDB && $statusPPDB->value != 'buka') {
-            return redirect('/login')->with('error', 'Gagal mendaftar! Pendaftaran PPDB telah ditutup.');
+        if (!\App\Models\Pengaturan::isOpen()) {
+            return redirect('/login')->with('error', 'Gagal mendaftar! Periode pendaftaran PPDB telah ditutup.');
         }
 
         $request->validate([

@@ -14,14 +14,17 @@
         <h1 class="hero-title">Wujudkan Masa Depan Gemilang Bersama Kami<span class="text-gradient"></span></h1>
         <p class="hero-subtitle">Sistem Penerimaan Peserta Didik Baru yang dirancang khusus untuk memberikan pengalaman pendaftaran yang Cepat, Transparan, dan Modern.</p>
         <div class="hero-actions">
-            @if(($settings['status_ppdb'] ?? 'tutup') == 'buka')
+            @if($isPPDBOpen)
                 <a href="{{ url('/login') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
                     Daftar Sekarang
                 </a>
             @else
-                <button class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; background: #94a3b8; cursor: not-allowed; border: none;" disabled title="Pendaftaran telah ditutup">
-                    Pendaftaran Ditutup <i class="fa-solid fa-lock"></i>
-                </button>
+                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                    <button class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; background: #94a3b8; cursor: not-allowed; border: none;" disabled>
+                        Pendaftaran Ditutup <i class="fa-solid fa-lock"></i>
+                    </button>
+                    <small style="color: #64748b; font-weight: 600;">Kembali buka sesuai jadwal periode pendaftaran.</small>
+                </div>
             @endif
             <a href="#tentang" class="btn-outline" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
                 Pelajari Lebih Lanjut
@@ -133,13 +136,13 @@
     <p style="font-size: 1.25rem; margin-bottom: 3rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
         Jangan lewatkan kesempatan untuk menjadi bagian dari komunitas belajar terbaik.
     </p>
-    @if(($settings['status_ppdb'] ?? 'tutup') == 'buka')
+    @if($isPPDBOpen)
         <a href="{{ url('/login') }}" class="btn-primary" style="background: var(--white); color: #000; padding: 1rem 3rem; font-size: 1.125rem; border: none;">
-            Login
+            Login & Daftar
         </a>
     @else
         <button class="btn-outline" style="border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.7); padding: 1rem 3rem; font-size: 1.125rem; cursor: not-allowed;" disabled>
-            Pendaftaran Ditutup
+            Pendaftaran Belum Dibuka
         </button>
     @endif
 </section>

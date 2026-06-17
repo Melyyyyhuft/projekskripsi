@@ -123,6 +123,21 @@ input:checked + .slider:before { transform:translateX(20px); }
     .modal-glass { padding:1.5rem; border-radius:20px; max-height:95vh; }
     .toolbar-flex { flex-direction:column!important; align-items:stretch!important; }
 }
+    /* ─── Scrolling Table Refinement ─── */
+    .table-scrolling-container {
+        border-radius: 20px;
+        overflow-y: auto;
+        max-height: 480px;
+        position: relative;
+        background: white;
+    }
+    .table-scrolling-container::-webkit-scrollbar { width: 8px; }
+    .table-scrolling-container::-webkit-scrollbar-track { background: #f8fafc; }
+    .table-scrolling-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .table-scrolling-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .modern-table thead { position: sticky; top: 0; z-index: 20; }
+    .modern-table thead th { background: #f8fafc; border-bottom: 2px solid #eef2f6; }
 </style>
 
 <div class="dashboard-container">
@@ -202,7 +217,8 @@ input:checked + .slider:before { transform:translateX(20px); }
 
     {{-- ─── Table ─── --}}
     <div class="premium-card" style="padding:0; overflow:hidden;">
-        <div style="overflow-x:auto;">
+        <div class="table-scrolling-container">
+            <div style="overflow-x:auto;">
             <table class="modern-table">
                 <thead>
                     <tr>
@@ -327,14 +343,8 @@ input:checked + .slider:before { transform:translateX(20px); }
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
-
-        @if($pendaftarans->hasPages())
-        <div style="padding:1rem 1.5rem; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:.8rem; font-weight:700; color:var(--gray);">{{ $pendaftarans->firstItem() }}–{{ $pendaftarans->lastItem() }} dari {{ $pendaftarans->total() }}</span>
-            <div>{{ $pendaftarans->links('vendor.pagination.simple-tailwind') }}</div>
-        </div>
-        @endif
     </div>
 </div>
 

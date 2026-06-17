@@ -42,12 +42,15 @@
         </form>
         
         <div style="text-align: center; margin-top: 2rem; color: var(--gray-text);">
-            @if(($statusPPDB ?? 'tutup') == 'buka')
+            @if($isPPDBOpen)
                 Belum punya akun? <a href="{{ url('/register') }}" style="color: var(--primary); font-weight: 600;">Daftar Sekarang</a>
             @else
-                <span style="background: #f1f5f9; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #64748b; border: 1px dashed #cbd5e1;">
-                    <i class="fa-solid fa-lock"></i> Pendaftaran telah ditutup
-                </span>
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 15px; border: 1px dashed #e2e8f0;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 0.25rem;">
+                        <i class="fa-solid fa-lock"></i> Pendaftaran Ditutup
+                    </span>
+                    <small style="font-size: 0.75rem; color: #94a3b8;">Silakan pantau berkala untuk jadwal pendaftaran SMK MITRA BINTARO.</small>
+                </div>
             @endif
         </div>
     </div>

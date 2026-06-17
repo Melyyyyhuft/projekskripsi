@@ -46,28 +46,29 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
                 <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">Nama Sekolah</label>
-                    <input type="text" name="nama_sekolah" class="form-control" value="{{ $settings['nama_sekolah'] ?? 'SMK MITRA BINTARO' }}" required>
+                    <input type="text" name="nama_sekolah" class="form-control" value="SMK MITRA BINTARO" readonly style="background:#f8fafc; font-weight:700; color:#475569;">
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">Tahun Ajaran Aktif</label>
                     <input type="text" name="tahun_ajaran" class="form-control" value="{{ $settings['tahun_ajaran'] ?? '2026/2027' }}" required>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label">Logo Sekolah</label>
-                    <input type="file" name="logo_sekolah" class="form-control">
-                    @if($settings['logo_sekolah'] ?? '')
-                        <div style="margin-top:0.5rem; display:flex; align-items:center; gap:0.5rem;">
-                            <img src="{{ asset('storage/'.$settings['logo_sekolah']) }}" height="30">
-                            <span style="font-size:0.75rem; color:var(--gray-text);">Logo aktif</span>
-                        </div>
-                    @endif
+                    <label class="form-label">Tanggal Buka Pendaftaran</label>
+                    <input type="date" name="tgl_buka" class="form-control" value="{{ $settings['tgl_buka'] ?? '' }}" required>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label">Status PPDB</label>
-                    <select name="status_ppdb" class="form-control" required>
+                    <label class="form-label">Tanggal Tutup Pendaftaran</label>
+                    <input type="date" name="tgl_tutup" class="form-control" value="{{ $settings['tgl_tutup'] ?? '' }}" required>
+                </div>
+                <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                    <label class="form-label">Status PPDB Manual</label>
+                    <select name="status_ppdb" class="form-control" required style="font-weight:700;">
                         <option value="buka" {{ ($settings['status_ppdb'] ?? '') == 'buka' ? 'selected' : '' }}>🟢 Buka (Siswa dapat mendaftar)</option>
                         <option value="tutup" {{ ($settings['status_ppdb'] ?? '') == 'tutup' ? 'selected' : '' }}>🔴 Tutup (Pendaftaran dikunci)</option>
                     </select>
+                    <small style="color:#64748b; font-size:0.75rem; margin-top:0.5rem; display:block;">
+                        💡 <b>Catatan:</b> Jika tanggal hari ini melewati tanggal tutup, pendaftaran akan otomatis terdeteksi ditutup oleh sistem meskipun status di sini "Buka".
+                    </small>
                 </div>
             </div>
             <div style="display:flex;justify-content:flex-end;">
@@ -82,30 +83,20 @@
     <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:1.5rem;">
         {{-- Periode --}}
         <div class="glass-card">
-            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📅 Periode Pendaftaran</h3>
+            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📅 Jadwal Pelaksanaan CBT</h3>
             <form action="{{ route('admin.pengaturan.periode') }}" method="POST">
                 @csrf
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="form-group">
-                        <label class="form-label">Tgl Buka</label>
-                        <input type="date" name="tgl_buka" class="form-control" value="{{ $settings['tgl_buka'] ?? '' }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tgl Tutup</label>
-                        <input type="date" name="tgl_tutup" class="form-control" value="{{ $settings['tgl_tutup'] ?? '' }}" required>
-                    </div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="form-group">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;">
+                    <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label">Tgl Mulai CBT</label>
                         <input type="date" name="tgl_mulai_cbt" class="form-control" value="{{ $settings['tgl_mulai_cbt'] ?? '' }}" required>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Durasi (Hari)</label>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Durasi Tes (Hari)</label>
                         <input type="number" name="durasi_cbt" class="form-control" value="{{ $settings['durasi_cbt'] ?? '' }}" required min="1">
                     </div>
                 </div>
-                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Periode</button>
+                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Jadwal CBT</button>
             </form>
         </div>
 
