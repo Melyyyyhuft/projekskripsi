@@ -20,12 +20,6 @@ class Pendaftaran extends Model
         'ditunda_seleksi' => 'boolean',
     ];
 
-    const BONUS_MAP = [
-        'Internasional'  => 3,
-        'Nasional'       => 2,
-        'Provinsi'       => 1,
-        'Kabupaten/Kota' => 0.5,
-    ];
 
     public function user() {
         return $this->belongsTo(User::class);
@@ -56,15 +50,8 @@ class Pendaftaran extends Model
         $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
         $nilaiRapor = (float) $this->nilai_rapor;
 
-        // Bonus: highest valid certificate only
+        // Bonus: Disabled (User requested to remove bonus)
         $bonusVal = 0;
-        $validCerts = $this->berkas()->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid')->get();
-        foreach ($validCerts as $s) {
-            $b = self::BONUS_MAP[$s->tingkat_prestasi] ?? 0;
-            if ($b > $bonusVal) {
-                $bonusVal = $b;
-            }
-        }
 
         // Formula logic
         $skorAkhir   = 0;
@@ -75,7 +62,7 @@ class Pendaftaran extends Model
         if ($hasCBT) {
             $raporPart = round(0.7 * $nilaiRapor, 2);
             $cbtPart   = round(0.3 * $nilaiCBT, 2);
-            $skorAkhir = round($raporPart + $cbtPart + $bonusVal, 2);
+            $skorAkhir = round($raporPart + $cbtPart, 2);
 
             $kategori   = 'DITERIMA';
             $penempatan = $skorAkhir >= 70 ? 'Kelas Unggulan' : 'Kelas Reguler';

@@ -127,10 +127,9 @@ class PenempatanController extends Controller
             'rapor'          => $nilaiRapor,
             'cbt'            => $nilaiCBT,
             'has_cbt'        => $nilaiCBT !== null,
-            'sertifikat'     => $hs->bonus_sertifikat > 0 ? $hs->pendaftaran->berkas->where('status_verifikasi','valid')->where('jenis_berkas','sertifikat')->sortByDesc(fn($s) => \App\Models\Pendaftaran::BONUS_MAP[$s->tingkat_prestasi] ?? 0)->first()->tingkat_prestasi : null,
-            'bonus'          => (float) $hs->bonus_sertifikat,
+            'bonus'          => 0,
             'formula'        => $nilaiCBT !== null
-                ? "((0.7 × {$nilaiRapor}) + (0.3 × {$nilaiCBT})) + {$hs->bonus_sertifikat} = {$hs->skor_akhir}"
+                ? "((0.7 × {$nilaiRapor}) + (0.3 × {$nilaiCBT})) = {$hs->skor_akhir}"
                 : 'Tidak ada data CBT',
             'skor_akhir'     => (float) $hs->skor_akhir,
             'penempatan'     => $hs->penempatan_kelas,
@@ -180,10 +179,6 @@ class PenempatanController extends Controller
                 $catatan    = null;
 
                 if ($override) {
-                    if (isset($override['bonus']) && $override['bonus'] !== '') {
-                        $bonusVal = (float) $override['bonus'];
-                        $isManual = true;
-                    }
                     if (isset($override['kategori']) && $override['kategori'] !== '') {
                         $kategori = $override['kategori'];
                         $isManual = true;
@@ -196,9 +191,9 @@ class PenempatanController extends Controller
                         $catatan = $override['catatan'];
                     }
 
-                    // Recalculate score with overridden bonus
-                    if ($calc['has_cbt'] && isset($override['bonus']) && $override['bonus'] !== '') {
-                        $skorAkhir = round((0.7 * $calc['rapor']) + (0.3 * $calc['cbt']) + $bonusVal, 2);
+                    // Recalculate score (Bonus removed)
+                    if ($calc['has_cbt']) {
+                        $skorAkhir = round((0.7 * $calc['rapor']) + (0.3 * $calc['cbt']), 2);
                     }
                 }
 
@@ -300,20 +295,18 @@ class PenempatanController extends Controller
             'cbt'            => $calc['cbt'],
             'has_cbt'        => $calc['has_cbt'],
             'formula'        => $calc['formula'],
-            'sertifikat'     => $calc['sertifikat']
-                ? ['nama' => $calc['sertifikat_nama'], 'tingkat' => $calc['sertifikat'], 'bonus' => $calc['bonus']]
-                : null,
+            'sertifikat'     => null,
             'calc_skor'      => $calc['skor_akhir'],
             'calc_kategori'  => $calc['kategori'],
             'calc_penempatan'=> $calc['penempatan'],
             'hasil'          => $p->hasilSeleksi ? [
                 'skor'        => (float) $p->hasilSeleksi->skor_akhir,
-                'bonus'       => (float) $p->hasilSeleksi->bonus_sertifikat,
+                'bonus'       => 0,
                 'penempatan'  => $p->hasilSeleksi->penempatan_kelas,
                 'kategori'    => $p->hasilSeleksi->kategori_kelulusan,
                 
                 'skor_sistem' => (float) $p->hasilSeleksi->skor_sistem,
-                'bonus_sistem'=> (float) $p->hasilSeleksi->bonus_sistem,
+                'bonus_sistem'=> 0,
                 'penempatan_sistem' => $p->hasilSeleksi->penempatan_sistem,
                 'kategori_sistem'   => $p->hasilSeleksi->kategori_sistem,
 
@@ -343,7 +336,7 @@ class PenempatanController extends Controller
         $catatan = $request->input('catatan');
 
         if ($isOverride) {
-            $bonus      = (float) $request->input('bonus_manual', $hs->bonus_sertifikat);
+            $bonus      = 0;
             $penempatan = $request->input('penempatan_manual', $hs->penempatan_kelas);
             $kategori   = $request->input('kategori_manual', $hs->kategori_kelulusan);
 
@@ -356,7 +349,7 @@ class PenempatanController extends Controller
             if ($nilaiCBT !== null) {
                 $raporPart = round(0.7 * $nilaiRapor, 2);
                 $cbtPart   = round(0.3 * $nilaiCBT, 2);
-                $skorAkhir = round($raporPart + $cbtPart + $bonus, 2);
+                $skorAkhir = round($raporPart + $cbtPart, 2);
             }
 
             $hs->update([

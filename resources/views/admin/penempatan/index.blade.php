@@ -228,7 +228,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <th style="text-align:center;">Rapor</th>
                         <th style="text-align:center;">CBT</th>
                         <th>Sertifikat</th>
-                        <th style="text-align:center;">Bonus</th>
                         <th style="text-align:center;">Skor</th>
                         <th>Kelas</th>
                         <th>Hasil</th>
@@ -243,16 +242,10 @@ input:checked + .slider:before { transform:translateX(20px); }
                             $nilaiCBT = $p->user->hasilUjian->skor ?? null;
                             $sp = $hs ? ($hs->status_proses ?: ($hs->is_finalisasi ? 'Sudah Dipublish' : 'Sudah Dihitung')) : 'Belum Dihitung';
                             
-                            // Ambil semua sertifikat (untuk ditampilkan)
+                            // Ambil sertifikat untuk ditampilkan
                             $allCerts = $p->berkas->where('jenis_berkas','sertifikat');
-                            // Sertifikat valid tertinggi (untuk bonus)
-                            $validCert = $allCerts->where('status_verifikasi','valid')
-                                ->sortByDesc(fn($s) => \App\Models\Pendaftaran::BONUS_MAP[$s->tingkat_prestasi] ?? 0)->first();
+                            $validCert = $allCerts->where('status_verifikasi','valid')->first();
                             
-                            $currentBonus = 0;
-                            if ($validCert) {
-                                $currentBonus = \App\Models\Pendaftaran::BONUS_MAP[$validCert->tingkat_prestasi] ?? 0;
-                            }
                             
                             // Sertifikat untuk ditampilkan di tabel (prioritas valid, lalu pending/lainnya)
                             $displayCert = $validCert ?: $allCerts->first();
@@ -281,13 +274,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                                         </span>
                                     @endif
                                 @else <span style="color:#cbd5e1;">-</span> @endif
-                            </td>
-                            <td style="text-align:center; font-weight:800;">
-                                @if($currentBonus > 0)
-                                    <span style="color:var(--success);">+{{ (float)$currentBonus }}</span>
-                                @elseif($allCerts->isNotEmpty() && !$validCert)
-                                    <span style="color:#94a3b8; font-size:.65rem; font-weight:700;">WAIT</span>
-                                @else <span style="color:#cbd5e1;">0</span> @endif
                             </td>
                             <td style="text-align:center;">
                                 @if($hs) <span style="font-weight:900; color:var(--dark); font-size:.9rem;">{{ number_format($hs->skor_akhir,2) }}</span>
@@ -367,7 +353,7 @@ input:checked + .slider:before { transform:translateX(20px); }
         {{-- Formula Legend --}}
         <div class="formula-box" style="margin-bottom:1.5rem;">
             <div style="font-size:.65rem; font-weight:800; color:#3b82f6; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.3rem;">📐 Formula Seleksi</div>
-            <div>Skor Akhir = ((0.7 × Rapor) + (0.3 × CBT)) + Bonus Sertifikat</div>
+            <div>Skor Akhir = ((0.7 × Rapor) + (0.3 × CBT))</div>
         </div>
 
         {{-- Preview Table Container --}}
@@ -379,7 +365,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <th>Nama / Jurusan</th>
                         <th style="text-align:center;">Rapor</th>
                         <th style="text-align:center;">CBT</th>
-                        <th style="text-align:center;">Bonus</th>
                         <th>Rumus Perhitungan</th>
                         <th style="text-align:center;">Skor</th>
                         <th>Kelas</th>
@@ -452,10 +437,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <input type="text" id="daCbt" class="mode-input" disabled>
                     </div>
                     <div class="mode-field">
-                        <label class="mode-label">Bonus Sistem</label>
-                        <input type="text" id="daBonus" class="mode-input" disabled>
-                    </div>
-                    <div class="mode-field">
                         <label class="mode-label">Skor Akhir</label>
                         <input type="text" id="daSkor" class="mode-input" disabled style="font-weight:900; color:var(--primary);">
                     </div>
@@ -480,10 +461,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                     </label>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                    <div class="mode-field">
-                        <label class="mode-label">Bonus Manual</label>
-                        <input type="number" step="0.5" id="dbBonus" class="mode-input manual-field" placeholder="Contoh: 2">
-                    </div>
                     <div class="mode-field">
                         <label class="mode-label">Penempatan Manual</label>
                         <select id="dbKelas" class="mode-input manual-field">
@@ -607,10 +584,6 @@ function renderPreview(data) {
             </td>
             <td style="text-align:center;font-weight:800;">${s.rapor}</td>
             <td style="text-align:center;font-weight:800;color:${s.has_cbt ? 'var(--primary)' : '#ef4444'};">${s.cbt !== null ? s.cbt : '<span style="font-size:.65rem;">✕ N/A</span>'}</td>
-            <td style="text-align:center;">
-                <span style="font-weight:800;color:var(--success);">+${s.bonus}</span>
-                ${s.sertifikat ? `<div style="font-size:.55rem;color:var(--gray);font-weight:600;">${s.sertifikat}</div>` : ''}
-            </td>
             <td>
                 <div class="formula-box" style="padding:.5rem .8rem;margin:0;font-size:.7rem;border-radius:10px;">${s.formula}</div>
             </td>
@@ -784,14 +757,12 @@ function showDetail(id) {
             // Mode A (Sistem)
             document.getElementById('daRapor').value = d.rapor;
             document.getElementById('daCbt').value = d.cbt ?? 'Tidak Ikut';
-            document.getElementById('daBonus').value = h.bonus_sistem;
             document.getElementById('daSkor').value = h.skor_sistem;
             document.getElementById('daKelas').value = h.penempatan_sistem ?? '-';
             document.getElementById('daStatus').value = h.kategori_sistem ?? 'BELUM DIHITUNG';
 
             // Mode B (Manual)
             document.getElementById('toggleOverride').checked = h.is_override;
-            document.getElementById('dbBonus').value = h.bonus;
             document.getElementById('dbKelas').value = h.penempatan || 'Kelas Reguler';
             document.getElementById('dbStatus').value = h.kategori || 'TIDAK DITERIMA';
             document.getElementById('dbCatatan').value = h.catatan || '';
@@ -837,7 +808,6 @@ function saveFinalDecision() {
     const isOverride = document.getElementById('toggleOverride').checked;
     const data = {
         is_manual_override: isOverride,
-        bonus_manual: document.getElementById('dbBonus').value,
         penempatan_manual: document.getElementById('dbKelas').value,
         kategori_manual: document.getElementById('dbStatus').value,
         catatan: document.getElementById('dbCatatan').value

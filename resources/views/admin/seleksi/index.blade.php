@@ -67,7 +67,7 @@
     <div class="glass-card">
         <h4 style="color:var(--primary);margin:0 0 .5rem;font-size:1rem;">⚡ Proses Seleksi Fleksibel</h4>
         <p style="color:var(--gray-text);font-size:.82rem;margin-bottom:1rem;line-height:1.5;">
-            Rumus: <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.8rem;">Skor = (60% × Rapor) + (40% × Ujian CBT) + Bonus Sertifikat</code><br>
+            Rumus: <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.8rem;">Skor = (60% × Rapor) + (40% × Ujian CBT)</code><br>
             <strong>Melakukan Ranking Otomatis Berdasarkan Jurusan & Kuota.</strong>
         </p>
         @if($sudahDifinalisasi)
@@ -158,23 +158,7 @@
                 @php
                     $nilaiUjian = $p->hasil_ujian ? $p->hasil_ujian->skor : null;
                     
-                    // Bonus Sertifikat (Hanya 1 terbaik, Max 5)
-                    $bonusMapping = [
-                        'Sekolah'         => 1,
-                        'Kecamatan'       => 1,
-                        'Kabupaten/Kota'  => 2,
-                        'Provinsi'        => 3,
-                        'Nasional'        => 4,
-                        'Internasional'   => 5,
-                    ];
-                    $bonusSertifikat = 0;
-                    $sertifikats = $p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid');
-                    foreach($sertifikats as $sert) {
-                        $val = $bonusMapping[$sert->tingkat_prestasi] ?? 0;
-                        if($val > $bonusSertifikat) $bonusSertifikat = $val;
-                    }
-
-                    $skorAkhir  = ($nilaiUjian !== null) ? round((0.60 * $p->nilai_rapor) + (0.40 * $nilaiUjian) + $bonusSertifikat, 2) : null;
+                    $skorAkhir  = ($nilaiUjian !== null) ? round((0.60 * $p->nilai_rapor) + (0.40 * $nilaiUjian), 2) : null;
                     $sudahUjian = in_array($p->status, ['sudah_ujian','siap_finalisasi','siap_diumumkan']);
                     $belumUjian = $p->status === 'lolos_admin';
                     $tidakIkut  = in_array($p->status, ['tidak_mengikuti_ujian','gugur']);
@@ -329,7 +313,7 @@
 function selectAll(state) { document.querySelectorAll('.cbSiswa').forEach(cb => cb.checked = state); }
 
 function konfirmProsesSemua() {
-    if (confirm('Proses seleksi untuk SEMUA siswa yang sudah ujian?\n\nRumus: Skor = (Bobot Ujian% × Ujian) + (Bobot Rapor% × Rapor) + Bonus Sertifikat\n• Ranking otomatis dilakukan per Jurusan.\n\nHasil masih dapat diperbarui sebelum finalisasi.')) {
+    if (confirm('Proses seleksi untuk SEMUA siswa yang sudah ujian?\n\nRumus: Skor = (Bobot Ujian% × Ujian) + (Bobot Rapor% × Rapor)\n• Ranking otomatis dilakukan per Jurusan.\n\nHasil masih dapat diperbarui sebelum finalisasi.')) {
         document.getElementById('formProsesSemuaSiswa').submit();
     }
 }

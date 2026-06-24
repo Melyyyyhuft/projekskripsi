@@ -109,7 +109,6 @@
                     <tr>
                         <th>Nilai Rapor</th>
                         <th>Nilai CBT</th>
-                        <th>Bonus Prestasi</th>
                         <th>Skor Akhir</th>
                     </tr>
                 </thead>
@@ -117,7 +116,6 @@
                     <tr>
                         <td>{{ number_format($pendaftaran->nilai_rapor, 1) }}</td>
                         <td>{{ number_format($pendaftaran->hasilUjian->skor ?? 0, 1) }}</td>
-                        <td>+{{ number_format($hasil->bonus_sertifikat, 1) }}</td>
                         <td style="font-weight: 900; color: #3b82f6;">{{ number_format($hasil->skor_akhir, 2) }}</td>
                     </tr>
                 </tbody>

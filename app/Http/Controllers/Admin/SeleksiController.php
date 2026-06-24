@@ -141,14 +141,6 @@ class SeleksiController extends Controller
         }
 
         // ── Mapping Bonus Sertifikat ──
-        $bonusMapping = [
-            'Sekolah'         => 1,
-            'Kecamatan'       => 1,
-            'Kabupaten/Kota'  => 2,
-            'Provinsi'        => 3,
-            'Nasional'        => 4,
-            'Internasional'   => 5,
-        ];
 
         // ── Hitung skor & Kelompokkan per Jurusan ──
         $dataPerJurusan = [];
@@ -156,21 +148,8 @@ class SeleksiController extends Controller
             $ujian     = HasilUjian::where('user_id', $p->user_id)->first();
             $skorUjian = $ujian ? $ujian->skor : 0;
             
-            // Hitung Bonus Sertifikat (Hanya 1 terbaik, Max 5)
-            $bonusSertifikat = 0;
-            $sertifikats = $p->berkas->where('jenis_berkas', 'sertifikat')->where('status_verifikasi', 'valid');
-            
-            foreach ($sertifikats as $sert) {
-                $nilaiSert = $bonusMapping[$sert->tingkat_prestasi] ?? 0;
-                if ($nilaiSert > $bonusSertifikat) {
-                    $bonusSertifikat = $nilaiSert;
-                }
-            }
-            // Pastikan tidak melebihi 5 (sudah terjamin oleh mapping tapi untuk jaga-jaga)
-            $bonusSertifikat = min(5, $bonusSertifikat);
-
-            // Rumus: (60% × Nilai Rapor) + (40% × Nilai Ujian CBT) + Bonus Sertifikat
-            $skorAkhir = round(($bobotRapor * $p->nilai_rapor) + ($bobotUjian * $skorUjian) + $bonusSertifikat, 2);
+            // Rumus: (60% × Nilai Rapor) + (40% × Nilai Ujian CBT)
+            $skorAkhir = round(($bobotRapor * $p->nilai_rapor) + ($bobotUjian * $skorUjian), 2);
 
             $dataPerJurusan[$p->jurusan_id][] = [
                 'pendaftaran_id' => $p->id,
