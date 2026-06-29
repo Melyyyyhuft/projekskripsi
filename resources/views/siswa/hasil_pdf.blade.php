@@ -102,7 +102,7 @@
         <div class="result-box">
             <div class="status-label">Menyatakan Bahwa Anda Dinyatakan:</div>
             <h2 class="status-value">LULUS / DITERIMA</h2>
-            <div class="placement-value">Penempatan: {{ $hasil->penempatan_kelas ?? 'Kelas Reguler' }}</div>
+
             
             <table class="score-table">
                 <thead>

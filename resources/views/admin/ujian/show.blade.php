@@ -17,30 +17,7 @@
         </div>
         <p style="color:#64748b;font-size:.875rem;margin:0;">Kelola soal dan pengaturan sesi ujian ini.</p>
     </div>
-    @if($ujian->is_tutup || ($ujian->jadwal_selesai && now()->gt($ujian->jadwal_selesai)))
-        <div style="display:flex; gap:.5rem;">
-            <form action="{{ route('admin.ujian.perpanjang', $ujian->id) }}" method="POST">
-                @csrf
-                <button type="submit" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:.65rem 1.25rem;border-radius:12px;font-weight:700;border:none;cursor:pointer;font-size:.875rem;">
-                    ⏳ Tambah 1 Hari
-                </button>
-            </form>
-            <form action="{{ route('admin.ujian.buka', $ujian->id) }}" method="POST">
-                @csrf
-                <button type="submit" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;padding:.65rem 1.25rem;border-radius:12px;font-weight:700;border:none;cursor:pointer;font-size:.875rem;">
-                    🔓 Buka Kembali
-                </button>
-            </form>
-        </div>
-    @else
-        <form action="{{ route('admin.ujian.tutup', $ujian->id) }}" method="POST"
-              onsubmit="return confirm('🔒 Tutup Ujian?\n\nSiswa yang belum ujian akan otomatis berstatus Tidak Mengikuti Ujian.');">
-            @csrf
-            <button type="submit" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;padding:.65rem 1.25rem;border-radius:12px;font-weight:700;border:none;cursor:pointer;font-size:.875rem;">
-                🔒 Tutup Ujian Manual
-            </button>
-        </form>
-    @endif
+
 </div>
 
 @if(session('success'))
@@ -102,14 +79,14 @@
 <div class="glass-card" style="margin-bottom:2rem;">
     <h3 style="margin:0 0 1.5rem;font-size:1.1rem;font-weight:700;color:#0f172a;">📝 Soal dalam Modul Ini <span style="background:#e0f2fe;color:var(--primary);padding:.2rem .6rem;border-radius:999px;font-size:.8rem;margin-left:.5rem;">{{ $soals->count() }}</span></h3>
 
-    <div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;">
+    <div style="overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0;max-height:420px;overflow-y:auto;">
         <table style="width:100%;border-collapse:collapse;min-width:500px;">
             <thead>
-                <tr style="background:#f8fafc;">
-                    <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;width:50px;">#</th>
-                    <th style="padding:.75rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Pertanyaan</th>
-                    <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Kunci</th>
-                    <th style="padding:.75rem 1rem;text-align:right;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Aksi</th>
+                <tr style="background:#f8fafc;position:sticky;top:0;z-index:1;">
+                    <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;width:50px;background:#f8fafc;">#</th>
+                    <th style="padding:.75rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;background:#f8fafc;">Pertanyaan</th>
+                    <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;background:#f8fafc;">Kunci</th>
+                    <th style="padding:.75rem 1rem;text-align:right;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;background:#f8fafc;">Aksi</th>
                 </tr>
             </thead>
             <tbody>

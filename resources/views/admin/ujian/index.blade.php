@@ -47,10 +47,7 @@
                     <label class="form-label" style="font-weight:700; font-size:0.7rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Tanggal Selesai</label>
                     <input type="datetime-local" name="cbt_tgl_selesai" class="form-control" style="background:#f8fafc; border-color:#e2e8f0; height:42px; font-size:0.85rem;" value="{{ \Carbon\Carbon::parse($settings['cbt_tgl_selesai'] ?? now()->addDays(3))->format('Y-m-d\TH:i') }}" required>
                 </div>
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label" style="font-weight:700; font-size:0.7rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Durasi (Menit)</label>
-                    <input type="number" name="cbt_durasi_default" class="form-control" style="background:#f8fafc; border-color:#e2e8f0; height:42px; font-size:0.85rem;" value="{{ $settings['cbt_durasi_default'] ?? 60 }}" required>
-                </div>
+
                 <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label" style="font-weight:700; font-size:0.7rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Maks. Percobaan</label>
                     <input type="number" name="cbt_max_percobaan" class="form-control" style="background:#f8fafc; border-color:#e2e8f0; height:42px; font-size:0.85rem;" value="{{ $settings['cbt_max_percobaan'] ?? 1 }}" required>

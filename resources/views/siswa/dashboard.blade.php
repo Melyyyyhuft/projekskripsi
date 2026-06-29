@@ -264,7 +264,7 @@
             @php
                 $tglMulaiGlobal = $settings['cbt_tgl_mulai'] ?? null;
                 $tglSelesaiGlobal = $settings['cbt_tgl_selesai'] ?? null;
-                $durasiGlobal = (int) ($settings['cbt_durasi_default'] ?? 0);
+
                 $statusCbt = $settings['cbt_status'] ?? 'ditutup';
                 
                 $now = now();

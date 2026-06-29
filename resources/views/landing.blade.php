@@ -112,9 +112,7 @@
                 <i class="fa-solid fa-graduation-cap" style="font-size: 4rem; color: rgba(255,255,255,0.5);"></i>
             </div>
             <div style="padding: 2.5rem;">
-                <span style="position: absolute; top: 1.5rem; right: 1.5rem; background: var(--white); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: bold; box-shadow: var(--shadow-sm);">
-                    Unggulan
-                </span>
+
                 <h3 style="font-size: 1.75rem; margin-bottom: 0.5rem;">{{ $jurusan->nama }}</h3>
                 <p style="color: var(--gray-text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-solid fa-users"></i> Kuota: <strong>{{ $jurusan->kuota }} Siswa</strong>

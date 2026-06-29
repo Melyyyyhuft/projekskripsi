@@ -46,6 +46,10 @@ class Pendaftaran extends Model
      */
     public function calculateSelectionResult()
     {
+        $settings   = Pengaturan::pluck('value', 'key')->all();
+        $bobotRapor = (float) ($settings['bobot_rapor'] ?? 70) / 100;
+        $bobotUjian = (float) ($settings['bobot_ujian'] ?? 30) / 100;
+
         $hasilUjian = HasilUjian::where('user_id', $this->user_id)->first();
         $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
         $nilaiRapor = (float) $this->nilai_rapor;
@@ -56,16 +60,16 @@ class Pendaftaran extends Model
         // Formula logic
         $skorAkhir   = 0;
         $kategori    = 'TIDAK DITERIMA';
-        $penempatan  = null;
+        $penempatan  = '-';
         $hasCBT      = $nilaiCBT !== null;
 
         if ($hasCBT) {
-            $raporPart = round(0.7 * $nilaiRapor, 2);
-            $cbtPart   = round(0.3 * $nilaiCBT, 2);
+            $raporPart = round($bobotRapor * $nilaiRapor, 2);
+            $cbtPart   = round($bobotUjian * $nilaiCBT, 2);
             $skorAkhir = round($raporPart + $cbtPart, 2);
 
             $kategori   = 'DITERIMA';
-            $penempatan = $skorAkhir >= 70 ? 'Kelas Unggulan' : 'Kelas Reguler';
+            $penempatan = '-'; // Placement logic removed by user request
         } else {
             $kategori = 'TIDAK HADIR CBT';
         }
@@ -73,9 +77,6 @@ class Pendaftaran extends Model
         // Sync with HasilSeleksi
         $hs = $this->hasilSeleksi;
         
-        // If it's a manual override, we might not want to overwrite it completely, 
-        // but the user asked for "automatic fill" which implies keeping it updated.
-        // We will update the 'system' fields regardless.
         $data = [
             'skor_sistem'        => $skorAkhir,
             'bonus_sistem'       => $bonusVal,

@@ -29,7 +29,7 @@
         🏫 Umum
     </button>
     <button class="tab-btn" onclick="openTab(event,'tab-periode')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
-        📅 Seleksi & CBT
+        ⚖️ Seleksi Bobot
     </button>
 
     <button class="tab-btn" onclick="openTab(event,'tab-jurusan')" style="padding:.6rem 1.25rem;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;background:transparent;color:#64748b;">
@@ -80,26 +80,7 @@
 
 {{-- Tab: Periode & Bobot --}}
 <div id="tab-periode" class="tab-pane" style="display:none;">
-    <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:1.5rem;">
-        {{-- Periode --}}
-        <div class="glass-card">
-            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">📅 Jadwal Pelaksanaan CBT</h3>
-            <form action="{{ route('admin.pengaturan.periode') }}" method="POST">
-                @csrf
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;">
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label class="form-label">Tgl Mulai CBT</label>
-                        <input type="date" name="tgl_mulai_cbt" class="form-control" value="{{ $settings['tgl_mulai_cbt'] ?? '' }}" required>
-                    </div>
-                    <div class="form-group" style="margin-bottom:0;">
-                        <label class="form-label">Durasi Tes (Hari)</label>
-                        <input type="number" name="durasi_cbt" class="form-control" value="{{ $settings['durasi_cbt'] ?? '' }}" required min="1">
-                    </div>
-                </div>
-                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Jadwal CBT</button>
-            </form>
-        </div>
-
+    <div style="max-width: 800px;">
         {{-- Bobot --}}
         <div class="glass-card">
             <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">⚖️ Bobot Nilai & Ambang Batas</h3>
@@ -109,21 +90,16 @@
                     💡 Rumus: <code>(Bobot Ujian × Nilai CBT) + (Bobot Rapor × Nilai Rapor)</code>. Total bobot harus 100%.
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:1.5rem;">
                         <label class="form-label">Bobot Ujian (%)</label>
                         <input type="number" name="bobot_ujian" class="form-control" value="{{ $settings['bobot_ujian'] ?? 30 }}" required min="0" max="100">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-bottom:1.5rem;">
                         <label class="form-label">Bobot Rapor (%)</label>
                         <input type="number" name="bobot_rapor" class="form-control" value="{{ $settings['bobot_rapor'] ?? 70 }}" required min="0" max="100">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Ambang Batas Kelas Unggulan</label>
-                    <input type="number" step="0.1" name="ambang_unggulan" class="form-control" value="{{ $settings['ambang_unggulan'] ?? 70.0 }}" required>
-                    <small style="color:var(--gray-text);font-size:0.75rem;">Siswa dengan skor akhir di atas nilai ini akan masuk kelas Unggulan.</small>
-                </div>
-                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Bobot & Ambang Batas</button>
+                <button type="submit" class="btn-primary" style="width:100%;padding:.75rem;">💾 Simpan Bobot Seleksi</button>
             </form>
         </div>
     </div>

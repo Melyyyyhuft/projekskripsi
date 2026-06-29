@@ -15,7 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PenempatanController extends Controller
 {
-    const THRESHOLD_UNGGULAN = 70;
+
 
     public function index(Request $request)
     {
@@ -114,6 +114,10 @@ class PenempatanController extends Controller
     {
         $hs = $p->calculateSelectionResult();
         
+        $settings   = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        $bobotRapor = (float) ($settings['bobot_rapor'] ?? 70);
+        $bobotUjian = (float) ($settings['bobot_ujian'] ?? 30);
+
         $hasilUjian = HasilUjian::where('user_id', $p->user_id)->first();
         $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
         $nilaiRapor = (float) $p->nilai_rapor;
@@ -129,10 +133,10 @@ class PenempatanController extends Controller
             'has_cbt'        => $nilaiCBT !== null,
             'bonus'          => 0,
             'formula'        => $nilaiCBT !== null
-                ? "((0.7 × {$nilaiRapor}) + (0.3 × {$nilaiCBT})) = {$hs->skor_akhir}"
+                ? "(({$bobotRapor}% × {$nilaiRapor}) + ({$bobotUjian}% × {$nilaiCBT})) = {$hs->skor_akhir}"
                 : 'Tidak ada data CBT',
             'skor_akhir'     => (float) $hs->skor_akhir,
-            'penempatan'     => $hs->penempatan_kelas,
+            'penempatan'     => '-',
             'kategori'       => $hs->kategori_kelulusan,
             'sudah_dihitung' => true,
             'sudah_publish'  => (bool) $hs->is_finalisasi,
@@ -193,7 +197,10 @@ class PenempatanController extends Controller
 
                     // Recalculate score (Bonus removed)
                     if ($calc['has_cbt']) {
-                        $skorAkhir = round((0.7 * $calc['rapor']) + (0.3 * $calc['cbt']), 2);
+                        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+                        $bR = (float) ($settings['bobot_rapor'] ?? 70) / 100;
+                        $bU = (float) ($settings['bobot_ujian'] ?? 30) / 100;
+                        $skorAkhir = round(($bR * $calc['rapor']) + ($bU * $calc['cbt']), 2);
                     }
                 }
 
@@ -347,8 +354,11 @@ class PenempatanController extends Controller
 
             $skorAkhir = $hs->skor_sistem;
             if ($nilaiCBT !== null) {
-                $raporPart = round(0.7 * $nilaiRapor, 2);
-                $cbtPart   = round(0.3 * $nilaiCBT, 2);
+                $settings  = \App\Models\Pengaturan::pluck('value', 'key')->all();
+                $bR        = (float) ($settings['bobot_rapor'] ?? 70) / 100;
+                $bU        = (float) ($settings['bobot_ujian'] ?? 30) / 100;
+                $raporPart = round($bR * $nilaiRapor, 2);
+                $cbtPart   = round($bU * $nilaiCBT, 2);
                 $skorAkhir = round($raporPart + $cbtPart, 2);
             }
 

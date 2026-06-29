@@ -54,12 +54,11 @@ class UjianController extends Controller
         $request->validate([
             'cbt_tgl_mulai'   => 'required|date',
             'cbt_tgl_selesai' => 'required|date|after:cbt_tgl_mulai',
-            'cbt_durasi_default' => 'required|integer|min:1',
             'cbt_max_percobaan'  => 'required|integer|min:1',
             'cbt_status'      => 'required|in:aktif,ditutup'
         ]);
 
-        foreach ($request->only(['cbt_tgl_mulai', 'cbt_tgl_selesai', 'cbt_durasi_default', 'cbt_max_percobaan', 'cbt_status']) as $key => $value) {
+        foreach ($request->only(['cbt_tgl_mulai', 'cbt_tgl_selesai', 'cbt_max_percobaan', 'cbt_status']) as $key => $value) {
             Pengaturan::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 

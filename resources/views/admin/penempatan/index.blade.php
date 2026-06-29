@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Seleksi & Penempatan PPDB')
+@section('title', 'Hasil Seleksi')
 
 @section('content')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -42,8 +42,7 @@
 .b-diterima { background:#dcfce7; color:#166534; border:1px solid #86efac; }
 .b-tidak { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
 .b-cbt { background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; }
-.b-unggulan { background:#fef9c3; color:#854d0e; border:1px solid #fde047; }
-.b-reguler { background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; }
+
 .b-proses { background:#f5f3ff; color:#5b21b6; border:1px solid #ddd6fe; }
 .b-publish { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
 .b-review { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
@@ -144,7 +143,7 @@ input:checked + .slider:before { transform:translateX(20px); }
     {{-- ─── Header ─── --}}
     <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:1rem;">
         <div>
-            <h1 style="font-size:1.6rem; font-weight:900; color:var(--dark); margin:0 0 .2rem; letter-spacing:-.02em;">🏫 Seleksi & Penempatan</h1>
+            <h1 style="font-size:1.6rem; font-weight:900; color:var(--dark); margin:0 0 .2rem; letter-spacing:-.02em;">🏫 Hasil Seleksi</h1>
             <p style="color:var(--gray); font-size:.9rem; margin:0; font-weight:500;">Preview kalkulasi → Review → Publish hasil ke siswa.</p>
         </div>
     </div>
@@ -228,8 +227,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <th style="text-align:center;">Rapor</th>
                         <th style="text-align:center;">CBT</th>
                         <th>Sertifikat</th>
-                        <th style="text-align:center;">Skor</th>
-                        <th>Kelas</th>
+                        <th style="text-align:center;">Skor Akhir</th>
                         <th>Hasil</th>
                         <th>Proses</th>
                         <th style="text-align:right;">Aksi</th>
@@ -278,14 +276,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                             <td style="text-align:center;">
                                 @if($hs) <span style="font-weight:900; color:var(--dark); font-size:.9rem;">{{ number_format($hs->skor_akhir,2) }}</span>
                                 @else <span style="color:#cbd5e1;">-</span> @endif
-                            </td>
-                            <td>
-                                @if($hs && $hs->penempatan_kelas)
-                                    <span class="badge-m {{ $hs->penempatan_kelas=='Kelas Unggulan' ? 'b-unggulan' : 'b-reguler' }}">
-                                        <i class="fa-solid {{ $hs->penempatan_kelas=='Kelas Unggulan' ? 'fa-star' : 'fa-book-open' }}" style="font-size:.5rem;"></i>
-                                        {{ str_replace('Kelas ','',$hs->penempatan_kelas) }}
-                                    </span>
-                                @else <span style="color:#cbd5e1; font-size:.65rem; font-weight:700;">—</span> @endif
                             </td>
                             <td>
                                 @if($hs)
@@ -366,8 +356,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <th style="text-align:center;">Rapor</th>
                         <th style="text-align:center;">CBT</th>
                         <th>Rumus Perhitungan</th>
-                        <th style="text-align:center;">Skor</th>
-                        <th>Kelas</th>
+                        <th style="text-align:center;">Skor Akhir</th>
                         <th>Status</th>
                         <th>Catatan</th>
                     </tr>
@@ -441,10 +430,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <input type="text" id="daSkor" class="mode-input" disabled style="font-weight:900; color:var(--primary);">
                     </div>
                     <div class="mode-field" style="grid-column: span 2;">
-                        <label class="mode-label">Kelas Penempatan</label>
-                        <input type="text" id="daKelas" class="mode-input" disabled>
-                    </div>
-                    <div class="mode-field" style="grid-column: span 2;">
                         <label class="mode-label">Status Kelulusan</label>
                         <input type="text" id="daStatus" class="mode-input" disabled>
                     </div>
@@ -461,13 +446,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                     </label>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                    <div class="mode-field">
-                        <label class="mode-label">Penempatan Manual</label>
-                        <select id="dbKelas" class="mode-input manual-field">
-                            <option value="Kelas Unggulan">Unggulan</option>
-                            <option value="Kelas Reguler">Reguler</option>
-                        </select>
-                    </div>
+
                     <div class="mode-field" style="grid-column: span 2;">
                         <label class="mode-label">Status Manual</label>
                         <select id="dbStatus" class="mode-input manual-field">
@@ -570,9 +549,7 @@ function renderPreview(data) {
                 ? `<span class="badge-m b-cbt"><i class="fa-solid fa-circle-xmark" style="font-size:.45rem;"></i> ${s.kategori}</span>`
                 : `<span class="badge-m b-tidak"><i class="fa-solid fa-circle-xmark" style="font-size:.45rem;"></i> ${s.kategori}</span>`;
 
-        const kelasBadge = s.penempatan
-            ? `<span class="badge-m ${s.penempatan === 'Kelas Unggulan' ? 'b-unggulan' : 'b-reguler'}">${s.penempatan.replace('Kelas ','')}</span>`
-            : '-';
+
 
         const publishWarn = s.sudah_publish ? '<span class="badge-m b-review" style="margin-left:3px;" title="Sudah dipublish sebelumnya">⚠ Published</span>' : '';
 
@@ -588,7 +565,6 @@ function renderPreview(data) {
                 <div class="formula-box" style="padding:.5rem .8rem;margin:0;font-size:.7rem;border-radius:10px;">${s.formula}</div>
             </td>
             <td style="text-align:center;font-weight:900;font-size:1rem;color:var(--dark);">${s.skor_akhir}</td>
-            <td>${kelasBadge}</td>
             <td>${katBadge}</td>
             <td>
                 <input type="text" class="catatan-input" data-id="${s.pendaftaran_id}" placeholder="Tambah catatan..." style="width:100%;padding:.35rem .5rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.7rem;outline:none;">
@@ -758,12 +734,11 @@ function showDetail(id) {
             document.getElementById('daRapor').value = d.rapor;
             document.getElementById('daCbt').value = d.cbt ?? 'Tidak Ikut';
             document.getElementById('daSkor').value = h.skor_sistem;
-            document.getElementById('daKelas').value = h.penempatan_sistem ?? '-';
             document.getElementById('daStatus').value = h.kategori_sistem ?? 'BELUM DIHITUNG';
 
             // Mode B (Manual)
             document.getElementById('toggleOverride').checked = h.is_override;
-            document.getElementById('dbKelas').value = h.penempatan || 'Kelas Reguler';
+
             document.getElementById('dbStatus').value = h.kategori || 'TIDAK DITERIMA';
             document.getElementById('dbCatatan').value = h.catatan || '';
 
@@ -808,7 +783,7 @@ function saveFinalDecision() {
     const isOverride = document.getElementById('toggleOverride').checked;
     const data = {
         is_manual_override: isOverride,
-        penempatan_manual: document.getElementById('dbKelas').value,
+
         kategori_manual: document.getElementById('dbStatus').value,
         catatan: document.getElementById('dbCatatan').value
     };
