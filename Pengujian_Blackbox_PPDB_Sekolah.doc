@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset="utf-8">
+    <title>Pengujian Black Box PPDB Sekolah</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 12pt; }
+        h1, h2, h3 { color: #2E5894; text-align: center; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+        .no-col { width: 30px; text-align: center; }
+        .hasil-col { width: 60px; text-align: center; color: green; font-weight: bold; }
+        .tampilan-img { max-width: 150px; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <h3>4.5.1 Pengujian Black Box</h3>
+    
+    <p><b>a. Pengujian Fitur Pendaftaran Siswa</b></p>
+    <p>Tabel 4. 1 Pengujian Fitur Pendaftaran Siswa</p>
+    <table>
+        <thead>
+            <tr>
+                <th class="no-col">No</th>
+                <th>Fitur</th>
+                <th>Skenario Uji</th>
+                <th>Proses yang diharapkan</th>
+                <th>Output yang diharapkan</th>
+                <th>Tampilan</th>
+                <th class="hasil-col">Hasil</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="no-col">1.</td>
+                <td>Menampilkan Jurusan</td>
+                <td>Calon siswa membuka halaman utama untuk melihat ketersediaan program keahlian.</td>
+                <td>Sistem menampilkan seluruh daftar jurusan beserta sisa kuota yang tersedia.</td>
+                <td>Daftar jurusan tersusun rapi dengan informasi deskripsi dan ikon yang representatif.</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+            <tr>
+                <td class="no-col">2.</td>
+                <td>Memilih Jurusan Tersedia</td>
+                <td>Siswa memilih salah satu jurusan saat melakukan registrasi akun.</td>
+                <td>Sistem menyimpan preferensi jurusan ke dalam data pendaftaran sementara.</td>
+                <td>Muncul konfirmasi pemilihan jurusan dan lanjut ke formulir data diri.</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+            <tr>
+                <td class="no-col">3.</td>
+                <td>Melengkapi Profil Pendaftar</td>
+                <td>Siswa mengisi data diri, orang tua, dan asal sekolah pada dashboard.</td>
+                <td>Sistem memproses dan memvalidasi tipe data yang dimasukkan ke database.</td>
+                <td>Badge status pada dashboard berubah menjadi "Data Profil Lengkap".</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+            <tr>
+                <td class="no-col">4.</td>
+                <td>Mengunggah Berkas Wajib</td>
+                <td>Siswa memilih file scan (KK/Ijazah) dan mengeklik "Unggah".</td>
+                <td>Sistem memverifikasi format file dan menyimpannya di folder storage server.</td>
+                <td>Berkas muncul di daftar lampiran dengan ikon pratinjau yang aktif.</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+            <tr>
+                <td class="no-col">5.</td>
+                <td>Re-upload Berkas</td>
+                <td>Siswa mengganti berkas yang sebelumnya ditolak oleh admin.</td>
+                <td>Sistem menghapus file lama dan menggantinya dengan berkas baru di database.</td>
+                <td>Status berkas berubah kembali menjadi "Menunggu Verifikasi" dan muncul notifikasi sukses.</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+            <tr>
+                <td class="no-col">6.</td>
+                <td>Validasi Form Kosong</td>
+                <td>Siswa mengeklik tombol "Finalisasi" tanpa melengkapi field wajib.</td>
+                <td>Sistem mengecek nilai null pada kolom database mandatory.</td>
+                <td>Form menampilkan peringatan kolom wajib diisi (Harap isi bidang ini).</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+            <tr>
+                <td class="no-col">7.</td>
+                <td>Finalisasi Pendaftaran</td>
+                <td>Siswa melakukan check-list pernyataan dan mengeklik "Kirim".</td>
+                <td>Sistem mengunci data pendaftaran sehingga tidak dapat diubah lagi.</td>
+                <td>Halaman dashboard menampilkan status "Menunggu Verifikasi".</td>
+                <td>(Terlampir di Sistem)</td>
+                <td class="hasil-col">Sesuai</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><b>b. Pengujian Fitur Pelaksanaan Ujian CBT</b></p>
+    <p>Tabel 4. 2 Pengujian Fitur Pelaksanaan Ujian CBT</p>
+    <table>
+        <thead>
+            <tr>
+                <th class="no-col">No</th>
+                <th>Fitur</th>
+                <th>Skenario Uji</th>
+                <th>Proses yang diharapkan</th>
+                <th>Output yang diharapkan</th>
+                <th>Tampilan</th>
+                <th class="hasil-col">Hasil</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="no-col">1.</td><td>Akses Token Ujian</td><td>Siswa mengeklik menu "Ujian Online" setelah status terverifikasi.</td><td>Sistem melakukan pengecekan status pendaftaran dan jadwal ujian aktif.</td><td>Tampil informasi tata tertib ujian beserta tombol "Mulai Ujian".</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">2.</td><td>Menampilkan Soal</td><td>Siswa memasuki halaman pengerjaan soal ujian.</td><td>Sistem menarik data soal secara acak berdasarkan paket soal.</td><td>Soal tampil satu per satu beserta opsi jawaban A-E dan navigator soal.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">3.</td><td>Timer Real-time</td><td>Siswa sedang mengerjakan soal di tengah durasi waktu.</td><td>Sistem melakukan hitung mundur durasi setiap 1 detik otomatis.</td><td>Countdown waktu tampil di pojok layar dan berubah warna saat sisa 5 menit.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">4.</td><td>Simpan Jawaban</td><td>Siswa memilih salah satu opsi dan sistem menyimpannya.</td><td>Sistem mengirim request AJAX untuk menyimpan jawaban ke tabel jawabans.</td><td>Ikon nomor soal pada navigator berubah menjadi warna hijau.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">5.</td><td>Selesai Ujian & Skor</td><td>Siswa menekan tombol "Selesaikan Ujian" sebelum waktu habis.</td><td>Sistem menghitung jawaban benar, salah, dan simpan skor ke tabel hasil_ujians.</td><td>Muncul pesan "Ujian Selesai!" dan dialihkan ke Dashboard.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">6.</td><td>Unduh Kartu Bukti</td><td>Siswa menekan tombol "Unduh Bukti Pendaftaran" di dashboard.</td><td>Sistem menyusun data pendaftaran dan nilai ke template PDF.</td><td>Berkas PDF berhasil terunduh secara otomatis.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+        </tbody>
+    </table>
+
+    <p><b>c. Pengujian Fitur Login Admin</b></p>
+    <p>Tabel 4. 3 Pengujian Fitur Login Admin</p>
+    <table>
+        <thead><tr><th class="no-col">No</th><th>Fitur</th><th>Skenario Uji</th><th>Proses yang diharapkan</th><th>Output yang diharapkan</th><th>Tampilan</th><th class="hasil-col">Hasil</th></tr></thead>
+        <tbody>
+            <tr><td class="no-col">1.</td><td>Login Kosong</td><td>Admin mengeklik "Login" tanpa mengisi email/password.</td><td>Sistem mendeteksi kolom kosong sebelum dikirim ke AuthController.</td><td>Form memunculkan peringatan (Harap isi bidang ini).</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">2.</td><td>Email Salah</td><td>Mengisi email yang tidak terdaftar di database.</td><td>Sistem memverifikasi kredensial email pada tabel users.</td><td>Muncul peringatan "Kredensial tidak cocok!".</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">3.</td><td>Akses Panitia</td><td>Login menggunakan akun dengan role 'Panitia/Admin'.</td><td>Sistem mencocokkan role, mulai sesi, dan arahkan ke dashboard.</td><td>Dialihkan ke Dashboard Admin dengan statistik pendaftar.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+        </tbody>
+    </table>
+
+    <p><b>d. Pengujian Fitur Panel Verifikasi Berkas</b></p>
+    <p>Tabel 4. 4 Pengujian Fitur Panel Verifikasi Berkas</p>
+    <table>
+        <thead><tr><th class="no-col">No</th><th>Fitur</th><th>Skenario Uji</th><th>Proses yang diharapkan</th><th>Output yang diharapkan</th><th>Tampilan</th><th class="hasil-col">Hasil</th></tr></thead>
+        <tbody>
+            <tr><td class="no-col">1.</td><td>Deteksi Pendaftar</td><td>Ada siswa baru melakukan finalisasi pendaftaran.</td><td>Sistem mengecek data tabel pendaftarans secara real-time.</td><td>Muncul notifikasi sidebar jumlah pendaftar baru yang belum dibaca.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">2.</td><td>Pratinjau Berkas</td><td>Admin mengeklik berkas scan pada detail siswa.</td><td>Sistem memanggil file dari storage dan tampilkan di modal/lightbox.</td><td>Muncul pop-up menampilkan dokumen dengan jelas.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">3.</td><td>Ubah Status</td><td>Admin mengeklik tombol "Setujui" pada daftar pendaftaran.</td><td>Sistem memperbarui status menjadi 'Terverifikasi' di database.</td><td>Baris pendaftaran berubah warna hijau dan tombol "Setujui" hilang.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">4.</td><td>Tolak & Revisi</td><td>Admin mengeklik "Tolak" dan memberikan alasan revisi.</td><td>Sistem simpan alasan dan ubah status menjadi 'Perlu Revisi'.</td><td>Sisi siswa muncul alert merah beserta instruksi perbaikan.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+        </tbody>
+    </table>
+
+    <p><b>e. Pengujian Fitur Panel Seleksi & Kelulusan</b></p>
+    <p>Tabel 4. 5 Pengujian Fitur Panel Seleksi</p>
+    <table>
+        <thead><tr><th class="no-col">No</th><th>Fitur</th><th>Skenario Uji</th><th>Proses yang diharapkan</th><th>Output yang diharapkan</th><th>Tampilan</th><th class="hasil-col">Hasil</th></tr></thead>
+        <tbody>
+            <tr><td class="no-col">1.</td><td>Jalankan Seleksi</td><td>Admin mengeklik tombol "Jalankan Seleksi" pada periode PPDB.</td><td>Sistem mengurutkan siswa berdasarkan total skor per jurusan.</td><td>Tabel perangkingan terisi otomatis sesuai kuota jurusan.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">2.</td><td>Publikasi Hasil</td><td>Admin mengeklik "Publikasikan" untuk ditampilkan ke publik.</td><td>Sistem mengubah flag is_published pada tabel hasil_seleksi.</td><td>Hasil seleksi muncul di website publik dan dashboard siswa.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+        </tbody>
+    </table>
+
+    <p><b>f. Pengujian Fitur Panel Manager</b></p>
+    <p>Tabel 4. 6 Pengujian Fitur Panel Manager</p>
+    <table>
+        <thead><tr><th class="no-col">No</th><th>Fitur</th><th>Skenario Uji</th><th>Proses yang diharapkan</th><th>Output yang diharapkan</th><th>Tampilan</th><th class="hasil-col">Hasil</th></tr></thead>
+        <tbody>
+            <tr><td class="no-col">1.</td><td>Konfigurasi Bobot</td><td>Manager mengubah bobot nilai rapor vs nilai ujian.</td><td>Sistem memperbarui konstanta perhitungan skor di tabel pengaturans.</td><td>Perhitungan perangkingan berubah sesuai bobot terbaru.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">2.</td><td>Periode PPDB</td><td>Manager mendaftarkan tanggal Buka dan Tutup.</td><td>Sistem mengecek tanggal hari ini terhadap rentang periode.</td><td>Tombol "Daftar" aktif jika dalam rentang tanggal.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+            <tr><td class="no-col">3.</td><td>Tambah Panitia</td><td>Manager mendaftarkan admin pendaftaran baru.</td><td>Sistem menyimpan user baru dengan role 'Admin'.</td><td>Akun baru muncul di daftar staf dan bisa digunakan untuk login.</td><td>(Sistem)</td><td class="hasil-col">Sesuai</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>

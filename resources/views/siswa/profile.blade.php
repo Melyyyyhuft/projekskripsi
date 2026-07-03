@@ -450,51 +450,6 @@
         {{-- ═══ RIGHT: Forms ═══ --}}
         <div class="profile-right-stack">
 
-            {{-- Edit Profile --}}
-            <div class="profile-card anim-in anim-d2">
-                <h3 class="profile-card-title">
-                    <i style="background:#eff6ff;color:#3b82f6;"><span class="fa-solid fa-pen-to-square"></span></i>
-                    Edit Profil
-                </h3>
-
-                <form action="{{ route('siswa.profile.update') }}" method="POST">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Nama Lengkap</label>
-                        <input type="text" name="name" class="pf-form-input @error('name') is-invalid @enderror"
-                               value="{{ old('name', $user->name) }}" placeholder="Masukkan nama lengkap">
-                        @error('name') <div class="pf-form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Email</label>
-                        <input type="email" name="email" class="pf-form-input @error('email') is-invalid @enderror"
-                               value="{{ old('email', $user->email) }}" placeholder="contoh@email.com">
-                        @error('email') <div class="pf-form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Nomor Telepon</label>
-                        <input type="text" name="no_hp" class="pf-form-input @error('no_hp') is-invalid @enderror"
-                               value="{{ old('no_hp', $user->no_hp ?: ($pendaftaran->no_hp ?? '')) }}" placeholder="08xxxxxxxxxx">
-                        @error('no_hp') <div class="pf-form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Alamat</label>
-                        <textarea name="alamat" class="pf-form-input pf-form-textarea @error('alamat') is-invalid @enderror"
-                                  placeholder="Masukkan alamat lengkap">{{ old('alamat', $user->alamat ?: ($pendaftaran->alamat ?? '')) }}</textarea>
-                        @error('alamat') <div class="pf-form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <button type="submit" class="pf-btn-gradient">
-                        <i class="fa-solid fa-check"></i> Simpan Perubahan
-                    </button>
-                </form>
-            </div>
-
             {{-- Change Password --}}
             <div class="profile-card anim-in anim-d3">
                 <h3 class="profile-card-title">

@@ -194,9 +194,7 @@ class PendaftaranController extends Controller
         if($request->hasFile('pasfoto')) {
             $file = $request->file('pasfoto');
             $path = $file->store('berkas_pendaftaran/pasfoto', 'public');
-            // Sync ke foto profil user
-            Auth::user()->update(['foto' => $path]);
-            
+
             Berkas::updateOrCreate(
                 ['pendaftaran_id' => $pendaftaran->id, 'jenis_berkas' => 'pasfoto'],
                 [
