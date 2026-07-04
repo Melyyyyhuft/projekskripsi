@@ -15,7 +15,7 @@
         <p class="hero-subtitle">Sistem Penerimaan Peserta Didik Baru yang dirancang khusus untuk memberikan pengalaman pendaftaran yang Cepat, Transparan, dan Modern.</p>
         <div class="hero-actions">
             @if($isPPDBOpen)
-                <a href="{{ url('/login') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
+                <a href="{{ url('/register') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
                     Daftar Sekarang
                 </a>
             @else
@@ -135,8 +135,8 @@
         Jangan lewatkan kesempatan untuk menjadi bagian dari komunitas belajar terbaik.
     </p>
     @if($isPPDBOpen)
-        <a href="{{ url('/login') }}" class="btn-primary" style="background: var(--white); color: #000; padding: 1rem 3rem; font-size: 1.125rem; border: none;">
-            Login & Daftar
+        <a href="{{ url('/register') }}" class="btn-primary" style="background: var(--white); color: #000; padding: 1rem 3rem; font-size: 1.125rem; border: none;">
+            Daftar Sekarang
         </a>
     @else
         <button class="btn-outline" style="border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.7); padding: 1rem 3rem; font-size: 1.125rem; cursor: not-allowed;" disabled>
