@@ -35,12 +35,12 @@
 
     .hero-container {
         text-align: center;
-        padding: 4rem 2rem;
-        border-radius: 40px;
+        padding: 1.75rem 2rem;
+        border-radius: 28px;
         position: relative;
         overflow: hidden;
         color: white;
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem;
     }
 
     .hero-container::before {
@@ -55,53 +55,54 @@
 
     .status-badge {
         display: inline-flex;
-        padding: 0.6rem 2rem;
+        padding: 0.35rem 1.25rem;
         background: rgba(255, 255, 255, 0.2);
         border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 999px;
         font-weight: 900;
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.2em;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0.6rem;
         backdrop-filter: blur(10px);
     }
 
-    .main-title { font-size: 4.5rem; font-weight: 950; letter-spacing: -3px; line-height: 1; margin: 0; }
+    .main-title { font-size: 2.75rem; font-weight: 950; letter-spacing: -2px; line-height: 1; margin: 0; }
     
     .stats-overlay {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 1.5rem;
-        margin-top: 3.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1.25rem;
     }
     .stat-item {
         background: rgba(0, 0, 0, 0.1);
-        padding: 1.5rem;
-        border-radius: 24px;
+        padding: 0.75rem 1rem;
+        border-radius: 16px;
         border: 1px solid rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(5px);
         transition: transform 0.3s ease;
     }
-    .stat-item:hover { transform: translateY(-5px); background: rgba(0,0,0,0.15); }
-    .stat-lbl { font-size: 0.75rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; margin-bottom: 0.5rem; }
-    .stat-val { font-size: 1.5rem; font-weight: 900; }
+    .stat-item:hover { transform: translateY(-3px); background: rgba(0,0,0,0.15); }
+    .stat-lbl { font-size: 0.68rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .stat-val { font-size: 1.1rem; font-weight: 900; }
 
     .btn-download {
         display: inline-flex;
         align-items: center;
-        gap: 0.8rem;
+        gap: 0.6rem;
         background: white;
         color: #059669;
-        padding: 1.1rem 2.5rem;
-        border-radius: 20px;
+        padding: 0.7rem 1.75rem;
+        border-radius: 14px;
         font-weight: 900;
+        font-size: 0.9rem;
         text-decoration: none;
-        margin-top: 3rem;
+        margin-top: 1rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
-    .btn-download:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); color: #064e3b; }
+    .btn-download:hover { transform: scale(1.04); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25); color: #064e3b; }
 
     .action-step {
         background: white;
@@ -150,7 +151,7 @@
                 {{ $isAccepted ? 'DITERIMA' : ($isNoCBT ? 'TIDAK HADIR CBT' : 'TIDAK DITERIMA') }}
             </h2>
             
-            <p style="max-width: 750px; margin: 2rem auto 0; font-size: 1.15rem; line-height: 1.8; opacity: 0.95; font-weight: 500;">
+            <p style="max-width: 750px; margin: 0.6rem auto 0; font-size: 0.92rem; line-height: 1.6; opacity: 0.95; font-weight: 500;">
                 @if($isAccepted)
                     Selamat! Berdasarkan hasil seleksi akumulatif, Anda dinyatakan <strong>Lolos Seleksi</strong> dan berhak menjadi bagian dari keluarga besar {{ $settings['nama_sekolah'] ?? 'Sekolah Kami' }}.
                 @elseif($isNoCBT)

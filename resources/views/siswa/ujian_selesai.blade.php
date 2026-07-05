@@ -70,43 +70,71 @@
 
 
 
-    {{-- ─── Info Detail Ujian ─── --}}
-    <div class="glass-card fade-up delay-2" style="margin-bottom:1.5rem;flex-shrink:0;">
-        <h4 style="color:#0f172a;margin:0 0 1rem;font-size:.95rem;font-weight:700;">ℹ️ Informasi Sesi Ujian</h4>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
-            <div style="background:#f8fafc;border-radius:10px;padding:.875rem;">
-                <div style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Nama Ujian</div>
-                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ $ujian->judul ?? '—' }}</div>
+    {{-- ─── Info Detail Ujian: Premium Modern Grid ─── --}}
+    <div class="glass-card fade-up delay-2" style="margin-bottom:2rem; padding:2rem;">
+        <h4 style="color:#0f172a; margin: 0 0 1.5rem; font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Informasi Sesi Ujian
+        </h4>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            
+            <div style="background:#f8fafc; border-radius:14px; padding:1.25rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 0.875rem;">
+                    <div style="width: 38px; height: 38px; background: #eff6ff; color: #3b82f6; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Nama Ujian</p>
+                        <p style="margin:0; font-weight: 700; color: #1e293b; font-size: 0.95rem;">{{ $ujian->judul ?? '—' }}</p>
+                    </div>
+                </div>
             </div>
-            <div style="background:#f8fafc;border-radius:10px;padding:.875rem;">
-                <div style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Durasi Pengerjaan</div>
-                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">⏱️ {{ $durasiMenit }} menit</div>
+
+            <div style="background:#f8fafc; border-radius:14px; padding:1.25rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 0.875rem;">
+                    <div style="width: 38px; height: 38px; background: #fdf2f8; color: #db2777; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Durasi Pengerjaan</p>
+                        <p style="margin:0; font-weight: 700; color: #1e293b; font-size: 0.95rem;">{{ $durasiMenit }} menit</p>
+                    </div>
+                </div>
             </div>
-            <div style="background:#f8fafc;border-radius:10px;padding:.875rem;">
-                <div style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Waktu Anda Selesai</div>
-                <div style="font-weight:700;color:#0f172a;font-size:.9rem;">{{ $hasilUjian->created_at->format('d M Y, H:i') }}</div>
-            </div>
-            @if($periodeUjian)
-            <div style="background:#eff6ff;border-radius:10px;padding:.875rem;border:1px solid #bfdbfe;">
-                <div style="font-size:.72rem;color:#1e40af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">📅 Periode Ujian (3 Hari)</div>
-                <div style="font-weight:700;color:#1d4ed8;font-size:.9rem;">{{ $periodeUjian }}</div>
-            </div>
-            @else
-            <div style="background:#eff6ff;border-radius:10px;padding:.875rem;border:1px solid #bfdbfe;">
-                <div style="font-size:.72rem;color:#1e40af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">📅 Periode Ujian</div>
-                <div style="font-weight:700;color:#1d4ed8;font-size:.9rem;">Sesuai jadwal panitia</div>
-            </div>
-            @endif
-            <div style="background:#d1fae5;border-radius:10px;padding:.875rem;">
-                <div style="font-size:.72rem;color:#166534;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Status Ujian</div>
-                <div style="font-weight:700;color:#059669;font-size:.9rem;">✅ Sudah Mengikuti Ujian</div>
-            </div>
-            <div style="background:#fef3c7;border-radius:10px;padding:.875rem;border:1px solid #fde68a;">
-                <div style="font-size:.72rem;color:#92400e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">Catatan Penting</div>
-                <div style="font-weight:700;color:#92400e;font-size:.85rem;">🔒 Ujian hanya 1 kali per akun</div>
+
+            <div style="background:#f8fafc; border-radius:14px; padding:1.25rem; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 0.875rem;">
+                    <div style="width: 38px; height: 38px; background: #f0fdf4; color: #166534; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Waktu Selesai</p>
+                        <p style="margin:0; font-weight: 700; color: #1e293b; font-size: 0.95rem;">{{ $hasilUjian->created_at->format('d M Y, H:i') }}</p>
+                    </div>
+                </div>
             </div>
         </div>
+
+        {{-- Status Ujian: Memanjang --}}
+        <div style="background:#ecfdf5; border-radius:14px; padding:1.25rem; border: 1px solid #d1fae5; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+            <div style="width: 44px; height: 44px; background: #10b981; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                <i class="fa-solid fa-check-double"></i>
+            </div>
+            <div>
+                <p style="margin:0; font-size: 0.7rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.05em;">Status Ujian</p>
+                <p style="margin:0; font-weight: 800; color: #047857; font-size: 1.1rem;">✓ Sudah Mengikuti Ujian CBT</p>
+            </div>
+        </div>
+
+        <div style="padding: 1.25rem; background: #fffcf0; border-radius: 12px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 32px; height: 32px; background: #f59e0b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <p style="margin:0; font-size: 0.85rem; font-weight: 700; color: #92400e;">
+                Catatan: <span style="font-weight: 500;">Ujian ini bersifat final dan hanya dapat diikuti satu kali per akun.</span>
+            </p>
+        </div>
     </div>
+
 
     {{-- ─── Tombol Navigasi ─── --}}
     <div style="display:flex;gap:1rem;flex-wrap:wrap;flex-shrink:0;margin-bottom:2rem;" class="fade-up delay-2">

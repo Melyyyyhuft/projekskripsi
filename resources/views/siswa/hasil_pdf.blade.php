@@ -64,20 +64,20 @@
         <div class="header">
             <div class="school-logo"></div>
             <div style="float: left;">
-                <h2 class="school-name">{{ $settings['nama_sekolah'] ?? 'PPDB SEKOLAH MENENGAH' }}</h2>
-                <p class="school-info">{{ $settings['alamat_sekolah'] ?? 'Jl. Pendidikan No. 123, Kota Cerdas' }}</p>
+                <h2 class="school-name">{{ $settings['nama_sekolah'] ?? 'PPDB SEKOLAH SMK MITRA BINTARO' }}</h2>
+                <p class="school-info">{{ $settings['alamat_sekolah'] ?? 'Jl. Sultan Ageng Tirtayasa No.6, RT.007/RW.008' }}</p>
                 <p class="school-info">Website: {{ url('/') }} | Email: info@sekolah.sch.id</p>
             </div>
             <div class="clear"></div>
         </div>
 
         <div class="doc-title">
-            <h1>SURAT HASIL SELEKSI PPDB</h1>
+            <h1>SURAT HASIL SELEKSI PPDB SMK MITRA BINTARO</h1>
             <p>Nomor: {{ $pendaftaran->nomor_pendaftaran }}/PPDB/{{ date('Y') }}</p>
         </div>
 
         <div class="intro">
-            Berdasarkan hasil seleksi Penerimaan Peserta Didik Baru (PPDB) Tahun Pelajaran {{ $settings['tahun_ajaran'] ?? '2026/2027' }}, Panitia Seleksi menetapkan bahwa calon siswa berikut:
+            Berdasarkan hasil seleksi Penerimaan Peserta Didik Baru (PPDB) SMK Mitra Bintaro Tahun Pelajaran {{ $settings['tahun_ajaran'] ?? '2026/2027' }}, Panitia Seleksi menetapkan bahwa calon siswa berikut:
         </div>
 
         <table class="table-data">
@@ -137,7 +137,7 @@
             </div>
 
             <div class="sign-section">
-                <div class="sign-title">Ditetapkan di Kota Cerdas,<br>{{ now()->translatedFormat('d F Y') }}</div>
+                <div class="sign-title">Ditetapkan di Kota Tangerang,<br>{{ now()->translatedFormat('d F Y') }}</div>
                 <div class="sign-name">DR. KEPALA SEKOLAH, M.PD</div>
                 <div class="sign-nip">NIP. 19800101 200501 1 001</div>
             </div>

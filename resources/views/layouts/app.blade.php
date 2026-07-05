@@ -65,6 +65,17 @@
                 </div>
                 <p>Mewujudkan generasi cerdas, berkarakter, dan berdaya saing global melalui sistem pendidikan yang modern dan transparan.</p>
 
+                <div class="footer-sosmed">
+                    <a href="https://www.instagram.com/mitrabintaro/" target="_blank" class="sosmed-btn sosmed-ig" title="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@smkmitrabintaro-real" target="_blank" class="sosmed-btn sosmed-yt" title="YouTube">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@smk.mitrabintaro" target="_blank" class="sosmed-btn sosmed-tt" title="TikTok">
+                        <i class="fa-brands fa-tiktok"></i>
+                    </a>
+                </div>
             </div>
             
             <div>
@@ -73,7 +84,7 @@
                     <li><a href="{{ url('/') }}">Beranda</a></li>
                     <li><a href="/#tentang">Tentang Kami</a></li>
                     <li><a href="/#jurusan">Pilihan Jurusan</a></li>
-                    <li><a href="{{ url('/login') }}">Daftar Sekarang</a></li>
+                    <li><a href="{{ url('/register') }}">Daftar Sekarang</a></li>
                 </ul>
             </div>
             

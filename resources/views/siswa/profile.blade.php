@@ -7,10 +7,9 @@
     .profile-page { max-width: 1100px; margin: 0 auto; }
 
     .profile-grid {
-        display: grid;
-        grid-template-columns: 380px 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 1.5rem;
-        align-items: start;
     }
 
     .profile-card {
@@ -239,10 +238,10 @@
         transform: translateY(0);
     }
 
-    /* PPDB Card */
+    /* PPDB Card — landscape 5 items */
     .ppdb-info-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(5, 1fr);
         gap: 1rem;
     }
     .ppdb-info-item {
@@ -344,9 +343,32 @@
     .anim-d2 { animation-delay: .2s; opacity: 0; }
     .anim-d3 { animation-delay: .3s; opacity: 0; }
 
+    /* Password card landscape */
+    .pw-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: end;
+    }
+
     /* Responsive */
-    @media (max-width: 860px) {
-        .profile-grid {
+    @media (max-width: 900px) {
+        .profile-avatar-landscape {
+            flex-direction: column;
+            text-align: center;
+        }
+        .profile-avatar-landscape .profile-avatar-section {
+            border-right: none !important;
+            border-bottom: 1px solid #f1f5f9;
+            padding-right: 0 !important;
+            padding-bottom: 1.5rem !important;
+            margin-right: 0 !important;
+            margin-bottom: 1.5rem !important;
+        }
+        .ppdb-info-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .pw-form-row {
             grid-template-columns: 1fr;
         }
     }
@@ -365,14 +387,13 @@
         <p style="color:#64748b;font-size:.9rem;margin:0;">Kelola informasi profil, foto, dan keamanan akun Anda.</p>
     </div>
 
-    <div class="profile-grid">
-
-        {{-- ═══ LEFT: Profile Card ═══ --}}
-        <div style="display:flex;flex-direction:column;gap:1.5rem;">
-
-            {{-- Avatar & Info Card --}}
-            <div class="profile-card anim-in anim-d1">
-                <div class="profile-avatar-section">
+    {{-- ═══ Dual Info Card: Account & PPDB — Premium Unified Design ═══ --}}
+    <div class="profile-card anim-in anim-d1" style="padding: 0; overflow: hidden;">
+        <div style="display: flex; flex-wrap: wrap;">
+            
+            {{-- Left/Top Sidebar: Avatar & Quick Status --}}
+            <div style="flex: 1; min-width: 300px; padding: 2.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(59, 130, 241, 0.05) 100%); border-right: 1px solid #f1f5f9;">
+                <div style="text-align: center;">
                     <div class="profile-avatar-wrap">
                         <div class="profile-avatar-img">
                             <div class="avatar-inner">
@@ -388,180 +409,163 @@
                         </div>
                     </div>
 
-                    {{-- Hidden photo form --}}
                     <form action="{{ route('siswa.profile.photo') }}" method="POST" enctype="multipart/form-data" id="photoForm">
                         @csrf
                         @method('PUT')
                         <input type="file" id="photoInput" name="foto" accept="image/jpeg,image/png,image/webp"
-                               style="display:none;" onchange="document.getElementById('photoForm').submit();">
+                            style="display:none;" onchange="document.getElementById('photoForm').submit();">
                     </form>
 
-                    <p class="profile-user-name">{{ $user->name }}</p>
-                    <span class="profile-user-role">
+                    <h2 class="profile-user-name" style="margin-top: 1rem; font-size: 1.5rem;">{{ $user->name }}</h2>
+                    <span class="profile-user-role" style="margin-bottom: 1.5rem;">
                         <i class="fa-solid fa-graduation-cap"></i> Calon Siswa PPDB
                     </span>
-                    <p style="font-size:.72rem;color:#94a3b8;margin:.75rem 0 0;cursor:pointer;" onclick="document.getElementById('photoInput').click()">
-                        <i class="fa-solid fa-camera"></i> Klik untuk ganti foto (JPG/PNG/WebP, maks 2MB)
-                    </p>
-                    @if($errors->has('foto'))
-                        <p style="color:#ef4444;font-size:.75rem;margin:.35rem 0 0;font-weight:600;">{{ $errors->first('foto') }}</p>
-                    @endif
-                </div>
 
-                {{-- Info rows --}}
-                <div class="profile-info-row">
-                    <div class="profile-info-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fa-solid fa-user"></i></div>
-                    <div>
-                        <p class="profile-info-label">Nama Lengkap</p>
-                        <p class="profile-info-value">{{ $user->name }}</p>
-                    </div>
-                </div>
-                <div class="profile-info-row">
-                    <div class="profile-info-icon" style="background:#f0fdf4;color:#059669;"><i class="fa-solid fa-envelope"></i></div>
-                    <div style="min-width:0;">
-                        <p class="profile-info-label">Email</p>
-                        <p class="profile-info-value">{{ $user->email }}</p>
-                    </div>
-                </div>
-                <div class="profile-info-row">
-                    <div class="profile-info-icon" style="background:#fef9c3;color:#b45309;"><i class="fa-solid fa-phone"></i></div>
-                    <div>
-                        <p class="profile-info-label">Nomor Telepon</p>
-                        <p class="profile-info-value">{{ $user->no_hp ?: ($pendaftaran->no_hp ?? '—') }}</p>
-                    </div>
-                </div>
-                <div class="profile-info-row">
-                    <div class="profile-info-icon" style="background:#fce7f3;color:#db2777;"><i class="fa-solid fa-location-dot"></i></div>
-                    <div>
-                        <p class="profile-info-label">Alamat</p>
-                        <p class="profile-info-value">{{ $user->alamat ?: ($pendaftaran->alamat ?? '—') }}</p>
-                    </div>
-                </div>
-                <div class="profile-info-row">
-                    <div class="profile-info-icon" style="background:#f5f3ff;color:#7c3aed;"><i class="fa-solid fa-calendar-check"></i></div>
-                    <div>
-                        <p class="profile-info-label">Tanggal Bergabung</p>
-                        <p class="profile-info-value">{{ $user->created_at->format('d F Y') }}</p>
+                    <div style="margin-top: 2rem; padding: 1.25rem; background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: var(--shadow-sm);">
+                        <p style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">Status Pendaftaran</p>
+                        @if($pendaftaran)
+                            @php
+                                $statusMap = [
+                                    'draft'                 => ['label' => 'Draft', 'color' => '#64748b', 'bg' => '#f1f5f9', 'icon' => '📝'],
+                                    'menunggu_verifikasi'   => ['label' => 'Menunggu Verifikasi', 'color' => '#92400e', 'bg' => '#fef9c3', 'icon' => '⏳'],
+                                    'perlu_revisi'          => ['label' => 'Perlu Revisi', 'color' => '#c2410c', 'bg' => '#ffedd5', 'icon' => '🔄'],
+                                    'lolos_admin'           => ['label' => 'Lolos Administrasi', 'color' => '#166534', 'bg' => '#dcfce7', 'icon' => '✅'],
+                                    'ditolak_admin'         => ['label' => 'Ditolak', 'color' => '#991b1b', 'bg' => '#fee2e2', 'icon' => '❌'],
+                                    'sudah_ujian'           => ['label' => 'Sudah Ujian', 'color' => '#1e40af', 'bg' => '#dbeafe', 'icon' => '📋'],
+                                    'siap_finalisasi'       => ['label' => 'Proses Seleksi', 'color' => '#3730a3', 'bg' => '#e0e7ff', 'icon' => '⚙️'],
+                                    'siap_diumumkan'        => ['label' => 'Siap Diumumkan', 'color' => '#166534', 'bg' => '#dcfce7', 'icon' => '📢'],
+                                    'gugur'                 => ['label' => 'Gugur', 'color' => '#991b1b', 'bg' => '#fee2e2', 'icon' => '🚫'],
+                                ];
+                                $st = $statusMap[$pendaftaran->status] ?? ['label' => ucfirst(str_replace('_',' ',$pendaftaran->status)), 'color' => '#64748b', 'bg' => '#f1f5f9', 'icon' => '📄'];
+                            @endphp
+                            <span class="ppdb-status-badge" style="background:{{ $st['bg'] }}; color:{{ $st['color'] }}; font-size: 0.85rem; padding: 0.5rem 1rem; width: 100%; justify-content: center;">
+                                {{ $st['icon'] }} {{ $st['label'] }}
+                            </span>
+                        @else
+                            <span class="ppdb-status-badge" style="background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.5rem 1rem; width: 100%; justify-content: center;">
+                                📄 Belum Terdaftar
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- ═══ RIGHT: Forms ═══ --}}
-        <div class="profile-right-stack">
-
-            {{-- Change Password --}}
-            <div class="profile-card anim-in anim-d3">
-                <h3 class="profile-card-title">
-                    <i style="background:#fef2f2;color:#ef4444;"><span class="fa-solid fa-shield-halved"></span></i>
-                    Ubah Password
-                </h3>
-
-                <form action="{{ route('siswa.profile.password') }}" method="POST">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Password Lama</label>
-                        <div class="pf-password-wrap">
-                            <input type="password" name="current_password" class="pf-form-input @error('current_password') is-invalid @enderror"
-                                   placeholder="Masukkan password saat ini" id="pw_old">
-                            <button type="button" class="pf-password-toggle" onclick="togglePw('pw_old', this)">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
+            {{-- Right Body: Information Details --}}
+            <div style="flex: 2; min-width: 350px; padding: 2.5rem;">
+                {{-- Category: Personal Information --}}
+                <div style="margin-bottom: 2.5rem;">
+                    <h3 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-user-gear" style="color: #6366f1;"></i> INFORMASI PRIBADI
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div>
+                            <p class="profile-info-label">Email Aktif</p>
+                            <p class="profile-info-value">{{ $user->email }}</p>
                         </div>
-                        @error('current_password') <div class="pf-form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Password Baru</label>
-                        <div class="pf-password-wrap">
-                            <input type="password" name="password" class="pf-form-input @error('password') is-invalid @enderror"
-                                   placeholder="Minimal 8 karakter" id="pw_new">
-                            <button type="button" class="pf-password-toggle" onclick="togglePw('pw_new', this)">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
+                        <div>
+                            <p class="profile-info-label">Nomor WhatsApp</p>
+                            <p class="profile-info-value">{{ $user->no_hp ?: ($pendaftaran->no_hp ?? '—') }}</p>
                         </div>
-                        @error('password') <div class="pf-form-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="pf-form-group">
-                        <label class="pf-form-label">Konfirmasi Password Baru</label>
-                        <div class="pf-password-wrap">
-                            <input type="password" name="password_confirmation" class="pf-form-input"
-                                   placeholder="Ketik ulang password baru" id="pw_confirm">
-                            <button type="button" class="pf-password-toggle" onclick="togglePw('pw_confirm', this)">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
+                        <div style="grid-column: 1 / -1;">
+                            <p class="profile-info-label">Alamat Lengkap</p>
+                            <p class="profile-info-value">{{ $user->alamat ?: ($pendaftaran->alamat ?? '—') }}</p>
                         </div>
                     </div>
+                </div>
 
-                    <button type="submit" class="pf-btn-gradient" style="background:linear-gradient(135deg, #ef4444, #f97316);">
-                        <i class="fa-solid fa-lock"></i> Perbarui Password
-                    </button>
-                </form>
+                {{-- Horizontal Divider --}}
+                <div style="height: 1px; background: #f1f5f9; margin-bottom: 2.5rem;"></div>
+
+                {{-- Category: Registration Information --}}
+                <div>
+                    <h3 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-file-invoice" style="color: #059669;"></i> DETAIL PENDAFTARAN PPDB
+                    </h3>
+                    @if($pendaftaran)
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <p class="profile-info-label">ID Pendaftaran</p>
+                                <p class="profile-info-value" style="color: var(--primary);">{{ $pendaftaran->nomor_pendaftaran ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="profile-info-label">NISN Siswa</p>
+                                <p class="profile-info-value">{{ $pendaftaran->nisn ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="profile-info-label">Pilihan Jurusan</p>
+                                <p class="profile-info-value">{{ $pendaftaran->jurusan->nama ?? '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="profile-info-label">Sekolah Asal</p>
+                                <p class="profile-info-value">{{ $pendaftaran->asal_sekolah ?? '—' }}</p>
+                            </div>
+                        </div>
+                    @else
+                        <div style="padding: 2rem; background: #f8fafc; border-radius: 12px; text-align: center; border: 1px dashed #cbd5e1;">
+                            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 1rem;">Anda belum melengkapi pendaftaran PPDB.</p>
+                            <a href="{{ route('siswa.pendaftaran') }}" class="pf-btn-gradient" style="width: auto; padding: 0.6rem 1.5rem;">
+                                <i class="fa-solid fa-plus"></i> Lengkapi Sekarang
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 
-    {{-- ═══ PPDB Information Card ═══ --}}
+    {{-- ═══ BOTTOM: Ubah Password — Landscape ═══ --}}
     <div class="profile-card anim-in anim-d3" style="margin-top:1.5rem;">
         <h3 class="profile-card-title">
-            <i style="background:#f0fdf4;color:#059669;"><span class="fa-solid fa-file-invoice"></span></i>
-            Informasi Pendaftaran PPDB
+            <i style="background:#fef2f2;color:#ef4444;"><span class="fa-solid fa-shield-halved"></span></i>
+            Ubah Password
         </h3>
 
-        @if($pendaftaran)
-        <div class="ppdb-info-grid">
-            <div class="ppdb-info-item">
-                <p class="ppdb-label"><i class="fa-solid fa-hashtag" style="margin-right:.3rem;"></i> No. Pendaftaran</p>
-                <p class="ppdb-value" style="color:var(--primary);">{{ $pendaftaran->nomor_pendaftaran ?? '—' }}</p>
+        <form action="{{ route('siswa.profile.password') }}" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="pw-form-row">
+                <div class="pf-form-group" style="margin-bottom:0;">
+                    <label class="pf-form-label">Password Lama</label>
+                    <div class="pf-password-wrap">
+                        <input type="password" name="current_password" class="pf-form-input @error('current_password') is-invalid @enderror"
+                               placeholder="Masukkan password saat ini" id="pw_old">
+                        <button type="button" class="pf-password-toggle" onclick="togglePw('pw_old', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('current_password') <div class="pf-form-error">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="pf-form-group" style="margin-bottom:0;">
+                    <label class="pf-form-label">Password Baru</label>
+                    <div class="pf-password-wrap">
+                        <input type="password" name="password" class="pf-form-input @error('password') is-invalid @enderror"
+                               placeholder="Minimal 8 karakter" id="pw_new">
+                        <button type="button" class="pf-password-toggle" onclick="togglePw('pw_new', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    @error('password') <div class="pf-form-error">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="pf-form-group" style="margin-bottom:0;">
+                    <label class="pf-form-label">Konfirmasi Password Baru</label>
+                    <div class="pf-password-wrap">
+                        <input type="password" name="password_confirmation" class="pf-form-input"
+                               placeholder="Ketik ulang password baru" id="pw_confirm">
+                        <button type="button" class="pf-password-toggle" onclick="togglePw('pw_confirm', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="pf-btn-gradient" style="background:linear-gradient(135deg, #ef4444, #f97316); white-space:nowrap;">
+                        <i class="fa-solid fa-lock"></i> Perbarui Password
+                    </button>
+                </div>
             </div>
-            <div class="ppdb-info-item">
-                <p class="ppdb-label"><i class="fa-solid fa-id-card" style="margin-right:.3rem;"></i> NISN</p>
-                <p class="ppdb-value">{{ $pendaftaran->nisn ?? '—' }}</p>
-            </div>
-            <div class="ppdb-info-item">
-                <p class="ppdb-label"><i class="fa-solid fa-building-columns" style="margin-right:.3rem;"></i> Jurusan Dipilih</p>
-                <p class="ppdb-value">{{ $pendaftaran->jurusan->nama ?? '—' }}</p>
-            </div>
-            <div class="ppdb-info-item">
-                <p class="ppdb-label"><i class="fa-solid fa-school" style="margin-right:.3rem;"></i> Asal Sekolah</p>
-                <p class="ppdb-value">{{ $pendaftaran->asal_sekolah ?? '—' }}</p>
-            </div>
-            <div class="ppdb-info-item">
-                <p class="ppdb-label"><i class="fa-solid fa-circle-check" style="margin-right:.3rem;"></i> Status Verifikasi</p>
-                @php
-                    $statusMap = [
-                        'draft'                 => ['label' => 'Draft',                 'bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => '📝'],
-                        'menunggu_verifikasi'   => ['label' => 'Menunggu Verifikasi',   'bg' => '#fef9c3', 'color' => '#92400e', 'icon' => '⏳'],
-                        'perlu_revisi'          => ['label' => 'Perlu Revisi',          'bg' => '#ffedd5', 'color' => '#c2410c', 'icon' => '🔄'],
-                        'lolos_admin'           => ['label' => 'Lolos Administrasi',    'bg' => '#dcfce7', 'color' => '#166534', 'icon' => '✅'],
-                        'ditolak_admin'         => ['label' => 'Ditolak',               'bg' => '#fee2e2', 'color' => '#991b1b', 'icon' => '❌'],
-                        'sudah_ujian'           => ['label' => 'Sudah Ujian',           'bg' => '#dbeafe', 'color' => '#1e40af', 'icon' => '📋'],
-                        'siap_finalisasi'       => ['label' => 'Proses Seleksi',        'bg' => '#e0e7ff', 'color' => '#3730a3', 'icon' => '⚙️'],
-                        'siap_diumumkan'        => ['label' => 'Siap Diumumkan',        'bg' => '#dcfce7', 'color' => '#166534', 'icon' => '📢'],
-                        'gugur'                 => ['label' => 'Gugur',                 'bg' => '#fee2e2', 'color' => '#991b1b', 'icon' => '🚫'],
-                    ];
-                    $st = $statusMap[$pendaftaran->status] ?? ['label' => ucfirst(str_replace('_',' ',$pendaftaran->status)), 'bg' => '#f1f5f9', 'color' => '#64748b', 'icon' => '📄'];
-                @endphp
-                <p class="ppdb-value">
-                    <span class="ppdb-status-badge" style="background:{{ $st['bg'] }};color:{{ $st['color'] }};">
-                        {{ $st['icon'] }} {{ $st['label'] }}
-                    </span>
-                </p>
-            </div>
-        </div>
-        @else
-        <div style="text-align:center;padding:2rem 1rem;color:#94a3b8;">
-            <div style="font-size:2.5rem;margin-bottom:.75rem;">📋</div>
-            <p style="font-weight:700;color:#64748b;margin:0 0 .35rem;">Belum Ada Pendaftaran</p>
-            <p style="font-size:.85rem;margin:0 0 1rem;">Anda belum mengisi form pendaftaran PPDB.</p>
-            <a href="{{ route('siswa.pendaftaran') }}" class="pf-btn-gradient" style="display:inline-flex;width:auto;">
-                <i class="fa-solid fa-plus"></i> Daftar Sekarang
-            </a>
-        </div>
-        @endif
+        </form>
     </div>
 </div>
 

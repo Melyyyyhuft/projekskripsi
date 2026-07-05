@@ -36,7 +36,7 @@
 <!-- FEATURES SECTION -->
 <section style="padding: 6rem 2rem; background: var(--white); position: relative; z-index: 10;">
     <div class="section-title">
-        <h2>Kenapa Memilih Kami?</h2>
+        <h2>Kenapa Memilih SMK Mitra Bintaro?</h2>
         <p>Kami menawarkan sistem dan lingkungan pendidikan terbaik untuk mendukung perkembangan akademik dan karakter siswa.</p>
     </div>
     
@@ -130,7 +130,7 @@
 
 <!-- CALL TO ACTION -->
 <section style="padding: 6rem 2rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: var(--white); text-align: center;">
-    <h2 style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--white);">Siap Bergabung Bersama Kami?</h2>
+    <h2 style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--white);">Siap Bergabung Bersama SMK Mitra Bintaro?</h2>
     <p style="font-size: 1.25rem; margin-bottom: 3rem; opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
         Jangan lewatkan kesempatan untuk menjadi bagian dari komunitas belajar terbaik.
     </p>
