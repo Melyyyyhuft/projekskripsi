@@ -54,7 +54,6 @@ class PengaturanController extends Controller
         $request->validate([
             'bobot_ujian'     => 'required|numeric|min:0|max:100',
             'bobot_rapor'     => 'required|numeric|min:0|max:100',
-            'ambang_unggulan' => 'required|numeric|min:0|max:100',
         ]);
 
         if ($request->bobot_ujian + $request->bobot_rapor != 100) {
@@ -63,9 +62,8 @@ class PengaturanController extends Controller
 
         Pengaturan::updateOrCreate(['key' => 'bobot_ujian'], ['value' => $request->bobot_ujian]);
         Pengaturan::updateOrCreate(['key' => 'bobot_rapor'], ['value' => $request->bobot_rapor]);
-        Pengaturan::updateOrCreate(['key' => 'ambang_unggulan'], ['value' => $request->ambang_unggulan]);
 
-        return back()->with('success', 'Pengaturan Bobot & Ambang Batas berhasil diperbarui!');
+        return back()->with('success', 'Pengaturan Bobot Seleksi berhasil diperbarui!');
     }
 
 

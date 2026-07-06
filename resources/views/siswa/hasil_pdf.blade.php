@@ -66,7 +66,7 @@
             <div style="float: left;">
                 <h2 class="school-name">{{ $settings['nama_sekolah'] ?? 'PPDB SEKOLAH SMK MITRA BINTARO' }}</h2>
                 <p class="school-info">{{ $settings['alamat_sekolah'] ?? 'Jl. Sultan Ageng Tirtayasa No.6, RT.007/RW.008' }}</p>
-                <p class="school-info">Website: {{ url('/') }} | Email: info@sekolah.sch.id</p>
+                <p class="school-info">Website: smkmitrabintaro.com | Email: mitrabintaro1@gmail.com</p>
             </div>
             <div class="clear"></div>
         </div>
@@ -127,14 +127,6 @@
         </div>
 
         <div class="footer-section">
-            <div class="qr-section">
-                <!-- Fallback to placeholder if QR library not configured -->
-                <div class="qr-code">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode(route('admin.penempatan.detail', $pendaftaran->id)) }}" width="100" height="100">
-                </div>
-                <div class="qr-text">VERIFIKASI DIGITAL</div>
-                <div class="qr-text">{{ $pendaftaran->nomor_pendaftaran }}</div>
-            </div>
 
             <div class="sign-section">
                 <div class="sign-title">Ditetapkan di Kota Tangerang,<br>{{ now()->translatedFormat('d F Y') }}</div>

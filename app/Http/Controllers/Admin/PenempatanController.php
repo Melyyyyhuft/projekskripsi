@@ -69,9 +69,15 @@ class PenempatanController extends Controller
             'tidak_diterima' => $hasHasil->filter(fn($p) => $p->hasilSeleksi->kategori_kelulusan === 'TIDAK DITERIMA')->count(),
         ];
 
+        // Get weights
+        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        $bobotRapor = (float) ($settings['bobot_rapor'] ?? 70);
+        $bobotUjian = (float) ($settings['bobot_ujian'] ?? 30);
+
         return view('admin.penempatan.index', compact(
             'pendaftarans', 'jurusans', 'stats',
-            'fJurusan', 'fStatusHasil', 'fStatusProses', 'search'
+            'fJurusan', 'fStatusHasil', 'fStatusProses', 'search',
+            'bobotRapor', 'bobotUjian'
         ));
     }
 

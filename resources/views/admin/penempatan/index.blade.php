@@ -148,6 +148,20 @@ input:checked + .slider:before { transform:translateX(20px); }
         </div>
     </div>
 
+    {{-- ─── Criteria Info ─── --}}
+    <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 18px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; animation: fadeIn 0.5s ease-out;">
+        <div style="width: 48px; height: 48px; background: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);">
+            <i class="fa-solid fa-circle-info"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #1e3a8a;">Kriteria Kelulusan Utama</h4>
+            <p style="margin: 0.1rem 0 0; font-size: 0.82rem; color: #1e40af; font-weight: 600;">
+                Skor Akhir ≥ <span style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem;">60</span> = <span style="color: #059669;">Diterima</span> 
+                | &lt; 60 = <span style="color: #dc2626;">Tidak Diterima</span>
+            </p>
+        </div>
+    </div>
+
     {{-- ─── Stats ─── --}}
     <div class="stats-grid">
         <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'','status_hasil'=>''])) }}" class="premium-card stat-card">
@@ -343,7 +357,7 @@ input:checked + .slider:before { transform:translateX(20px); }
         {{-- Formula Legend --}}
         <div class="formula-box" style="margin-bottom:1.5rem;">
             <div style="font-size:.65rem; font-weight:800; color:#3b82f6; text-transform:uppercase; letter-spacing:.08em; margin-bottom:.3rem;">📐 Formula Seleksi</div>
-            <div>Skor Akhir = ((0.7 × Rapor) + (0.3 × CBT))</div>
+            <div>Skor Akhir = (({{ $bobotRapor / 100 }} × Rapor) + ({{ $bobotUjian / 100 }} × CBT))</div>
         </div>
 
         {{-- Preview Table Container --}}

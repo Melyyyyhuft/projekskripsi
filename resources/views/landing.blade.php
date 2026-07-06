@@ -174,7 +174,7 @@
     
     <div class="glass-card" style="max-width: 900px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 3rem; align-items: center;">
         <div style="flex: 1; min-width: 300px;">
-            <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Sekolah" style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+            <img src="{{ asset('images/about_school.png') }}" alt="Pembinaan Karakter SMK Mitra Bintaro" style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
         </div>
         <div style="flex: 1; min-width: 300px;">
             <h3 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--dark);">Membangun Generasi Siswa yang Berkarakter</h3>
@@ -186,12 +186,12 @@
             </p>
             <div style="display: flex; gap: 2rem;">
                 <div>
-                    <h4 style="font-size: 2rem; color: var(--primary);">15+</h4>
-                    <span style="color: var(--gray-text);">Tahun Pengalaman</span>
+                    <h4 style="font-size: 1.25rem; color: var(--primary); font-weight: 800; margin-bottom: 0.25rem;">Pembinaan Karakter</h4>
+                    <span style="color: var(--gray-text); font-size: 0.9rem;">Fokus utama pendidikan</span>
                 </div>
                 <div>
-                    <h4 style="font-size: 2rem; color: var(--primary);">5000+</h4>
-                    <span style="color: var(--gray-text);">Alumni Sukses</span>
+                    <h4 style="font-size: 1.25rem; color: var(--primary); font-weight: 800; margin-bottom: 0.25rem;">Pengembangan Potensi</h4>
+                    <span style="color: var(--gray-text); font-size: 0.9rem;">Asah bakat & minat</span>
                 </div>
             </div>
         </div>

@@ -68,7 +68,7 @@ class Pendaftaran extends Model
             $cbtPart   = round($bobotUjian * $nilaiCBT, 2);
             $skorAkhir = round($raporPart + $cbtPart, 2);
 
-            $kategori   = 'DITERIMA';
+            $kategori   = $skorAkhir >= 60 ? 'DITERIMA' : 'TIDAK DITERIMA';
             $penempatan = '-'; // Placement logic removed by user request
         } else {
             $kategori = 'TIDAK HADIR CBT';

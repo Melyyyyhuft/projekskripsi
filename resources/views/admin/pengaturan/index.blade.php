@@ -83,7 +83,7 @@
     <div style="max-width: 800px;">
         {{-- Bobot --}}
         <div class="glass-card">
-            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">⚖️ Bobot Nilai & Ambang Batas</h3>
+            <h3 style="margin:0 0 1.5rem;font-size:1.05rem;font-weight:700;color:#0f172a;">⚖️ Bobot Nilai Seleksi</h3>
             <form action="{{ route('admin.pengaturan.bobot') }}" method="POST">
                 @csrf
                 <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:0.75rem;margin-bottom:1rem;font-size:.78rem;color:#1e40af;">

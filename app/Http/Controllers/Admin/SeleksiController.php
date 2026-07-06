@@ -11,9 +11,6 @@ use App\Models\HasilSeleksi;
 
 class SeleksiController extends Controller
 {
-    // Ambang batas kategori kelulusan (bisa diatur lewat DB nantinya)
-    const AMBANG_UNGGULAN = 80;
-
     // ──────────────────────────────────────────
     // INDEX — tampilkan halaman seleksi lengkap
     // ──────────────────────────────────────────
@@ -117,9 +114,10 @@ class SeleksiController extends Controller
                 ->with('error', 'Hasil seleksi sudah difinalisasi dan tidak dapat diubah lagi.');
         }
 
-        // Formula: 60% Rapor, 40% CBT
-        $bobotRapor = 0.60;
-        $bobotUjian = 0.40;
+        // Get weights from settings
+        $settings   = \App\Models\Pengaturan::pluck('value', 'key')->all();
+        $bobotRapor = (float) ($settings['bobot_rapor'] ?? 70) / 100;
+        $bobotUjian = (float) ($settings['bobot_ujian'] ?? 30) / 100;
 
         $mode = $request->input('mode', 'semua'); // 'semua' | 'terpilih'
         $terpilihIds = $request->input('pendaftaran_ids', []);
@@ -161,43 +159,21 @@ class SeleksiController extends Controller
             ];
         }
 
-        // ── Proses Ranking per Jurusan ──
+            // ── Proses Penentuan Kelulusan Berdasarkan Skor (Threshold 60) ──
         $jumlahProses = 0;
         foreach ($dataPerJurusan as $jurusanId => $siswas) {
-            $jurusan = \App\Models\Jurusan::find($jurusanId);
-            $quota = $jurusan->kuota ?? 0;
-
-            // Urutkan berdasarkan aturan:
-            // 1. Skor Akhir (DESC)
-            // 2. Nilai Ujian CBT (DESC)
-            // 3. Nilai Rapor (DESC)
-            // 4. Waktu Pendaftaran (ASC - lebih awal lebih prioritas)
-            usort($siswas, function($a, $b) {
-                if ($b['skor_akhir'] != $a['skor_akhir']) {
-                    return $b['skor_akhir'] <=> $a['skor_akhir'];
-                }
-                if ($b['skor_ujian'] != $a['skor_ujian']) {
-                    return $b['skor_ujian'] <=> $a['skor_ujian'];
-                }
-                if ($b['nilai_rapor'] != $a['nilai_rapor']) {
-                    return $b['nilai_rapor'] <=> $a['nilai_rapor'];
-                }
-                return $a['waktu_daftar'] <=> $b['waktu_daftar'];
-            });
-
-            $rank = 1;
             foreach ($siswas as $item) {
-                // Tentukan Kelulusan Berdasarkan Quota
-                $isLulus = ($rank <= $quota);
+                // Tentukan Kelulusan Berdasarkan Skor (Bukan Quota)
+                $isLulus = ($item['skor_akhir'] >= 60);
                 $statusKelulusan = $isLulus ? 'DITERIMA' : 'TIDAK DITERIMA';
 
                 HasilSeleksi::updateOrCreate(
                     ['pendaftaran_id' => $item['pendaftaran_id']],
                     [
                         'skor_akhir'         => $item['skor_akhir'],
-                        'ranking'            => $rank,
+                        'ranking'            => 0, // Ranking diabaikan dalam mode threshold
                         'status_kelulusan'   => $isLulus, 
-                        'kategori_kelulusan' => $statusKelulusan, // Menggunakan kategori untuk menyimpan label DITERIMA/TIDAK DITERIMA
+                        'kategori_kelulusan' => $statusKelulusan,
                         'is_finalisasi'      => false,
                     ]
                 );
@@ -205,13 +181,12 @@ class SeleksiController extends Controller
                 Pendaftaran::where('id', $item['pendaftaran_id'])
                     ->update(['status' => 'siap_finalisasi']);
 
-                $rank++;
                 $jumlahProses++;
             }
         }
 
         return redirect()->route('admin.seleksi.index')
-            ->with('success', "Proses seleksi berhasil! {$jumlahProses} siswa telah diranking berdasarkan kuota jurusan.");
+            ->with('success', "Proses seleksi berhasil! {$jumlahProses} siswa telah diproses berdasarkan ambang batas skor 60.");
     }
 
     public function tundaSeleksi(Request $request)
