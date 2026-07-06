@@ -335,7 +335,7 @@
                     <div class="pm-icon" style="background:#fdf4ff;color:#9333ea;"><i class="fa-solid fa-calendar"></i></div>
                     <div class="pm-row-text">
                         <p class="pm-label">Bergabung</p>
-                        <p class="pm-value">{{ Auth::user()->created_at->format('d M Y') }}</p>
+                        <p class="pm-value">{{ Auth::user()->created_at->translatedFormat('d M Y') }}</p>
                     </div>
                 </div>
 

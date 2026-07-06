@@ -626,7 +626,7 @@
                 <div class="tl-lsub">{{ $step['sub'] }}</div>
                 @if($step['date'])
                 <div class="tl-date {{ $isWarn?'warn':'' }}">
-                    {{ \Carbon\Carbon::parse($step['date'])->format('d M Y H:i') }} WIB
+                    {{ \Carbon\Carbon::parse($step['date'])->translatedFormat('d M Y H:i') }} WIB
                 </div>
                 @endif
             </div>

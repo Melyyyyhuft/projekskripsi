@@ -364,7 +364,7 @@
                     <p style="margin:0; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Pelaksanaan</p>
                     <p style="margin:0; font-size: 0.85rem; font-weight: 700; color: #1e293b;">
                         @if($tglMulaiGlobal)
-                            {{ \Carbon\Carbon::parse($tglMulaiGlobal)->format('d M') }} — {{ \Carbon\Carbon::parse($tglSelesaiGlobal)->format('d M') }}
+                            {{ \Carbon\Carbon::parse($tglMulaiGlobal)->translatedFormat('d M') }} — {{ \Carbon\Carbon::parse($tglSelesaiGlobal)->translatedFormat('d M') }}
                         @else
                             Belum Diset
                         @endif
