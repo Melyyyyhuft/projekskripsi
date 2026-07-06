@@ -4,7 +4,7 @@
 @section('content')
 <style>
     .hero-premium {
-        min-height: 80vh;
+        min-height: 85vh;
         margin-top: 80px;
         display: flex;
         align-items: center;
@@ -14,7 +14,7 @@
     }
     .hero-container {
         width: 100%;
-        max-width: 1400px;
+        max-width: 1440px;
         margin: 0 auto;
         display: flex;
         padding: 0;
@@ -22,75 +22,76 @@
     }
     .hero-left {
         flex: 1;
-        padding: 3rem 4rem 3rem 6rem;
+        padding: 4rem 4rem 4rem 7rem;
         z-index: 10;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        background: linear-gradient(to right, rgba(255,255,255,0.9) 20%, rgba(255,255,255,0.1) 100%);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        background: linear-gradient(to right, #ffffff 45%, rgba(255,255,255,0.8) 65%, transparent 100%);
     }
     .hero-right {
-        flex: 1.5;
+        flex: 1.4;
         position: relative;
-        height: 650px;
-        margin-left: -150px; /* Overlap effect */
+        height: 700px;
+        margin-left: -200px; /* Deep overlap for smooth transition */
     }
     .hero-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        mask-image: linear-gradient(to left, black 70%, transparent);
-        -webkit-mask-image: linear-gradient(to left, black 70%, transparent);
+        mask-image: linear-gradient(to left, black 65%, transparent);
+        -webkit-mask-image: linear-gradient(to left, black 65%, transparent);
     }
     .hero-title-p {
         font-family: 'Outfit', sans-serif;
-        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        font-size: clamp(2.5rem, 4.5vw, 4rem);
         font-weight: 900;
         color: #1e293b;
         line-height: 1.1;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1px;
     }
     .hero-title-script {
         font-family: 'Dancing Script', cursive;
         display: block;
-        color: #1e3a8a;
-        font-size: 0.85em;
-        margin-top: 0.1rem;
+        color: #1d4ed8;
+        font-size: 0.9em;
+        margin-top: 0.2rem;
+        font-weight: 700;
     }
     .hero-subtitle-p {
-        font-size: 1rem;
+        font-size: 1.05rem;
         color: #475569;
         line-height: 1.6;
-        margin-bottom: 2rem;
-        max-width: 450px;
+        margin-bottom: 2.5rem;
+        max-width: 500px;
         font-weight: 500;
+        opacity: 0.9;
     }
     .btn-daftar-now {
         background: linear-gradient(135deg, #0c42bb, #2563eb);
         color: white;
-        padding: 0.85rem 2.2rem;
-        border-radius: 10px;
-        font-size: 1rem;
-        font-weight: 700;
+        padding: 1rem 2.8rem;
+        border-radius: 14px;
+        font-size: 1.1rem;
+        font-weight: 800;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.75rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(12, 66, 187, 0.2);
+        gap: 0.8rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px -5px rgba(12, 66, 187, 0.4);
     }
     .btn-daftar-now:hover {
         background: linear-gradient(135deg, #093395, #0c42bb);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(12, 66, 187, 0.3);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 35px -5px rgba(12, 66, 187, 0.5);
     }
     
     @media (max-width: 1024px) {
         .hero-premium { min-height: auto; }
         .hero-container { flex-direction: column; }
-        .hero-left { padding: 3rem 1.5rem; text-align: center; align-items: center; background: rgba(255, 255, 255, 0.85); margin-left: 0; }
+        .hero-left { padding: 4rem 1.5rem; text-align: center; align-items: center; background: white; margin-left: 0; }
         .hero-subtitle-p { margin-left: auto; margin-right: auto; }
         .hero-right { order: -1; height: 350px; margin-left: 0; }
         .hero-img { mask-image: none; -webkit-mask-image: none; }
@@ -102,9 +103,6 @@
     <div class="hero-container">
         <!-- Content Left -->
         <div class="hero-left animate-slide-up">
-            <div>
-            </div>
-
             <h1 class="hero-title-p">
                 Langkah Awal<br>
                 Meraih Masa Depan<br>

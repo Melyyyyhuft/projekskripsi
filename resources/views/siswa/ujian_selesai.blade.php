@@ -114,24 +114,28 @@
             </div>
         </div>
 
-        {{-- Status Ujian: Memanjang --}}
-        <div style="background:#ecfdf5; border-radius:14px; padding:1.25rem; border: 1px solid #d1fae5; display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
-            <div style="width: 44px; height: 44px; background: #10b981; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+        {{-- Status Ujian: Memanjang (Lebih Kecil) --}}
+        <div style="background:#ecfdf5; border-radius:12px; padding:0.85rem 1.15rem; border: 1px solid #d1fae5; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem;">
+            <div style="width: 36px; height: 36px; background: #10b981; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
                 <i class="fa-solid fa-check-double"></i>
             </div>
             <div>
-                <p style="margin:0; font-size: 0.7rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.05em;">Status Ujian</p>
-                <p style="margin:0; font-weight: 800; color: #047857; font-size: 1.1rem;">✓ Sudah Mengikuti Ujian CBT</p>
+                <p style="margin:0; font-size: 0.6rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">Status Ujian</p>
+                <p style="margin:0; font-weight: 800; color: #047857; font-size: 0.95rem;">✓ Sudah Mengikuti Ujian CBT</p>
             </div>
         </div>
 
-        <div style="padding: 1.25rem; background: #fffcf0; border-radius: 12px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1rem;">
-            <div style="width: 32px; height: 32px; background: #f59e0b; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0;">
+        {{-- Catatan: Memanjang (Diseimbangkan dengan Status) --}}
+        <div style="background:#fffcf0; border-radius:12px; padding:0.85rem 1.15rem; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 36px; height: 36px; background: #f59e0b; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
-            <p style="margin:0; font-size: 0.85rem; font-weight: 700; color: #92400e;">
-                Catatan: <span style="font-weight: 500;">Ujian ini bersifat final dan hanya dapat diikuti satu kali per akun.</span>
-            </p>
+            <div>
+                <p style="margin:0; font-size: 0.6rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">Informasi Penting</p>
+                <p style="margin:0; font-size: 0.85rem; font-weight: 700; color: #92400e;">
+                    Catatan: <span style="font-weight: 500;">Hanya dapat diikuti satu kali per akun.</span>
+                </p>
+            </div>
         </div>
     </div>
 

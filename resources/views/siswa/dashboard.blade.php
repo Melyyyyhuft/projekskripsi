@@ -171,10 +171,10 @@
     @php
         $step4Completed = in_array($s, $statusDiterima);
         $steps = [
-            ['label' => 'Isi Biodata & Berkas',  'done' => $step1Completed, 'active' => !$step1Completed],
-            ['label' => 'Verifikasi Panitia',     'done' => $step2Completed, 'active' => $step1Completed && !$step2Completed],
-            ['label' => 'Ujian Online',            'done' => $step3Completed, 'active' => $step2Completed && !$step3Completed],
-            ['label' => 'Hasil Seleksi',           'done' => $step4Completed, 'active' => $step3Completed && !$step4Completed],
+            ['label' => 'Lengkapi Data',     'desc' => 'Isi Biodata & Berkas', 'done' => $step1Completed, 'active' => !$step1Completed],
+            ['label' => 'Verifikasi',         'desc' => 'Pengecekan Panitia',  'done' => $step2Completed, 'active' => $step1Completed && !$step2Completed],
+            ['label' => 'Ujian CBT',          'desc' => 'Tes Online Sekolah',  'done' => $step3Completed, 'active' => $step2Completed && !$step3Completed],
+            ['label' => 'Hasil Akhir',        'desc' => 'Status Kelulusan',    'done' => $step4Completed, 'active' => $step3Completed && !$step4Completed],
         ];
     @endphp
 
@@ -206,7 +206,12 @@
             </div>
 
             {{-- Label --}}
-            <div style="font-size:.8rem;font-weight:600;text-align:center;color:{{ $step['done'] ? '#10b981' : ($step['active'] ? 'var(--primary)' : 'var(--gray-text)') }};line-height:1.3;padding:0 4px;">
+            <div style="font-size:.85rem;font-weight:800;text-align:center;color:{{ $step['done'] ? '#065f46' : ($step['active'] ? 'var(--primary)' : '#475569') }};line-height:1.2;padding:0 4px;margin-top:0.4rem;">
+                {{ $step['label'] }}
+            </div>
+            {{-- Deskripsi (Tulisan Kecil) --}}
+            <div style="font-size:0.65rem;text-align:center;color:#94a3b8;font-weight:600;max-width:100px;line-height:1.2;">
+                {{ $step['desc'] }}
             </div>
         </div>
         @endforeach

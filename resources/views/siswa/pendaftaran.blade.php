@@ -454,150 +454,148 @@
     </div>
 </div>
 
-{{-- ── Two-column card grid ── --}}
-<div class="sum-grid">
-
-    {{-- LEFT: Ringkasan Biodata --}}
-    <div class="sum-card">
-        <div class="sum-card-hdr">
-            <div class="sum-card-hdr-left">
-                <div class="sum-card-icon"><i class="fa-solid fa-address-card"></i></div>
-                <div>
-                    <div class="sum-card-title">Ringkasan Data Pendaftaran</div>
-                </div>
-            </div>
-            <div class="sum-readonly"><i class="fa-solid fa-lock"></i> Read Only</div>
-        </div>
-
-        @php
-            $bioRows = [
-                ['icon'=>'fa-user',          'label'=>'Nama Lengkap',        'value'=> Auth::user()->name],
-                ['icon'=>'fa-calendar-days', 'label'=>'Tempat, Tanggal Lahir',
-                    'value'=> ($pendaftaran->tempat_lahir??'-').', '.($pendaftaran->tanggal_lahir?\Carbon\Carbon::parse($pendaftaran->tanggal_lahir)->translatedFormat('d M Y'):'-')],
-                ['icon'=>'fa-fingerprint',   'label'=>'NISN',               'value'=> $pendaftaran->nisn??'-'],
-                ['icon'=>'fa-school',        'label'=>'Asal Sekolah',       'value'=> $pendaftaran->asal_sekolah??'-'],
-                ['icon'=>'fa-graduation-cap','label'=>'Jurusan Pilihan',    'value'=> $pendaftaran->jurusan->nama??'-'],
-                ['icon'=>'fa-location-dot',  'label'=>'Alamat Rumah',       'value'=> $pendaftaran->alamat??'-'],
-                ['icon'=>'fa-phone',         'label'=>'Nomor HP / WhatsApp','value'=> $pendaftaran->no_hp??'-'],
-                ['icon'=>'fa-chart-line',    'label'=>'Rata-rata Nilai Rapor','value'=> $pendaftaran->nilai_rapor??'-'],
-            ];
-        @endphp
-
-        @foreach($bioRows as $r)
-        <div class="sum-row">
-            <div class="sum-row-icon"><i class="fa-solid {{ $r['icon'] }}"></i></div>
-            <div class="sum-row-label">{{ $r['label'] }}</div>
-            <div class="sum-row-value">{{ $r['value'] }}</div>
-        </div>
-        @endforeach
-    </div>
-
-    {{-- RIGHT: Dokumen Terupload --}}
-    <div class="sum-card">
-        <div class="sum-card-hdr">
-            <div class="sum-card-hdr-left">
-                <div class="sum-card-icon"><i class="fa-solid fa-folder-open"></i></div>
-                <div>
-                    <div class="sum-card-title">Dokumen Terupload</div>
-                    <div class="sum-card-sub">Berikut adalah berkas yang telah Anda upload</div>
-                </div>
-            </div>
-        </div>
-
-        @if($hasRevisi)
-        <form action="{{ route('siswa.pendaftaran.reuploadMass') }}" method="POST" enctype="multipart/form-data" id="main-reupload-form">
-            @csrf
-        @endif
-
-        @forelse($berkasAktif as $b)
-        @php
-            $bIsPdf    = strtolower($b->file_type)==='pdf';
-            $bIsValid  = $b->status_verifikasi==='valid';
-            $bIsRevisi = $b->status_verifikasi==='tidak_valid';
-            
-            // Format mapping
-            $accept = '';
-            if($b->jenis_berkas === 'skl')     $accept = '.pdf,.jpg,.jpeg,.png';
-            elseif($b->jenis_berkas === 'rapor')   $accept = '.pdf';
-            elseif($b->jenis_berkas === 'pasfoto') $accept = '.jpg,.jpeg,.png';
-        @endphp
-        <div class="doc-item-sum">
-            <div class="doc-row">
-                <div class="doc-file-icon" style="background:{{ $bIsPdf?'#fff0f0':'#f0fdf4' }}; color:{{ $bIsPdf?'#ef4444':'#22c55e' }};">
-                    <i class="fa-solid {{ $bIsPdf?'fa-file-pdf':'fa-file-image' }}"></i>
-                </div>
-                <div class="doc-info">
-                    <div class="doc-fname">{{ $b->nama_file }}</div>
-                    <div class="doc-fmeta">{{ strtoupper($b->file_type) }} • {{ $b->jenis_berkas }}</div>
-                    
-                    {{-- Feedback UI for new file selection --}}
-                    <div id="selection-status-{{ $b->jenis_berkas }}" style="display:none; margin-top:.5rem; align-items:center; gap:.6rem; background:#f0fdf4; padding:.4rem .7rem; border-radius:8px; border:1px solid #bbf7d0;">
-                        <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
-                        <div style="flex:1; min-width:0;">
-                            <div id="selected-name-{{ $b->jenis_berkas }}" style="font-size:.73rem; color:#166534; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
-                            <div style="font-size:.65rem; color:#15803d; font-weight:600;">File siap diunggah</div>
-                        </div>
-                        <button type="button" class="doc-btn lihat" style="padding:.25rem .5rem; font-size:.65rem; background:white; border:1px solid #bbf7d0;" onclick="previewNewRevision('{{ $b->jenis_berkas }}')">
-                            <i class="fa-solid fa-eye"></i> Lihat
-                        </button>
+<div class="sum-card" style="margin-bottom: 2rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); align-items: stretch;">
+        
+        {{-- SECTION LEFT: Ringkasan Biodata --}}
+        <div style="border-right: 1px solid #f1f5f9;">
+            <div class="sum-card-hdr">
+                <div class="sum-card-hdr-left">
+                    <div class="sum-card-icon"><i class="fa-solid fa-address-card"></i></div>
+                    <div>
+                        <div class="sum-card-title">Ringkasan Data Pendaftaran</div>
                     </div>
                 </div>
-                <div class="doc-actions">
-                    <span class="doc-badge {{ $bIsValid?'valid':($bIsRevisi?'revisi':'pending') }}">
-                        {{ $bIsValid?'Terverifikasi':($bIsRevisi?'Perlu Revisi':'Pending') }}
-                    </span>
-                    @if($bIsRevisi && $hasRevisi)
-                        <input type="file" name="{{ $b->jenis_berkas }}" id="input-select-{{ $b->jenis_berkas }}" 
-                            style="display:none;" accept="{{ $accept }}"
-                            onchange="showSelectedFile('{{ $b->jenis_berkas }}')">
-                        <label for="input-select-{{ $b->jenis_berkas }}" class="doc-btn reupload" style="cursor:pointer;">
-                            <i class="fa-solid fa-file-circle-plus"></i> Pilih File
-                        </label>
-                    @else
-                        <button type="button" class="doc-btn lihat" onclick="previewExistingFile('{{ asset('storage/'.$b->file_path) }}', '{{ strtolower($b->file_type) }}')">
-                            <i class="fa-solid fa-eye"></i> Lihat
-                        </button>
-                    @endif
+                <div class="sum-readonly"><i class="fa-solid fa-lock"></i> Read Only</div>
+            </div>
+
+            @php
+                $bioRows = [
+                    ['icon'=>'fa-user',          'label'=>'Nama Lengkap',        'value'=> Auth::user()->name],
+                    ['icon'=>'fa-calendar-days', 'label'=>'Tempat, Tanggal Lahir',
+                        'value'=> ($pendaftaran->tempat_lahir??'-').', '.($pendaftaran->tanggal_lahir?\Carbon\Carbon::parse($pendaftaran->tanggal_lahir)->translatedFormat('d M Y'):'-')],
+                    ['icon'=>'fa-fingerprint',   'label'=>'NISN',               'value'=> $pendaftaran->nisn??'-'],
+                    ['icon'=>'fa-school',        'label'=>'Asal Sekolah',       'value'=> $pendaftaran->asal_sekolah??'-'],
+                    ['icon'=>'fa-graduation-cap','label'=>'Jurusan Pilihan',    'value'=> $pendaftaran->jurusan->nama??'-'],
+                    ['icon'=>'fa-location-dot',  'label'=>'Alamat Rumah',       'value'=> $pendaftaran->alamat??'-'],
+                    ['icon'=>'fa-phone',         'label'=>'Nomor HP / WhatsApp','value'=> $pendaftaran->no_hp??'-'],
+                    ['icon'=>'fa-chart-line',    'label'=>'Rata-rata Nilai Rapor','value'=> $pendaftaran->nilai_rapor??'-'],
+                ];
+            @endphp
+
+            @foreach($bioRows as $r)
+            <div class="sum-row">
+                <div class="sum-row-icon"><i class="fa-solid {{ $r['icon'] }}"></i></div>
+                <div class="sum-row-label">{{ $r['label'] }}</div>
+                <div class="sum-row-value">{{ $r['value'] }}</div>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- SECTION RIGHT: Dokumen Terupload --}}
+        <div style="background: #fafcfd;">
+            <div class="sum-card-hdr">
+                <div class="sum-card-hdr-left">
+                    <div class="sum-card-icon"><i class="fa-solid fa-folder-open"></i></div>
+                    <div>
+                        <div class="sum-card-title">Dokumen Terupload</div>
+                        <div class="sum-card-sub">Berkas yang telah Anda upload</div>
+                    </div>
                 </div>
             </div>
-            @if($bIsRevisi && $b->catatan_admin)
-            <div class="doc-admin-note">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <strong>Catatan Admin:</strong> {{ $b->catatan_admin }}
+
+            @if($hasRevisi)
+            <form action="{{ route('siswa.pendaftaran.reuploadMass') }}" method="POST" enctype="multipart/form-data" id="main-reupload-form">
+                @csrf
+            @endif
+
+            @forelse($berkasAktif as $b)
+            @php
+                $bIsPdf    = strtolower($b->file_type)==='pdf';
+                $bIsValid  = $b->status_verifikasi==='valid';
+                $bIsRevisi = $b->status_verifikasi==='tidak_valid';
+                
+                $accept = '';
+                if($b->jenis_berkas === 'skl')     $accept = '.pdf,.jpg,.jpeg,.png';
+                elseif($b->jenis_berkas === 'rapor')   $accept = '.pdf';
+                elseif($b->jenis_berkas === 'pasfoto') $accept = '.jpg,.jpeg,.png';
+            @endphp
+            <div class="doc-item-sum" style="background: white;">
+                <div class="doc-row">
+                    <div class="doc-file-icon" style="background:{{ $bIsPdf?'#fff0f0':'#f0fdf4' }}; color:{{ $bIsPdf?'#ef4444':'#22c55e' }};">
+                        <i class="fa-solid {{ $bIsPdf?'fa-file-pdf':'fa-file-image' }}"></i>
+                    </div>
+                    <div class="doc-info">
+                        <div class="doc-fname">{{ $b->nama_file }}</div>
+                        <div class="doc-fmeta">{{ strtoupper($b->file_type) }} • {{ $b->jenis_berkas }}</div>
+                        
+                        <div id="selection-status-{{ $b->jenis_berkas }}" style="display:none; margin-top:.5rem; align-items:center; gap:.6rem; background:#f0fdf4; padding:.4rem .7rem; border-radius:8px; border:1px solid #bbf7d0;">
+                            <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+                            <div style="flex:1; min-width:0;">
+                                <div id="selected-name-{{ $b->jenis_berkas }}" style="font-size:.73rem; color:#166534; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+                                <div style="font-size:.65rem; color:#15803d; font-weight:600;">File siap diunggah</div>
+                            </div>
+                            <button type="button" class="doc-btn lihat" style="padding:.25rem .5rem; font-size:.65rem; background:white; border:1px solid #bbf7d0;" onclick="previewNewRevision('{{ $b->jenis_berkas }}')">
+                                <i class="fa-solid fa-eye"></i> Lihat
+                            </button>
+                        </div>
+                    </div>
+                    <div class="doc-actions">
+                        <span class="doc-badge {{ $bIsValid?'valid':($bIsRevisi?'revisi':'pending') }}">
+                            {{ $bIsValid?'Terverifikasi':($bIsRevisi?'Perlu Revisi':'Pending') }}
+                        </span>
+                        @if($bIsRevisi && $hasRevisi)
+                            <input type="file" name="{{ $b->jenis_berkas }}" id="input-select-{{ $b->jenis_berkas }}" 
+                                style="display:none;" accept="{{ $accept }}"
+                                onchange="showSelectedFile('{{ $b->jenis_berkas }}')">
+                            <label for="input-select-{{ $b->jenis_berkas }}" class="doc-btn reupload" style="cursor:pointer;">
+                                <i class="fa-solid fa-file-circle-plus"></i> Pilih File
+                            </label>
+                        @else
+                            <button type="button" class="doc-btn lihat" onclick="previewExistingFile('{{ asset('storage/'.$b->file_path) }}', '{{ strtolower($b->file_type) }}')">
+                                <i class="fa-solid fa-eye"></i> Lihat
+                            </button>
+                        @endif
+                    </div>
+                </div>
+                @if($bIsRevisi && $b->catatan_admin)
+                <div class="doc-admin-note">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <strong>Catatan Admin:</strong> {{ $b->catatan_admin }}
+                </div>
+                @endif
+            </div>
+            @empty
+            <div style="padding:2rem; text-align:center; color:#94a3b8; font-size:.85rem;">
+                <i class="fa-solid fa-folder-open fa-2x" style="display:block;margin-bottom:.75rem;"></i>
+                Belum ada berkas yang diunggah.
+            </div>
+            @endforelse
+
+            {{-- Submit button for all revisions --}}
+            @if($hasRevisi)
+                <div style="padding:1.4rem; background:#f8fafc; border-top:1px solid #e2e8f0; text-align:center;">
+                    <button type="submit" class="sum-banner-btn" style="width:100%; height:48px; border-radius:12px; background:#6366f1; color:white; border:none; box-shadow:0 10px 15px -3px rgba(99,102,241,0.25); justify-content:center;">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Reupload
+                    </button>
+                </div>
+            </form>
+            @endif
+
+            {{-- Footer note --}}
+            @if($hasRevisi)
+            <div style="padding:.9rem 1.4rem; background:#fffbeb; border-top:1px solid #fde68a; display:flex; align-items:center; gap:.6rem;">
+                <i class="fa-solid fa-circle-info" style="color:#f59e0b;"></i>
+                <span style="font-size:.78rem; color:#92400e; font-weight:700;">Silakan pilih berkas revisi, lalu klik submit.</span>
+            </div>
+            @elseif($allValid2 && count($berkasAktif)>0)
+            <div style="padding:.9rem 1.4rem; background:#f0fdf4; border-top:1px solid #bbf7d0; display:flex; align-items:center; gap:.6rem;">
+                <i class="fa-solid fa-circle-check" style="color:#22c55e;"></i>
+                <span style="font-size:.78rem; color:#166534; font-weight:700;">Semua dokumen telah terverifikasi.</span>
             </div>
             @endif
         </div>
-        @empty
-        <div style="padding:2rem; text-align:center; color:#94a3b8; font-size:.85rem;">
-            <i class="fa-solid fa-folder-open fa-2x" style="display:block;margin-bottom:.75rem;"></i>
-            Belum ada berkas yang diunggah.
-        </div>
-        @endforelse
-
-        {{-- Submit button for all revisions --}}
-        @if($hasRevisi)
-            <div style="padding:1.4rem; background:#f8fafc; border-top:1px solid #e2e8f0; text-align:center;">
-                <button type="submit" class="sum-banner-btn" style="width:100%; height:48px; border-radius:12px; background:#6366f1; color:white; border:none; box-shadow:0 10px 15px -3px rgba(99,102,241,0.25); justify-content:center;">
-                    <i class="fa-solid fa-paper-plane"></i> Submit
-                </button>
-            </div>
-        </form>
-        @endif
-
-        {{-- Footer note --}}
-        @if($hasRevisi)
-        <div style="padding:.9rem 1.4rem; background:#fffbeb; border-top:1px solid #fde68a; display:flex; align-items:center; gap:.6rem;">
-            <i class="fa-solid fa-circle-info" style="color:#f59e0b;"></i>
-            <span style="font-size:.78rem; color:#92400e; font-weight:700;">Silakan pilih semua berkas yang perlu direvisi, lalu klik kirim.</span>
-        </div>
-        @elseif($allValid2 && count($berkasAktif)>0)
-        <div style="padding:.9rem 1.4rem; background:#f0fdf4; border-top:1px solid #bbf7d0; display:flex; align-items:center; gap:.6rem;">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e;"></i>
-            <span style="font-size:.78rem; color:#166534; font-weight:700;">Semua dokumen telah terverifikasi.</span>
-        </div>
-        @endif
     </div>
-</div>
 </div>
 
 {{-- ── Timeline ── --}}
