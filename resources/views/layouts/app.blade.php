@@ -6,47 +6,77 @@
     <title>PPDB Web - @yield('title')</title>
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Main Style -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <!-- Scripts -->
+    
+    <style>
+        .nav-tagline { font-size: 0.7rem; font-weight: 600; color: #64748b; margin: 0; text-transform: none; font-family: 'Inter', sans-serif; letter-spacing: 0; }
+        .navbar-premium { padding: 0.75rem 4rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f1f5f9; position: fixed; top: 0; width: 100%; z-index: 1000; box-sizing: border-box; }
+        .nav-brand-container { display: flex; align-items: center; gap: 1rem; text-decoration: none; }
+        .nav-logo-img { width: 65px; height: auto; object-fit: contain; }
+        .nav-school-name { font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 900; color: #1e293b; line-height: 1; margin: 0; }
+        .nav-links-center { display: flex; gap: 2rem; align-items: center; }
+        .nav-link-p { font-weight: 600; color: #475569; font-size: 0.95rem; text-decoration: none; transition: all 0.3s ease; position: relative; padding: 0.5rem 0; }
+        .nav-link-p:hover, .nav-link-p.active { color: #1d4ed8; }
+        .nav-link-p.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #1d4ed8; border-radius: 2px; }
+        .nav-right-actions { display: flex; align-items: center; gap: 1.25rem; }
+        .nav-social-icon { font-size: 1.25rem; color: #64748b; transition: all 0.3s ease; }
+        .nav-social-icon.ig:hover { color: #e1306c; }
+        .nav-social-icon.wa:hover { color: #25d366; }
+        .nav-social-icon.map:hover { color: #3b82f6; }
+        .btn-masuk { background: linear-gradient(135deg, #0c42bb, #2563eb); color: white; padding: 0.5rem 1.75rem; border-radius: 8px; font-weight: 700; text-decoration: none; transition: all 0.3s ease; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(12, 66, 187, 0.1); }
+        .btn-masuk:hover { background: linear-gradient(135deg, #093395, #0c42bb); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(12, 66, 187, 0.2); }
+        
+        @media (max-width: 1024px) {
+            .navbar-premium { padding: 0.75rem 2rem; }
+            .nav-links-center { display: none; }
+        }
+    </style>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const navbar = document.querySelector('.navbar');
+            const navbar = document.querySelector('.navbar-premium');
             window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) {
-                    navbar.classList.add('scrolled');
+                if (window.scrollY > 20) {
+                    navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.05)';
+                    navbar.style.padding = '0.5rem 4rem';
                 } else {
-                    navbar.classList.remove('scrolled');
+                    navbar.style.boxShadow = 'none';
+                    navbar.style.padding = '0.75rem 4rem';
                 }
             });
         });
     </script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> SMK MITRA BINTARO
-        </div>
-        <div class="nav-links">
-            <a href="{{ url('/') }}" class="nav-item {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
-            <a href="/#tentang" class="nav-item">Tentang Kami</a>
-            <a href="/#jurusan" class="nav-item">Jurusan</a>
-            
-            <div class="dropdown">
-                <a href="#" class="nav-item">Menu Akses <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i></a>
-                <div class="dropdown-content">
-                    <a href="{{ url('/login') }}"><i class="fa-solid fa-right-to-bracket"></i> Login / Daftar</a>
-                    <a href="{{ url('/siswa/ujian') }}"><i class="fa-solid fa-laptop-code"></i> Ujian Online</a>
-                    <a href="{{ url('/siswa/hasil') }}"><i class="fa-solid fa-bullhorn"></i> Hasil Seleksi</a>
-                </div>
+    <nav class="navbar-premium">
+        <a href="{{ url('/') }}" class="nav-brand-container">
+            <img src="{{ asset('images/logo_sekolah.png') }}" alt="Logo SMK Mitra Bintaro" class="nav-logo-img">
+            <div>
+                <h1 class="nav-school-name">SMK MITRA BINTARO</h1>
             </div>
+        </a>
+
+        <div class="nav-links-center">
+            <a href="{{ url('/') }}" class="nav-link-p {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
+            <a href="/#tentang" class="nav-link-p">Tentang Kami</a>
+            <a href="/#jurusan" class="nav-link-p">Jurusan</a>
+            <a href="/#alur" class="nav-link-p">Alur Pendaftaran</a>
+        </div>
+
+        <div class="nav-right-actions">
+            <a href="https://instagram.com/mitrabintaro" target="_blank" class="nav-social-icon ig"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://tiktok.com/@smk.mitrabintaro" target="_blank" class="nav-social-icon tiktok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="https://youtube.com/@smkmitrabintaro-real" target="_blank" class="nav-social-icon youtube"><i class="fa-brands fa-youtube"></i></a>
             
             @auth
-                <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : route('siswa.dashboard') }}" class="btn-primary" style="padding: 0.5rem 1.5rem;">
+                <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : route('siswa.dashboard') }}" class="btn-masuk">
                     Dashboard
                 </a>
             @else
-                <a href="{{ url('/login') }}" class="btn-primary" style="padding: 0.5rem 1.5rem;">
+                <a href="{{ url('/login') }}" class="btn-masuk">
                     Masuk
                 </a>
             @endauth
@@ -65,17 +95,6 @@
                 </div>
                 <p>Mewujudkan generasi cerdas, berkarakter, dan berdaya saing global melalui sistem pendidikan yang modern dan transparan.</p>
 
-                <div class="footer-sosmed">
-                    <a href="https://www.instagram.com/mitrabintaro/" target="_blank" class="sosmed-btn sosmed-ig" title="Instagram">
-                        <i class="fa-brands fa-instagram"></i>
-                    </a>
-                    <a href="https://www.youtube.com/@smkmitrabintaro-real" target="_blank" class="sosmed-btn sosmed-yt" title="YouTube">
-                        <i class="fa-brands fa-youtube"></i>
-                    </a>
-                    <a href="https://www.tiktok.com/@smk.mitrabintaro" target="_blank" class="sosmed-btn sosmed-tt" title="TikTok">
-                        <i class="fa-brands fa-tiktok"></i>
-                    </a>
-                </div>
             </div>
             
             <div>

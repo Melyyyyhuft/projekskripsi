@@ -2,33 +2,135 @@
 @section('title', 'Beranda')
 
 @section('content')
-<!-- HERO SECTION -->
-<section class="hero">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
+<style>
+    .hero-premium {
+        min-height: 80vh;
+        margin-top: 80px;
+        display: flex;
+        align-items: center;
+        background: white;
+        overflow: hidden;
+        position: relative;
+    }
+    .hero-container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        padding: 0;
+        position: relative;
+    }
+    .hero-left {
+        flex: 1;
+        padding: 3rem 4rem 3rem 6rem;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: linear-gradient(to right, rgba(255,255,255,0.9) 20%, rgba(255,255,255,0.1) 100%);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+    .hero-right {
+        flex: 1.5;
+        position: relative;
+        height: 650px;
+        margin-left: -150px; /* Overlap effect */
+    }
+    .hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        mask-image: linear-gradient(to left, black 70%, transparent);
+        -webkit-mask-image: linear-gradient(to left, black 70%, transparent);
+    }
+    .hero-title-p {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+        font-weight: 900;
+        color: #1e293b;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+    }
+    .hero-title-script {
+        font-family: 'Dancing Script', cursive;
+        display: block;
+        color: #1e3a8a;
+        font-size: 0.85em;
+        margin-top: 0.1rem;
+    }
+    .hero-subtitle-p {
+        font-size: 1rem;
+        color: #475569;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        max-width: 450px;
+        font-weight: 500;
+    }
+    .btn-daftar-now {
+        background: linear-gradient(135deg, #0c42bb, #2563eb);
+        color: white;
+        padding: 0.85rem 2.2rem;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(12, 66, 187, 0.2);
+    }
+    .btn-daftar-now:hover {
+        background: linear-gradient(135deg, #093395, #0c42bb);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(12, 66, 187, 0.3);
+    }
     
-    <div class="hero-content">
-        <div class="badge">
-            Pendaftaran Tahun Ajaran Baru Telah Dibuka
-        </div>
-        <h1 class="hero-title">Wujudkan Masa Depan Gemilang Bersama Kami<span class="text-gradient"></span></h1>
-        <p class="hero-subtitle">Sistem Penerimaan Peserta Didik Baru yang dirancang khusus untuk memberikan pengalaman pendaftaran yang Cepat, Transparan, dan Modern.</p>
-        <div class="hero-actions">
-            @if($isPPDBOpen)
-                <a href="{{ url('/register') }}" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
-                    Daftar Sekarang
-                </a>
-            @else
-                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
-                    <button class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.125rem; background: #94a3b8; cursor: not-allowed; border: none;" disabled>
-                        Pendaftaran Ditutup <i class="fa-solid fa-lock"></i>
+    @media (max-width: 1024px) {
+        .hero-premium { min-height: auto; }
+        .hero-container { flex-direction: column; }
+        .hero-left { padding: 3rem 1.5rem; text-align: center; align-items: center; background: rgba(255, 255, 255, 0.85); margin-left: 0; }
+        .hero-subtitle-p { margin-left: auto; margin-right: auto; }
+        .hero-right { order: -1; height: 350px; margin-left: 0; }
+        .hero-img { mask-image: none; -webkit-mask-image: none; }
+    }
+</style>
+
+<!-- HERO SECTION PREMIUM -->
+<section class="hero-premium">
+    <div class="hero-container">
+        <!-- Content Left -->
+        <div class="hero-left animate-slide-up">
+            <div>
+            </div>
+
+            <h1 class="hero-title-p">
+                Langkah Awal<br>
+                Meraih Masa Depan<br>
+                <span class="hero-title-script">Bersama Kami</span>
+            </h1>
+
+            <p class="hero-subtitle-p">
+                SMK Mitra Bintaro menghadirkan sistem PPDB yang <strong>mudah, cepat,</strong> dan <strong>terpercaya</strong> untuk membantu Anda mewujudkan masa depan terbaik.
+            </p>
+
+            <div class="hero-actions-p">
+                @if($isPPDBOpen)
+                    <a href="{{ url('/register') }}" class="btn-daftar-now">
+                        Daftar Sekarang
+                    </a>
+                @else
+                    <button class="btn-daftar-now" style="background: #94a3b8; cursor: not-allowed;" disabled>
+                        Pendaftaran Ditutup
                     </button>
-                    <small style="color: #64748b; font-weight: 600;">Kembali buka sesuai jadwal periode pendaftaran.</small>
-                </div>
-            @endif
-            <a href="#tentang" class="btn-outline" style="padding: 1rem 2.5rem; font-size: 1.125rem;">
-                Pelajari Lebih Lanjut
-            </a>
+                @endif
+            </div>
+        </div>
+
+        <!-- Image Right -->
+        <div class="hero-right">
+            <img src="{{ asset('images/hero_school.png') }}" alt="SMK Mitra Bintaro Hero" class="hero-img">
         </div>
     </div>
 </section>
@@ -77,12 +179,12 @@
             <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Sekolah" style="width: 100%; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
         </div>
         <div style="flex: 1; min-width: 300px;">
-            <h3 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--dark);">Membangun Generasi Emas</h3>
+            <h3 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--dark);">Membangun Generasi Siswa yang Berkarakter</h3>
             <p style="font-size: 1.1rem; color: var(--gray-text); margin-bottom: 1.5rem;">
-                Kami merupakan institusi pendidikan vokasi terdepan yang berkomitmen menghasilkan lulusan terbaik di bidang teknologi dan kreatif. 
+                Kami tidak hanya berfokus pada pencapaian akademik, tetapi juga pada pembentukan karakter, kedisiplinan, dan tanggung jawab.
             </p>
             <p style="font-size: 1.1rem; color: var(--gray-text); margin-bottom: 2rem;">
-                Didukung dengan fasilitas yang super lengkap, laboratorium modern, dan tenaga pendidik profesional yang berpengalaman di bidangnya.
+                Dengan bimbingan guru serta lingkungan belajar yang positif, setiap siswa didorong untuk berkembang menjadi pribadi yang lebih baik dan siap menyongsong masa depan.
             </p>
             <div style="display: flex; gap: 2rem;">
                 <div>
@@ -125,6 +227,35 @@
             <p style="color: var(--gray-text); font-size: 1.2rem;">Belum ada data jurusan yang ditambahkan.</p>
         </div>
         @endforelse
+    </div>
+</section>
+
+<!-- ALUR PENDAFTARAN SECTION -->
+<section id="alur" style="padding: 8rem 2rem; background: #f8fafc;">
+    <div class="section-title">
+        <h2>Alur Pendaftaran</h2>
+        <p>Proses pendaftaran yang mudah dan transparan untuk memudahkan Anda menjadi bagian dari kami.</p>
+    </div>
+    
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; max-width: 1200px; margin: 0 auto;">
+        <!-- Step 1 -->
+        <div class="glass-card" style="flex: 1; min-width: 250px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 60px; background: #eff6ff; color: #1d4ed8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem; border: 2px solid #dbeafe;">1</div>
+            <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Registrasi Akun</h3>
+            <p style="color: #64748b; font-size: 0.9rem;">Buat akun siswa menggunakan NISN dan email yang aktif.</p>
+        </div>
+        <!-- Step 2 -->
+        <div class="glass-card" style="flex: 1; min-width: 250px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 60px; background: #eff6ff; color: #1d4ed8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem; border: 2px solid #dbeafe;">2</div>
+            <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Lengkapi Biodata</h3>
+            <p style="color: #64748b; font-size: 0.9rem;">Isi formulir pendaftaran, nilai rapor, dan unggah berkas fisik.</p>
+        </div>
+        <!-- Step 3 -->
+        <div class="glass-card" style="flex: 1; min-width: 250px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 60px; height: 60px; background: #eff6ff; color: #1d4ed8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem; border: 2px solid #dbeafe;">3</div>
+            <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Ujian & Hasil</h3>
+            <p style="color: #64748b; font-size: 0.9rem;">Ikuti ujian online CBT dan pantau pengumuman kelulusan.</p>
+        </div>
     </div>
 </section>
 
