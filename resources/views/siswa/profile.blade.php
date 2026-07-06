@@ -413,7 +413,7 @@
                         @csrf
                         @method('PUT')
                         <input type="file" id="photoInput" name="foto" accept="image/jpeg,image/png,image/webp"
-                            style="display:none;" onchange="document.getElementById('photoForm').submit();">
+                            style="display:none;" onchange="confirmPhotoUpload()">
                     </form>
 
                     <h2 class="profile-user-name" style="margin-top: 1rem; font-size: 1.5rem;">{{ $user->name }}</h2>
@@ -586,6 +586,41 @@
         }
     }
 
+    // Handle photo confirmation
+    function confirmPhotoUpload() {
+        const fileInput = document.getElementById('photoInput');
+        if (fileInput.files && fileInput.files[0]) {
+            Swal.fire({
+                title: 'Perbarui Foto Profil?',
+                text: "Apakah Anda yakin ingin mengganti foto profil saat ini?",
+                icon: 'question',
+                showCancelButton: false,
+                showCloseButton: true,
+                confirmButtonColor: '#3b82f6',
+                confirmButtonText: 'Ya',
+                reverseButtons: true,
+                background: '#ffffff',
+                borderRadius: '20px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Mengunggah...',
+                        text: 'Tunggu sebentar, sedang memproses foto Anda.',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    document.getElementById('photoForm').submit();
+                } else {
+                    fileInput.value = ''; // Reset input if cancelled
+                }
+            });
+        }
+    }
+
     // Toast notifications
     function showToast(message, type = 'success') {
         const toast = document.createElement('div');
@@ -611,6 +646,9 @@
     @endif
     @if(session('success_photo'))
         showToast('{{ session("success_photo") }}', 'success');
+    @endif
+    @if(session('success_foto'))
+        showToast('{{ session("success_foto") }}', 'success');
     @endif
 </script>
 @endsection

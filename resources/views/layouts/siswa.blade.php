@@ -283,14 +283,14 @@
                 </button>
 
                 <div class="pm-avatar-wrap">
-                    <div class="pm-avatar" onclick="document.getElementById('fotoInput').click()" title="Klik untuk ganti foto">
+                    <div class="pm-avatar" onclick="window.location.href='{{ route('siswa.profile') }}'" title="Klik untuk ganti foto">
                         @if(Auth::user()->foto)
                             <img src="{{ asset('storage/' . Auth::user()->foto) }}" alt="foto profil">
                         @else
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         @endif
                     </div>
-                    <div class="pm-camera-btn" onclick="document.getElementById('fotoInput').click()">
+                    <div class="pm-camera-btn" onclick="window.location.href='{{ route('siswa.profile') }}'">
                         <i class="fa-solid fa-camera"></i>
                     </div>
                 </div>
@@ -307,8 +307,8 @@
                     <input type="file" id="fotoInput" name="foto" accept="image/jpeg,image/png,image/webp"
                            style="display:none;" onchange="document.getElementById('fotoForm').submit();">
                 </form>
-                <p class="pm-upload-hint" style="font-size:.7rem;text-align:center;color:#64748b;margin-bottom:1rem;cursor:pointer;" onclick="document.getElementById('fotoInput').click()">
-                    <i class="fa-solid fa-camera"></i> Klik foto untuk mengganti (JPG/PNG, maks 2MB)
+                <p class="pm-upload-hint" style="font-size:.7rem;text-align:center;color:#64748b;margin-bottom:1rem;cursor:pointer;" onclick="window.location.href='{{ route('siswa.profile') }}'">
+                    <i class="fa-solid fa-camera"></i> Klik foto untuk mengganti (JPG/PNG)
                 </p>
 
                 @if($errors->has('foto'))
