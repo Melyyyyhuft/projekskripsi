@@ -163,28 +163,36 @@ input:checked + .slider:before { transform:translateX(20px); }
     </div>
 
     {{-- ─── Stats ─── --}}
+    @php
+        $activeTab = request('tab', 'total');
+        if(!request()->has('tab') && request()->has('status_proses')) {
+            if(request('status_proses') == 'Sudah Dihitung') $activeTab = 'dihitung';
+            elseif(request('status_hasil') == 'DITERIMA') $activeTab = 'diterima';
+            elseif(request('status_hasil') == 'TIDAK DITERIMA') $activeTab = 'tidak_diterima';
+        }
+    @endphp
     <div class="stats-grid">
-        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'','status_hasil'=>''])) }}" class="premium-card stat-card">
+        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'','status_hasil'=>'', 'tab'=>'total'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'total' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
             <div class="stat-icon" style="background:#f1f5f9; color:var(--dark);"><i class="fa-solid fa-users"></i></div>
             <div class="stat-val">{{ $stats['total'] }}</div>
             <div class="stat-label">Total Peserta</div>
         </a>
-        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'Sudah Dihitung','status_hasil'=>''])) }}" class="premium-card stat-card">
+        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'Sudah Dihitung','status_hasil'=>'', 'tab'=>'dihitung'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'dihitung' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
             <div class="stat-icon" style="background:#f5f3ff; color:#5b21b6;"><i class="fa-solid fa-calculator"></i></div>
             <div class="stat-val">{{ $stats['dihitung'] }}</div>
             <div class="stat-label">Sudah Dihitung</div>
         </a>
-        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'Sudah Dihitung','status_hasil'=>''])) }}" class="premium-card stat-card" style="{{ $stats['belum_publish'] > 0 ? 'border-color:#fbbf24;' : '' }}">
+        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'Sudah Dihitung','status_hasil'=>'', 'tab'=>'belum_publish'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'belum_publish' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
             <div class="stat-icon" style="background:#fff7ed; color:#c2410c;"><i class="fa-solid fa-clock"></i></div>
             <div class="stat-val">{{ $stats['belum_publish'] }}</div>
             <div class="stat-label">Belum Dipublish</div>
         </a>
-        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_hasil'=>'DITERIMA','status_proses'=>''])) }}" class="premium-card stat-card">
+        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_hasil'=>'DITERIMA','status_proses'=>'', 'tab'=>'diterima'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'diterima' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
             <div class="stat-icon" style="background:#f0fdf4; color:#166534;"><i class="fa-solid fa-user-check"></i></div>
             <div class="stat-val">{{ $stats['diterima'] }}</div>
             <div class="stat-label">Diterima</div>
         </a>
-        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_hasil'=>'TIDAK DITERIMA','status_proses'=>''])) }}" class="premium-card stat-card">
+        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_hasil'=>'TIDAK DITERIMA','status_proses'=>'', 'tab'=>'tidak_diterima'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'tidak_diterima' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
             <div class="stat-icon" style="background:#fef2f2; color:#991b1b;"><i class="fa-solid fa-user-xmark"></i></div>
             <div class="stat-val">{{ $stats['tidak_diterima'] }}</div>
             <div class="stat-label">Tidak Diterima</div>

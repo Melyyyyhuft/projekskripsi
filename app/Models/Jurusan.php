@@ -33,4 +33,12 @@ class Jurusan extends Model
     {
         return max(0, $this->kuota - $this->pendaftar_count);
     }
+
+    // Hitung jumlah siswa yang diterima berdasarkan hasil seleksi
+    public function getDiterimaCountAttribute()
+    {
+        return $this->pendaftarans()->whereHas('hasilSeleksi', function ($query) {
+            $query->where('kategori_kelulusan', 'DITERIMA');
+        })->count();
+    }
 }

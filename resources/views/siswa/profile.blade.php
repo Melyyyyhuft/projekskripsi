@@ -642,7 +642,15 @@
         showToast('{{ session("success_profile") }}', 'success');
     @endif
     @if(session('success_password'))
-        showToast('{{ session("success_password") }}', 'success');
+        Swal.fire({
+            title: 'Berhasil!',
+            text: '{{ session("success_password") }}',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 2000,
+            background: '#ffffff',
+            borderRadius: '20px'
+        });
     @endif
     @if(session('success_photo'))
         showToast('{{ session("success_photo") }}', 'success');
