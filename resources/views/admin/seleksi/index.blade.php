@@ -68,7 +68,7 @@
         <h4 style="color:var(--primary);margin:0 0 .5rem;font-size:1rem;">⚡ Proses Seleksi Fleksibel</h4>
         <p style="color:var(--gray-text);font-size:.82rem;margin-bottom:1rem;line-height:1.5;">
             Rumus: <code style="background:#f1f5f9;padding:.1rem .35rem;border-radius:4px;font-size:.8rem;">Skor = (60% × Rapor) + (40% × Ujian CBT)</code><br>
-            <strong>Melakukan Ranking Otomatis Berdasarkan Jurusan & Kuota.</strong>
+            <strong>Kelulusan ditentukan berdasarkan skor akhir sesuai ambang batas yang ditetapkan.</strong>
         </p>
         @if($sudahDifinalisasi)
             <div style="background:#d1fae5;color:#059669;padding:.75rem 1rem;border-radius:8px;font-size:.85rem;">
@@ -303,7 +303,7 @@
 function selectAll(state) { document.querySelectorAll('.cbSiswa').forEach(cb => cb.checked = state); }
 
 function konfirmProsesSemua() {
-    if (confirm('Proses seleksi untuk SEMUA siswa yang sudah ujian?\n\nRumus: Skor = (Bobot Ujian% × Ujian) + (Bobot Rapor% × Rapor)\n• Ranking otomatis dilakukan per Jurusan.\n\nHasil masih dapat diperbarui sebelum finalisasi.')) {
+    if (confirm('Proses seleksi untuk SEMUA siswa yang sudah ujian?\n\nRumus: Skor = (Bobot Ujian% × Ujian) + (Bobot Rapor% × Rapor)\n• Kelulusan ditentukan berdasarkan skor akhir sesuai ambang batas.\n\nHasil masih dapat diperbarui sebelum finalisasi.')) {
         document.getElementById('formProsesSemuaSiswa').submit();
     }
 }
