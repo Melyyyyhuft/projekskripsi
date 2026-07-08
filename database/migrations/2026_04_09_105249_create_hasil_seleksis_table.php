@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pendaftaran_id')->constrained()->onDelete('cascade');
             $table->decimal('skor_akhir', 5, 2);
-            $table->integer('ranking');
             $table->boolean('status_kelulusan');
             $table->timestamps();
         });

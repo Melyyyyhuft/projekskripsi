@@ -221,14 +221,9 @@ class PenempatanController extends Controller
                     ['pendaftaran_id' => $p->id],
                     [
                         'skor_sistem'        => $calc['skor_akhir'],
-                        'bonus_sistem'       => $calc['bonus'],
-                        'penempatan_sistem'  => $calc['penempatan'],
                         'kategori_sistem'    => $calc['kategori'],
                         
                         'skor_akhir'         => $skorAkhir,
-                        'bonus_sertifikat'   => $bonusVal,
-                        'penempatan_kelas'   => $penempatan,
-                        'ranking'            => 0,
                         'status_kelulusan'   => $kategori === 'DITERIMA',
                         'kategori_kelulusan' => $kategori,
                         'alasan_penolakan'   => $catatan,
@@ -315,12 +310,10 @@ class PenempatanController extends Controller
             'hasil'          => $p->hasilSeleksi ? [
                 'skor'        => (float) $p->hasilSeleksi->skor_akhir,
                 'bonus'       => 0,
-                'penempatan'  => $p->hasilSeleksi->penempatan_kelas,
+                'penempatan'  => '-',
                 'kategori'    => $p->hasilSeleksi->kategori_kelulusan,
                 
                 'skor_sistem' => (float) $p->hasilSeleksi->skor_sistem,
-                'bonus_sistem'=> 0,
-                'penempatan_sistem' => $p->hasilSeleksi->penempatan_sistem,
                 'kategori_sistem'   => $p->hasilSeleksi->kategori_sistem,
 
                 'is_publish'  => (bool) $p->hasilSeleksi->is_finalisasi,
@@ -350,7 +343,7 @@ class PenempatanController extends Controller
 
         if ($isOverride) {
             $bonus      = 0;
-            $penempatan = $request->input('penempatan_manual', $hs->penempatan_kelas);
+            $penempatan = $request->input('penempatan_manual', '-');
             $kategori   = $request->input('kategori_manual', $hs->kategori_kelulusan);
 
             // Recalculate score with manual bonus
@@ -370,8 +363,6 @@ class PenempatanController extends Controller
 
             $hs->update([
                 'skor_akhir'         => $skorAkhir,
-                'bonus_sertifikat'   => $bonus,
-                'penempatan_kelas'   => $penempatan,
                 'kategori_kelulusan' => $kategori,
                 'status_kelulusan'   => $kategori === 'DITERIMA',
                 'alasan_penolakan'   => $catatan,
@@ -384,8 +375,6 @@ class PenempatanController extends Controller
             // Revert to system values or just update comments/status
             $hs->update([
                 'skor_akhir'         => $hs->skor_sistem,
-                'bonus_sertifikat'   => $hs->bonus_sistem,
-                'penempatan_kelas'   => $hs->penempatan_sistem,
                 'kategori_kelulusan' => $hs->kategori_sistem,
                 'status_kelulusan'   => $hs->kategori_sistem === 'DITERIMA',
                 'alasan_penolakan'   => $catatan,

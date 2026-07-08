@@ -68,11 +68,11 @@ class SeleksiController extends Controller
         // Apakah ada hasil seleksi (draft)?
         $adaHasilSeleksi = HasilSeleksi::where('is_finalisasi', false)->exists();
 
-        // Hasil seleksi untuk tabel bawah (diurutkan per jurusan lalu ranking)
+        // Hasil seleksi untuk tabel bawah (diurutkan per jurusan lalu skor tertinggi)
         $hasil = HasilSeleksi::with(['pendaftaran.user', 'pendaftaran.jurusan'])
             ->join('pendaftarans', 'hasil_seleksis.pendaftaran_id', '=', 'pendaftarans.id')
             ->orderBy('pendaftarans.jurusan_id')
-            ->orderBy('hasil_seleksis.ranking')
+            ->orderBy('hasil_seleksis.skor_akhir', 'desc')
             ->select('hasil_seleksis.*')
             ->get();
 
@@ -171,7 +171,6 @@ class SeleksiController extends Controller
                     ['pendaftaran_id' => $item['pendaftaran_id']],
                     [
                         'skor_akhir'         => $item['skor_akhir'],
-                        'ranking'            => 0, // Ranking diabaikan dalam mode threshold
                         'status_kelulusan'   => $isLulus, 
                         'kategori_kelulusan' => $statusKelulusan,
                         'is_finalisasi'      => false,
@@ -234,7 +233,6 @@ class SeleksiController extends Controller
                 ['pendaftaran_id' => $p->id],
                 [
                     'skor_akhir'         => 0,
-                    'ranking'            => 0,
                     'status_kelulusan'   => false,
                     'kategori_kelulusan' => 'GUGUR',
                     'is_finalisasi'      => true,

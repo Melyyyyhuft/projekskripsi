@@ -262,7 +262,6 @@
         <table style="width:100%;border-collapse:collapse;min-width:500px;">
             <thead>
                 <tr style="background:#f8fafc;">
-                    <th style="padding:.75rem 1rem;text-align:center;font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;width:60px;">Ranking</th>
                     <th style="padding:.75rem 1rem;text-align:left;font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Nama</th>
                     <th style="padding:.75rem 1rem;text-align:left;font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Jurusan</th>
                     <th style="padding:.75rem 1rem;text-align:center;font-size:.72rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Skor Akhir</th>
@@ -273,15 +272,6 @@
             <tbody>
                 @foreach($hasil as $h)
                 <tr style="border-bottom:1px solid #f1f5f9;background:{{ $h->kategori_kelulusan==='DITERIMA'?'#f0fdf4':($h->kategori_kelulusan==='GUGUR'?'#fef2f2':'#fffbeb') }};">
-                    <td style="padding:.75rem 1rem;text-align:center;">
-                        <div style="font-size:1rem;font-weight:800;color:#0f172a;">
-                            @if($h->ranking > 0)
-                                #{{ $h->ranking }} <span style="font-size:.7rem;color:#94a3b8;font-weight:600;">/ {{ $totalPerJurusan[$h->pendaftaran->jurusan_id] ?? '?' }}</span>
-                            @else
-                                <span style="color:#94a3b8;">—</span>
-                            @endif
-                        </div>
-                    </td>
                     <td style="padding:.75rem 1rem;font-weight:700;color:#0f172a;">{{ $h->pendaftaran->user->name }}</td>
                     <td style="padding:.75rem 1rem;font-size:.875rem;color:#475569;">{{ $h->pendaftaran->jurusan->nama }}</td>
                     <td style="padding:.75rem 1rem;text-align:center;"><strong style="font-size:1rem;">{{ number_format($h->skor_akhir, 2) }}</strong></td>

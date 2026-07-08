@@ -12,12 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('hasil_seleksis', function (Blueprint $table) {
-            // Kolom untuk menyimpan nilai asli dari sistem (Mode A)
-            $table->decimal('skor_sistem', 5, 2)->nullable()->after('pendaftaran_id');
-            $table->string('kategori_sistem')->nullable()->after('skor_sistem');
-            
-            // Kolom status_proses sudah ada dari turn sebelumnya, pastikan tipenya mendukung
-            // is_manual_override, overridden_by, overridden_at juga sudah ada
+            if (Schema::hasColumn('hasil_seleksis', 'penempatan_sistem')) {
+                $table->dropColumn('penempatan_sistem');
+            }
         });
     }
 
@@ -27,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('hasil_seleksis', function (Blueprint $table) {
-            $table->dropColumn(['skor_sistem', 'kategori_sistem']);
+            $table->string('penempatan_sistem')->nullable()->after('skor_sistem');
         });
     }
 };

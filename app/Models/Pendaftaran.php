@@ -79,16 +79,12 @@ class Pendaftaran extends Model
         
         $data = [
             'skor_sistem'        => $skorAkhir,
-            'bonus_sistem'       => $bonusVal,
-            'penempatan_sistem'  => $penempatan,
             'kategori_sistem'    => $kategori,
         ];
 
         // Only update the final result if it's NOT a manual override or if results don't exist yet
         if (!$hs || !$hs->is_manual_override) {
             $data['skor_akhir']         = $skorAkhir;
-            $data['bonus_sertifikat']   = $bonusVal;
-            $data['penempatan_kelas']   = $penempatan;
             $data['kategori_kelulusan'] = $kategori;
             $data['status_kelulusan']   = $kategori === 'DITERIMA';
         }
@@ -96,7 +92,6 @@ class Pendaftaran extends Model
         if (!$hs) {
             $data['is_finalisasi'] = false;
             $data['status_proses'] = 'Sudah Dihitung';
-            $data['ranking'] = 0;
         }
 
         return HasilSeleksi::updateOrCreate(

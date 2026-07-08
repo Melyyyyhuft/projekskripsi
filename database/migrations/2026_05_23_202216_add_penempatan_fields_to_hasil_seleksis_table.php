@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('hasil_seleksis', function (Blueprint $table) {
-            $table->decimal('bonus_sertifikat', 5, 2)->default(0)->after('skor_akhir');
-            $table->string('penempatan_kelas')->nullable()->after('bonus_sertifikat');
             $table->text('alasan_penolakan')->nullable()->after('kategori_kelulusan');
         });
     }
@@ -24,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('hasil_seleksis', function (Blueprint $table) {
-            $table->dropColumn(['bonus_sertifikat', 'penempatan_kelas', 'alasan_penolakan']);
+            $table->dropColumn(['alasan_penolakan']);
         });
     }
 };

@@ -78,11 +78,6 @@
             <td style="padding:5px 0;vertical-align:top;text-align:center;">:</td>
             <td style="padding:5px 0;vertical-align:top;font-weight:700;">{{ $hasil->skor_akhir }}</td>
         </tr>
-        <tr>
-            <td style="padding:5px 0;vertical-align:top;">Ranking</td>
-            <td style="padding:5px 0;vertical-align:top;text-align:center;">:</td>
-            <td style="padding:5px 0;vertical-align:top;font-weight:700;">#{{ $hasil->ranking }}</td>
-        </tr>
     </table>
 
     {{-- ─── Kalimat Penutup ─── --}}
