@@ -84,21 +84,26 @@ class UjianController extends Controller
             $bankSoalsQuery->where('tahun_ajaran', $request->tahun_ajaran);
         }
 
-        // Filter nama paket jika ada
-        if ($request->filled('nama_paket')) {
-            $bankSoalsQuery->where('nama_paket', $request->nama_paket);
+        // Filter sumber jika ada
+        if ($request->filled('sumber')) {
+            $bankSoalsQuery->where('sumber', $request->sumber);
         }
         
+        // Filter pencarian teks soal
+        if ($request->filled('search')) {
+            $bankSoalsQuery->where('teks_soal', 'like', '%' . $request->search . '%');
+        }
+
         $bankSoals = $bankSoalsQuery->get();
         $tahunAjarans = Soal::select('tahun_ajaran')->distinct()->pluck('tahun_ajaran');
-        $namaPakets = Soal::select('nama_paket')->distinct()->pluck('nama_paket');
+        $sumbers = Soal::select('sumber')->distinct()->pluck('sumber');
 
         // Ambil daftar peserta ujian untuk info admin
         $peserta = Pendaftaran::with(['user', 'jurusan'])
             ->whereIn('status', ['lolos_admin', 'sudah_ujian', 'tidak_mengikuti_ujian', 'siap_finalisasi', 'siap_diumumkan'])
             ->get();
 
-        return view('admin.ujian.show', compact('ujian', 'soals', 'bankSoals', 'tahunAjarans', 'namaPakets', 'peserta'));
+        return view('admin.ujian.show', compact('ujian', 'soals', 'bankSoals', 'tahunAjarans', 'sumbers', 'peserta'));
     }
 
     public function assignSoal(Request $request, Ujian $ujian)

@@ -69,7 +69,7 @@ class PendaftaranController extends Controller
             'tempat_lahir'        => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s]+$/'],
             'tanggal_lahir'       => 'required|date|before:today',
             'alamat'              => ['required', 'string', 'max:500', 'regex:/[a-zA-Z]/'],
-            'skl'     => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf,jpg,jpeg,png|max:2048',
+            'skl'     => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf|max:2048',
             'rapor'   => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:pdf|max:2048',
             'pasfoto' => ($existingPendaftaran ? 'nullable' : 'required') . '|mimes:jpg,jpeg,png|max:2048',
             'sertifikat_file.*'   => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -90,7 +90,7 @@ class PendaftaranController extends Controller
             'tanggal_lahir.before'      => 'Tanggal lahir tidak valid (harus sebelum hari ini).',
             'alamat.regex'              => 'Alamat wajib mengandung unsur huruf.',
             'alamat.required'           => 'Alamat rumah wajib diisi.',
-            'skl.mimes'                 => 'File SKL harus berformat PDF, JPG, atau PNG.',
+            'skl.mimes'                 => 'File SKL harus berformat PDF.',
             'skl.max'                   => 'File SKL maksimal 2 MB.',
             'rapor.mimes'               => 'File Rapor harus berformat PDF.',
             'rapor.max'                 => 'File Rapor maksimal 2 MB.',
@@ -252,7 +252,7 @@ class PendaftaranController extends Controller
         }
 
         $request->validate([
-            'skl'     => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
+            'skl'     => 'nullable|mimes:pdf|max:2048',
             'rapor'   => 'nullable|mimes:pdf|max:2048',
             'pasfoto' => 'nullable|mimes:jpg,jpeg,png|max:2048',
         ]);

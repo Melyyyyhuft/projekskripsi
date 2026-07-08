@@ -137,6 +137,13 @@
         </div>
 
         <form action="{{ route('admin.ujian.show', $ujian->id) }}" method="GET" style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+            <div style="display:flex;gap:0;align-items:center;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+                <input type="text" name="search" id="searchBankSoal" placeholder="Cari soal..." value="{{ request('search') }}" style="padding:.4rem .75rem;font-size:.85rem;height:auto;border:none;width:150px;outline:none;" onkeyup="if(event.keyCode===13) this.form.submit()">
+                <button type="submit" style="padding:.4rem .6rem;background:#6366f1;border:none;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;" title="Cari">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+            </div>
+            
             <div style="display:flex;gap:.4rem;align-items:center;">
                 <label style="font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;">Thn Ajaran:</label>
                 <select name="tahun_ajaran" class="form-control" style="padding:.4rem .75rem;font-size:.85rem;height:auto;border-radius:8px;width:120px;" onchange="this.form.submit()">
@@ -146,16 +153,17 @@
                     @endforeach
                 </select>
             </div>
+            
             <div style="display:flex;gap:.4rem;align-items:center;">
-                <label style="font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;">Paket File:</label>
-                <select name="nama_paket" class="form-control" style="padding:.4rem .75rem;font-size:.85rem;height:auto;border-radius:8px;width:160px;" onchange="this.form.submit()">
+                <label style="font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;">Sumber:</label>
+                <select name="sumber" class="form-control" style="padding:.4rem .75rem;font-size:.85rem;height:auto;border-radius:8px;width:160px;" onchange="this.form.submit()">
                     <option value="">Semua</option>
-                    @foreach($namaPakets as $np)
-                        <option value="{{ $np }}" {{ request('nama_paket') == $np ? 'selected' : '' }}>{{ $np }}</option>
+                    @foreach($sumbers as $smb)
+                        <option value="{{ $smb }}" {{ request('sumber') == $smb ? 'selected' : '' }}>{{ $smb }}</option>
                     @endforeach
                 </select>
             </div>
-            @if(request('tahun_ajaran') || request('nama_paket'))
+            @if(request('tahun_ajaran') || request('sumber') || request('search'))
                 <a href="{{ route('admin.ujian.show', $ujian->id) }}" style="text-decoration:none;color:#ef4444;font-size:.85rem;font-weight:700;">✕ Reset</a>
             @endif
         </form>
@@ -170,20 +178,24 @@
                         <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;width:50px;">
                             <input type="checkbox" id="checkAll" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
                         </th>
+                        <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;width:40px;">No</th>
                         <th style="padding:.75rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;">Pertanyaan</th>
                         <th style="padding:.75rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;border-bottom:1px solid #e2e8f0;white-space:nowrap;">Tahun Ajaran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($bankSoals as $bs)
+                    @forelse($bankSoals as $idx => $bs)
                     <tr style="border-bottom:1px solid #f1f5f9;cursor:pointer;" onclick="this.querySelector('input[type=checkbox]').click()">
                         <td style="padding:.75rem 1rem;text-align:center;" onclick="event.stopPropagation()">
                             <input type="checkbox" name="soal_ids[]" value="{{ $bs->id }}" class="checkSoal" style="width:16px;height:16px;accent-color:var(--primary);">
                         </td>
+                        <td style="padding:.75rem 1rem;text-align:center;color:#94a3b8;font-size:.875rem;">
+                            {{ $idx + 1 }}
+                        </td>
                         <td style="padding:.75rem 1rem;">
                             <div style="font-size:.9rem;font-weight:500;color:#0f172a;">{{ Str::limit($bs->teks_soal, 100) }}</div>
                             <div style="font-size:.7rem;color:#94a3b8;margin-top:.2rem;">
-                                📁 Paket: {{ $bs->nama_paket ?? 'Manual Input' }}
+                                📁 Sumber: {{ $bs->sumber ?? 'Input Manual' }}
                             </div>
                         </td>
                         <td style="padding:.75rem 1rem;text-align:center;">

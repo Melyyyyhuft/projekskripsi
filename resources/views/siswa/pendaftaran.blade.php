@@ -286,17 +286,20 @@
         </div>
         <div class="upload-item">
             <div class="upload-header"><span class="upload-title">1. Scan SKL / Ijazah *</span><span class="badge badge-pending" id="badge-skl">Belum Dipilih</span></div>
-            <input type="file" name="skl" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required onchange="handleFile(this,'skl','SKL')">
+            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>PDF</strong></p>
+            <input type="file" name="skl" class="form-control" accept=".pdf,application/pdf" required onchange="handleFile(this,'skl','SKL')">
             <div class="review-box" id="review-skl"><div id="thumb-skl"></div><div class="doc-info"><div class="review-name" id="name-skl"></div></div><button type="button" class="btn-lihat" onclick="bukaPreview('skl')">Lihat</button></div>
         </div>
         <div class="upload-item">
             <div class="upload-header"><span class="upload-title">2. Scan Rapor *</span><span class="badge badge-pending" id="badge-rapor">Belum Dipilih</span></div>
-            <input type="file" name="rapor" class="form-control" accept=".pdf" required onchange="handleFile(this,'rapor','Rapor')">
+            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>PDF</strong></p>
+            <input type="file" name="rapor" class="form-control" accept=".pdf,application/pdf" required onchange="handleFile(this,'rapor','Rapor')">
             <div class="review-box" id="review-rapor"><div style="color:#ef4444;"><i class="fa-solid fa-file-pdf fa-xl"></i></div><div class="doc-info"><div class="review-name" id="name-rapor"></div></div><button type="button" class="btn-lihat" onclick="bukaPreview('rapor')">Lihat</button></div>
         </div>
         <div class="upload-item">
             <div class="upload-header"><span class="upload-title">3. Pas Foto *</span><span class="badge badge-pending" id="badge-pasfoto">Belum Dipilih</span></div>
-            <input type="file" name="pasfoto" class="form-control" accept=".jpg,.jpeg,.png" required onchange="handleFile(this,'pasfoto','Foto')">
+            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>JPG, JPEG, atau PNG</strong></p>
+            <input type="file" name="pasfoto" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required onchange="handleFile(this,'pasfoto','Foto')">
             <div class="review-box" id="review-pasfoto"><div id="thumb-pasfoto"></div><div class="doc-info"><div class="review-name" id="name-pasfoto"></div></div><button type="button" class="btn-lihat" onclick="bukaPreview('pasfoto')">Lihat</button></div>
         </div>
 
@@ -516,9 +519,9 @@
                 $bIsRevisi = $b->status_verifikasi==='tidak_valid';
                 
                 $accept = '';
-                if($b->jenis_berkas === 'skl')     $accept = '.pdf,.jpg,.jpeg,.png';
-                elseif($b->jenis_berkas === 'rapor')   $accept = '.pdf';
-                elseif($b->jenis_berkas === 'pasfoto') $accept = '.jpg,.jpeg,.png';
+                if($b->jenis_berkas === 'skl')     $accept = '.pdf,application/pdf';
+                elseif($b->jenis_berkas === 'rapor')   $accept = '.pdf,application/pdf';
+                elseif($b->jenis_berkas === 'pasfoto') $accept = '.jpg,.jpeg,.png,image/jpeg,image/png';
             @endphp
             <div class="doc-item-sum" style="background: white;">
                 <div class="doc-row">
@@ -527,7 +530,11 @@
                     </div>
                     <div class="doc-info">
                         <div class="doc-fname">{{ $b->nama_file }}</div>
-                        <div class="doc-fmeta">{{ strtoupper($b->file_type) }} • {{ $b->jenis_berkas }}</div>
+                        <div class="doc-fmeta">{{ strtoupper($b->file_type) }} • {{ $b->jenis_berkas }}
+                            @if($bIsRevisi && $hasRevisi)
+                                <br><span style="color:#ef4444; font-weight:700; font-size:0.65rem;">(Wajib format {{ $b->jenis_berkas === 'pasfoto' ? 'JPG/JPEG/PNG' : 'PDF' }})</span>
+                            @endif
+                        </div>
                         
                         <div id="selection-status-{{ $b->jenis_berkas }}" style="display:none; margin-top:.5rem; align-items:center; gap:.6rem; background:#f0fdf4; padding:.4rem .7rem; border-radius:8px; border:1px solid #bbf7d0;">
                             <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
@@ -657,8 +664,28 @@ function showSelectedFile(type) {
     const status = document.getElementById('selection-status-' + type);
     const name = document.getElementById('selected-name-' + type);
     if (input.files.length > 0) {
-        revFilesStore[type] = input.files[0];
-        name.textContent = input.files[0].name;
+        const file = input.files[0];
+        const fileName = file.name.toLowerCase();
+        let isValid = true;
+        if (type === 'skl' || type === 'rapor') {
+            if (!fileName.endsWith('.pdf')) isValid = false;
+        } else if (type === 'pasfoto') {
+            if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg') && !fileName.endsWith('.png')) isValid = false;
+        }
+
+        if (!isValid) {
+            input.value = '';
+            Swal.fire({
+                icon: 'error',
+                title: 'Format File Tidak Sesuai',
+                text: type === 'pasfoto' ? 'Mohon unggah file dengan format JPG, JPEG, atau PNG.' : 'Mohon unggah file dengan format PDF.',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
+
+        revFilesStore[type] = file;
+        name.textContent = file.name;
         status.style.display = 'flex';
     }
 }
@@ -733,6 +760,25 @@ const certFiles = {};
 function handleFile(input, type, label) {
     const file = input.files[0];
     if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    let isValid = true;
+    if (type === 'skl' || type === 'rapor') {
+        if (!fileName.endsWith('.pdf')) isValid = false;
+    } else if (type === 'pasfoto') {
+        if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg') && !fileName.endsWith('.png')) isValid = false;
+    }
+
+    if (!isValid) {
+        input.value = '';
+        Swal.fire({
+            icon: 'error',
+            title: 'Format File Tidak Sesuai',
+            text: type === 'pasfoto' ? 'Mohon unggah file dengan format JPG, JPEG, atau PNG (Tidak bisa All Files).' : 'Mohon unggah file dengan format PDF (Tidak bisa All Files).',
+            confirmButtonColor: '#ef4444'
+        });
+        return;
+    }
 
     fileStore[type] = file;
 

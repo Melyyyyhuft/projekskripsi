@@ -452,6 +452,27 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ── NEW CARD: Panduan Import Soal ── -->
+                <div style="margin-top: 1.5rem; background: white; border: 1.5px solid var(--glass-border); border-radius: 12px; padding: 1.25rem;">
+                    <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="file-spreadsheet" style="width:16px; color:var(--success);"></i> Panduan Import Soal
+                    </h4>
+                    <ul style="font-size: 0.77rem; color: var(--text-muted); margin-bottom: 1.25rem; padding-left: 1.25rem; line-height: 1.6; font-weight:600;">
+                        <li style="margin-bottom: 0.25rem;">File harus berformat CSV atau Excel (.xlsx).</li>
+                        <li style="margin-bottom: 0.25rem;">Gunakan <strong style="color:var(--primary);">template</strong> yang telah disediakan.</li>
+                        <li style="margin-bottom: 0.25rem;">Jangan mengubah nama kolom.</li>
+                        <li>Maksimal 100 soal/import.</li>
+                    </ul>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="btn-lux btn-lux-ghost" style="flex:1; justify-content:center; font-size:0.75rem; border-radius:8px; display:flex; align-items:center; gap:0.4rem;" onclick="openModal('templatePreviewModal')">
+                            <i data-lucide="eye" style="width:14px;"></i> Lihat Template
+                        </button>
+                        <a href="{{ route('admin.bank_soal.template_excel') }}" class="btn-lux btn-lux-primary" style="flex:1; justify-content:center; font-size:0.75rem; text-decoration:none; border-radius:8px; display:flex; align-items:center; gap:0.4rem; background:var(--success); border:none; box-shadow:0 4px 12px rgba(16,185,129,0.2);">
+                            <i data-lucide="download" style="width:14px;"></i> Download Template
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -571,13 +592,48 @@
                 <div style="border:1.5px dashed var(--glass-border); border-radius:12px; padding:1.5rem; text-align:center; cursor:pointer; background:white;" onclick="document.getElementById('file_import_input').click()">
                     <i data-lucide="upload-cloud" style="width:32px; color:var(--info); margin:0 auto 0.5rem; display:block;"></i>
                     <span id="import_file_label" style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">Click to select CSV/Excel</span>
-                    <input type="file" id="file_import_input" name="file_soal" accept=".csv, .xlsx, .xls" style="display:none;" onchange="document.getElementById('import_file_label').innerText = this.files[0].name">
+                    <input type="file" id="file_import_input" name="file_soal" accept=".csv, .xlsx, .xls, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv" style="display:none;" onchange="handleImportFile(this)">
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:2rem;">
-                    <a href="{{ route('admin.bank_soal.template_excel') }}" class="btn-lux btn-lux-ghost" style="font-size:0.7rem;"><i data-lucide="download" style="width:14px;"></i> Template</a>
                     <button type="submit" class="btn-lux btn-lux-primary">Mulai Import</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+{{-- ─── Template Preview Modal ─── --}}
+<div id="templatePreviewModal" class="modal-overlay">
+    <div class="premium-card" style="width:680px; padding:1.5rem; border-radius:24px; max-width:95vw;">
+        <div class="card-header" style="border:none; padding:0 0 1rem 0;">
+            <h3><i data-lucide="eye" style="width:20px;"></i> Preview Format Template</h3>
+            <button onclick="closeModal('templatePreviewModal')" style="border:none; background:none; cursor:pointer;"><i data-lucide="x" style="width:20px; color:var(--text-muted);"></i></button>
+        </div>
+        <div style="background:rgba(241, 245, 249, 0.5); border:1px solid var(--glass-border); border-radius:12px; padding:1rem; overflow-x:auto;">
+            <table class="table-modern" style="min-width: 600px; text-align: left;">
+                <thead>
+                    <tr>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Tahun Ajaran</th>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Pertanyaan</th>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Opsi A</th>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Opsi B</th>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Opsi C</th>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Opsi D</th>
+                        <th style="padding:0.75rem; font-size:0.65rem;">Jawaban Benar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">2024/2025</td>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">Berapakah 1+1?</td>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">1</td>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">2</td>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">3</td>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">4</td>
+                        <td style="padding:0.75rem; font-size:0.75rem; font-weight:700;">B</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -626,6 +682,30 @@
             const activeEl = document.getElementById(`prev_opt_${correct}`);
             if(activeEl) activeEl.classList.add('correct');
         }
+    }
+
+    function handleImportFile(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const validExtensions = ['.csv', '.xlsx', '.xls'];
+        const fileName = file.name.toLowerCase();
+        let isValid = false;
+        
+        for (let ext of validExtensions) {
+            if (fileName.endsWith(ext)) {
+                isValid = true;
+                break;
+            }
+        }
+        
+        if (!isValid) {
+            input.value = '';
+            document.getElementById('import_file_label').innerText = 'Click to select CSV/Excel';
+            alert('Gagal! Format file tidak didukung. Hanya bisa mengunggah file CSV atau Excel.');
+            return;
+        }
+        
+        document.getElementById('import_file_label').innerText = file.name;
     }
 
     function handleImagePreview(input) {
@@ -739,7 +819,7 @@
     });
 
     window.onclick = function(event) {
-        const modals = ['importModal', 'deleteModal'];
+        const modals = ['importModal', 'deleteModal', 'templatePreviewModal'];
         modals.forEach(id => {
             if (event.target == document.getElementById(id)) closeModal(id);
         });

@@ -47,6 +47,45 @@
                     navbar.style.padding = '0.75rem 4rem';
                 }
             });
+
+            // Scroll Spy for Navbar Active Links
+            const navLinks = document.querySelectorAll('.nav-links-center .nav-link-p');
+            const sections = document.querySelectorAll('section[id]');
+            
+            function updateActiveLink() {
+                let scrollY = window.scrollY;
+                let current = '';
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 200; // Offset for fixed navbar
+                    if (scrollY >= sectionTop) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                // If near top, reset to Beranda
+                if (scrollY < 150) {
+                    current = ''; 
+                }
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href');
+                    if (current === '') {
+                        if (href === '{{ url('/') }}' || href === '/') {
+                            link.classList.add('active');
+                        }
+                    } else {
+                        if (href.includes('#' + current)) {
+                            link.classList.add('active');
+                        }
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveLink);
+            window.addEventListener('hashchange', updateActiveLink);
+            updateActiveLink(); // Initial check
         });
     </script>
 </head>
@@ -60,7 +99,7 @@
         </a>
 
         <div class="nav-links-center">
-            <a href="{{ url('/') }}" class="nav-link-p {{ request()->is('/') ? 'active' : '' }}">Beranda</a>
+            <a href="{{ url('/') }}" class="nav-link-p">Beranda</a>
             <a href="/#tentang" class="nav-link-p">Tentang Kami</a>
             <a href="/#jurusan" class="nav-link-p">Jurusan</a>
             <a href="/#alur" class="nav-link-p">Alur Pendaftaran</a>

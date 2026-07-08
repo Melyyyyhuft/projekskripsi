@@ -232,7 +232,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                 <option value="Perlu Review" {{ $fStatusProses == 'Perlu Review' ? 'selected' : '' }}>Perlu Review</option>
                 <option value="Sudah Dipublish" {{ $fStatusProses == 'Sudah Dipublish' ? 'selected' : '' }}>Sudah Dipublish</option>
             </select>
-            <button type="submit" class="btn-action" style="width:36px;height:36px;"><i class="fa-solid fa-sliders"></i></button>
         </form>
     </div>
 
