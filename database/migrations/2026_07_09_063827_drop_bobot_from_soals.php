@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('soals', function (Blueprint $table) {
-            $table->string('gambar')->nullable()->after('mapel');
-            $table->text('penjelasan')->nullable()->after('teks_soal');
-            $table->string('status')->default('Aktif')->after('jawaban_benar');
+            if (Schema::hasColumn('soals', 'bobot')) {
+                $table->dropColumn('bobot');
+            }
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('soals', function (Blueprint $table) {
-            $table->dropColumn(['gambar', 'penjelasan', 'status']);
+            $table->integer('bobot')->default(5)->after('mapel');
         });
     }
 };
