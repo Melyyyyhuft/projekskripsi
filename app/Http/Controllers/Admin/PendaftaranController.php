@@ -13,6 +13,7 @@ class PendaftaranController extends Controller
     {
         $tab = $request->query('tab', 'baru'); // 'baru' atau 'arsip'
         $filterStatus = $request->query('status');
+        $search = $request->query('search');
 
         $query = Pendaftaran::with(['user', 'jurusan'])->latest();
 
@@ -26,9 +27,23 @@ class PendaftaranController extends Controller
             $query->where('status', $filterStatus);
         }
 
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($uq) use ($search) {
+                    $uq->where('name', 'like', "%{$search}%");
+                })
+                ->orWhere('nisn', 'like', "%{$search}%")
+                ->orWhere('asal_sekolah', 'like', "%{$search}%")
+                ->orWhere('nilai_rapor', 'like', "%{$search}%")
+                ->orWhereHas('jurusan', function($jq) use ($search) {
+                    $jq->where('nama', 'like', "%{$search}%");
+                });
+            });
+        }
+
         $pendaftarans = $query->get();
 
-        return view('admin.pendaftaran.index', compact('pendaftarans', 'tab', 'filterStatus'));
+        return view('admin.pendaftaran.index', compact('pendaftarans', 'tab', 'filterStatus', 'search'));
     }
 
     public function show($id)

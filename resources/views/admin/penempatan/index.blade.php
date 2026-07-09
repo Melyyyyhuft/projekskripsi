@@ -167,6 +167,7 @@ input:checked + .slider:before { transform:translateX(20px); }
         $activeTab = request('tab', 'total');
         if(!request()->has('tab') && request()->has('status_proses')) {
             if(request('status_proses') == 'Sudah Dihitung') $activeTab = 'dihitung';
+            elseif(request('status_proses') == 'Belum Dipublish') $activeTab = 'belum_publish';
             elseif(request('status_hasil') == 'DITERIMA') $activeTab = 'diterima';
             elseif(request('status_hasil') == 'TIDAK DITERIMA') $activeTab = 'tidak_diterima';
         }
@@ -182,7 +183,7 @@ input:checked + .slider:before { transform:translateX(20px); }
             <div class="stat-val">{{ $stats['dihitung'] }}</div>
             <div class="stat-label">Sudah Dihitung</div>
         </a>
-        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'Sudah Dihitung','status_hasil'=>'', 'tab'=>'belum_publish'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'belum_publish' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
+        <a href="{{ route('admin.penempatan.index', array_merge(request()->query(), ['status_proses'=>'Belum Dipublish','status_hasil'=>'', 'tab'=>'belum_publish'])) }}" class="premium-card stat-card" style="{{ $activeTab == 'belum_publish' ? 'border-color:#fbbf24; border-width: 2px;' : '' }}">
             <div class="stat-icon" style="background:#fff7ed; color:#c2410c;"><i class="fa-solid fa-clock"></i></div>
             <div class="stat-val">{{ $stats['belum_publish'] }}</div>
             <div class="stat-label">Belum Dipublish</div>
@@ -229,6 +230,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                 <option value="">Status: Semua</option>
                 <option value="Belum Dihitung" {{ $fStatusProses == 'Belum Dihitung' ? 'selected' : '' }}>Belum Dihitung</option>
                 <option value="Sudah Dihitung" {{ $fStatusProses == 'Sudah Dihitung' ? 'selected' : '' }}>Sudah Dihitung</option>
+                <option value="Belum Dipublish" {{ $fStatusProses == 'Belum Dipublish' ? 'selected' : '' }}>Belum Dipublish</option>
                 <option value="Perlu Review" {{ $fStatusProses == 'Perlu Review' ? 'selected' : '' }}>Perlu Review</option>
                 <option value="Sudah Dipublish" {{ $fStatusProses == 'Sudah Dipublish' ? 'selected' : '' }}>Sudah Dipublish</option>
             </select>
@@ -243,6 +245,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                 <thead>
                     <tr>
                         <th style="width:40px; text-align:center;"><input type="checkbox" class="form-checkbox" id="selectAll"></th>
+                        <th style="width:40px; text-align:center;">No</th>
                         <th>Nama Siswa</th>
                         <th>Jurusan</th>
                         <th style="text-align:center;">Rapor</th>
@@ -271,6 +274,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                         @endphp
                         <tr>
                             <td style="text-align:center;"><input type="checkbox" class="form-checkbox student-cb" value="{{ $p->id }}"></td>
+                            <td style="text-align:center; font-weight:800; font-size:.8rem; color:var(--gray);">{{ $loop->iteration }}</td>
                             <td>
                                 <div style="display:flex; align-items:center; gap:.6rem;">
                                     <div style="width:32px;height:32px;background:#f1f5f9;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--gray);font-size:.7rem;">{{ mb_substr($p->user->name,0,1) }}</div>

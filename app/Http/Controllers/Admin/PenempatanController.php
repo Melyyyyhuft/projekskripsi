@@ -44,6 +44,8 @@ class PenempatanController extends Controller
             if ($fStatusProses === 'Belum Dihitung') {
                 $query->whereDoesntHave('hasilSeleksi');
             } elseif ($fStatusProses === 'Sudah Dihitung') {
+                $query->whereHas('hasilSeleksi');
+            } elseif ($fStatusProses === 'Belum Dipublish') {
                 $query->whereHas('hasilSeleksi', fn($q) => $q->where('is_finalisasi', false)->where(function($qq) {
                     $qq->whereNull('status_proses')->orWhere('status_proses', '!=', 'Perlu Review');
                 }));
@@ -128,6 +130,8 @@ class PenempatanController extends Controller
         $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
         $nilaiRapor = (float) $p->nilai_rapor;
 
+        $evalCBT = $nilaiCBT ?? 0;
+
         // For display in the index table and modals
         return [
             'pendaftaran_id' => $p->id,
@@ -138,9 +142,7 @@ class PenempatanController extends Controller
             'cbt'            => $nilaiCBT,
             'has_cbt'        => $nilaiCBT !== null,
             'bonus'          => 0,
-            'formula'        => $nilaiCBT !== null
-                ? "(({$bobotRapor}% × {$nilaiRapor}) + ({$bobotUjian}% × {$nilaiCBT})) = {$hs->skor_akhir}"
-                : 'Tidak ada data CBT',
+            'formula'        => "(({$bobotRapor}% × {$nilaiRapor}) + ({$bobotUjian}% × {$evalCBT})) = {$hs->skor_akhir}",
             'skor_akhir'     => (float) $hs->skor_akhir,
             'penempatan'     => '-',
             'kategori'       => $hs->kategori_kelulusan,
@@ -202,12 +204,11 @@ class PenempatanController extends Controller
                     }
 
                     // Recalculate score (Bonus removed)
-                    if ($calc['has_cbt']) {
-                        $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
-                        $bR = (float) ($settings['bobot_rapor'] ?? 70) / 100;
-                        $bU = (float) ($settings['bobot_ujian'] ?? 30) / 100;
-                        $skorAkhir = round(($bR * $calc['rapor']) + ($bU * $calc['cbt']), 2);
-                    }
+                    $settings = \App\Models\Pengaturan::pluck('value', 'key')->all();
+                    $bR = (float) ($settings['bobot_rapor'] ?? 70) / 100;
+                    $bU = (float) ($settings['bobot_ujian'] ?? 30) / 100;
+                    $evalCBT = $calc['cbt'] ?? 0;
+                    $skorAkhir = round(($bR * $calc['rapor']) + ($bU * $evalCBT), 2);
                 }
 
                 $statusProses = $isManual ? 'Sudah Dihitung' : 'Sudah Dihitung';
@@ -352,14 +353,13 @@ class PenempatanController extends Controller
             $nilaiCBT   = $hasilUjian ? (float) $hasilUjian->skor : null;
 
             $skorAkhir = $hs->skor_sistem;
-            if ($nilaiCBT !== null) {
-                $settings  = \App\Models\Pengaturan::pluck('value', 'key')->all();
-                $bR        = (float) ($settings['bobot_rapor'] ?? 70) / 100;
-                $bU        = (float) ($settings['bobot_ujian'] ?? 30) / 100;
-                $raporPart = round($bR * $nilaiRapor, 2);
-                $cbtPart   = round($bU * $nilaiCBT, 2);
-                $skorAkhir = round($raporPart + $cbtPart, 2);
-            }
+            $evalCBT = $nilaiCBT ?? 0;
+            $settings  = \App\Models\Pengaturan::pluck('value', 'key')->all();
+            $bR        = (float) ($settings['bobot_rapor'] ?? 70) / 100;
+            $bU        = (float) ($settings['bobot_ujian'] ?? 30) / 100;
+            $raporPart = round($bR * $nilaiRapor, 2);
+            $cbtPart   = round($bU * $evalCBT, 2);
+            $skorAkhir = round($raporPart + $cbtPart, 2);
 
             $hs->update([
                 'skor_akhir'         => $skorAkhir,

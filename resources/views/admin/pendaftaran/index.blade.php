@@ -35,6 +35,13 @@
         {{-- Filter Status --}}
         <form action="{{ route('admin.pendaftaran.index') }}" method="GET" style="display:flex;gap:.75rem;align-items:center;">
             <input type="hidden" name="tab" value="{{ $tab }}">
+            
+            <div style="position:relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:.8rem;"></i>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NISN, asal sekolah..." class="form-control" style="padding:.45rem .75rem .45rem 2rem;height:auto;font-size:.85rem;border-radius:8px;min-width:200px;">
+                <button type="submit" style="display:none;"></button>
+            </div>
+
             <label style="font-size:.8rem;font-weight:600;color:#475569;white-space:nowrap;">Filter Status:</label>
             <select name="status" class="form-control" style="padding:.45rem .75rem;height:auto;font-size:.85rem;border-radius:8px;" onchange="this.form.submit()">
                 <option value="">Semua Status</option>
@@ -50,6 +57,7 @@
         <table style="width:100%;border-collapse:collapse;min-width:640px;">
             <thead>
                 <tr style="background:#f8fafc;">
+                    <th style="padding:.875rem 1rem;text-align:center;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;width:40px;">No</th>
                     <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Peserta</th>
                     <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">NISN</th>
                     <th style="padding:.875rem 1rem;text-align:left;font-size:.75rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e2e8f0;">Asal Sekolah</th>
@@ -62,6 +70,7 @@
             <tbody>
                 @forelse($pendaftarans as $p)
                 <tr style="border-bottom:1px solid #f1f5f9;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:.875rem 1rem;text-align:center;font-size:.875rem;color:#64748b;font-weight:700;">{{ $loop->iteration }}</td>
                     <td style="padding:.875rem 1rem;">
                         <div style="font-weight:700;color:#0f172a;">{{ $p->user->name }}</div>
                         <div style="font-size:.75rem;color:#94a3b8;">{{ $p->user->email }}</div>
@@ -107,7 +116,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" style="padding:3rem;text-align:center;color:#94a3b8;">
+                    <td colspan="8" style="padding:3rem;text-align:center;color:#94a3b8;">
                         <div style="font-size:2rem;margin-bottom:.5rem;">📭</div>
                         Tidak ada data pendaftaran untuk ditampilkan.
                     </td>

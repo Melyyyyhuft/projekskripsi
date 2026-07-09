@@ -27,6 +27,8 @@ Route::get('/lupa-password', function () {
 // Admin Routes
 Route::middleware(['auth', 'is.admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'index'])->name('admin.profile');
+    Route::put('/profile/password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('admin.profile.password');
     Route::get('/api/cek-notifikasi', [\App\Http\Controllers\Admin\DashboardController::class, 'checkNewPendaftar']);
     
     // Notifikasi

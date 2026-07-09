@@ -34,6 +34,13 @@ class UjianController extends Controller
             'acak_jawaban'  => 'nullable|boolean',
         ]);
 
+        if ($request->jurusan_id) {
+            $exists = Ujian::where('jurusan_id', $request->jurusan_id)->exists();
+            if ($exists) {
+                return back()->with('error', 'Jurusan ini sudah memiliki modul ujian. Hapus modul lama terlebih dahulu jika ingin membuat modul baru.');
+            }
+        }
+
         Ujian::create([
             'judul'          => $request->judul,
             'jurusan_id'     => $request->jurusan_id,

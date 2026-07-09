@@ -20,6 +20,18 @@
     </script>
 @endif
 
+@if(session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: "{{ session('error') }}",
+            confirmButtonColor: '#6366f1',
+            confirmButtonText: 'OK'
+        });
+    </script>
+@endif
+
 {{-- ─── Page Header ─── --}}
 <div class="animate-slide-up" style="margin-bottom: 2rem;">
     <h1 style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 0 0 .25rem; letter-spacing: -0.02em;">Manajemen Ujian CBT</h1>

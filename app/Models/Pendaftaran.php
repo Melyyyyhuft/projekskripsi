@@ -58,18 +58,17 @@ class Pendaftaran extends Model
         $bonusVal = 0;
 
         // Formula logic
-        $skorAkhir   = 0;
-        $kategori    = 'TIDAK DITERIMA';
-        $penempatan  = '-';
         $hasCBT      = $nilaiCBT !== null;
+        $evalCBT     = $hasCBT ? $nilaiCBT : 0;
+        
+        $raporPart = round($bobotRapor * $nilaiRapor, 2);
+        $cbtPart   = round($bobotUjian * $evalCBT, 2);
+        $skorAkhir = round($raporPart + $cbtPart, 2);
+
+        $penempatan  = '-';
 
         if ($hasCBT) {
-            $raporPart = round($bobotRapor * $nilaiRapor, 2);
-            $cbtPart   = round($bobotUjian * $nilaiCBT, 2);
-            $skorAkhir = round($raporPart + $cbtPart, 2);
-
-            $kategori   = $skorAkhir >= 60 ? 'DITERIMA' : 'TIDAK DITERIMA';
-            $penempatan = '-'; // Placement logic removed by user request
+            $kategori = $skorAkhir >= 60 ? 'DITERIMA' : 'TIDAK DITERIMA';
         } else {
             $kategori = 'TIDAK HADIR CBT';
         }

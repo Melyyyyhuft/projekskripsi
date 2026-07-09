@@ -121,6 +121,9 @@
                             </div>
                         </div>
                         <div class="dropdown-content" style="min-width: 160px; right: 0;">
+                            <a href="{{ route('admin.profile') }}" style="color: var(--dark); border-bottom: 1px solid #f1f5f9;">
+                                <i class="fa-solid fa-key"></i> Ganti Password
+                            </a>
                             <a href="#" onclick="event.preventDefault(); document.getElementById('header-logout-form').submit();" style="color: #ef4444;">
                                 <i class="fa-solid fa-right-from-bracket"></i> Keluar
                             </a>
