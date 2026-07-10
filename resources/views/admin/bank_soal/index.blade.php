@@ -373,7 +373,7 @@
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:0.75rem; margin-bottom:0.75rem;">
+                    <div style="margin-bottom:0.75rem;">
                         <div class="form-group-modern">
                             <label class="label-modern">Gambar (JPG/PNG)</label>
                             <div id="drop_zone" style="border:1.5px dashed var(--glass-border); border-radius:10px; padding:0.75rem; text-align:center; cursor:pointer; background:rgba(248, 250, 252, 0.4); transition:all 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--glass-border)'" onclick="document.getElementById('gambar_input').click()">
@@ -381,10 +381,6 @@
                                 <span id="file_name_label" style="font-size:0.65rem; color:var(--text-muted); font-weight:700;">Click to upload</span>
                                 <input type="file" id="gambar_input" name="gambar" accept="image/jpeg,image/png,image/jpg" style="display:none;" onchange="handleImagePreview(this)">
                             </div>
-                        </div>
-                        <div class="form-group-modern">
-                            <label class="label-modern">Penjelasan (Opsional)</label>
-                            <textarea name="penjelasan" id="form_penjelasan" class="input-modern" style="min-height:68px; resize:none;" placeholder="Mengapa jawaban ini benar?"></textarea>
                         </div>
                     </div>
 
@@ -487,13 +483,7 @@
                     <input type="text" id="searchInput" class="input-modern" placeholder="Cari..." style="padding-left:2.25rem; border-radius:99px; width:200px; font-size:0.75rem;">
                 </div>
                 
-                <form action="{{ route('admin.bank_soal.index') }}" method="GET" id="filterForm" style="display:flex; gap:0.4rem;">
-                    <select name="status" class="input-modern" id="filterStatus" style="padding:0.4rem 0.75rem; border-radius:99px; font-size:0.7rem;" onchange="this.form.submit()">
-                        <option value="">Semua Status</option>
-                        <option value="Aktif" {{ request('status') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="Draft" {{ request('status') == 'Draft' ? 'selected' : '' }}>Draft</option>
-                    </select>
-                </form>
+
 
                 <div style="width:1px; height:20px; background:var(--glass-border); margin:0 0.25rem;"></div>
 
@@ -741,7 +731,6 @@
         document.querySelector('textarea[name="opsi_b"]').value = soal.opsi_b;
         document.querySelector('textarea[name="opsi_c"]').value = soal.opsi_c;
         document.querySelector('textarea[name="opsi_d"]').value = soal.opsi_d;
-        document.getElementById('form_penjelasan').value = soal.penjelasan || '';
         
         const radio = document.querySelector(`input[name="jawaban_benar"][value="${soal.jawaban_benar}"]`);
         if(radio) radio.checked = true;

@@ -203,15 +203,12 @@ input:checked + .slider:before { transform:translateX(20px); }
     {{-- ─── Action Bar ─── --}}
     <div class="premium-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;" >
         <div style="display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;">
-            <button class="btn-g bg-primary" onclick="requestPreview('selected')" id="btnHitungPilih">
-                <i class="fa-solid fa-bolt"></i> Hitung Terpilih
-            </button>
-            <button class="btn-g bg-dark" onclick="requestPreview('all')">
-                <i class="fa-solid fa-microchip"></i> Hitung Semua
+            <button class="btn-g bg-primary" onclick="requestPreview('selected')" id="btnHitung">
+                <i class="fa-solid fa-calculator"></i> Hitung
             </button>
             <div style="width:1px; height:28px; background:#e2e8f0; margin:0 .25rem;"></div>
-            <button class="btn-g bg-success" onclick="handlePublish('all')" {{ $stats['belum_publish'] == 0 ? 'disabled' : '' }}>
-                <i class="fa-solid fa-bullhorn"></i> Publish Semua
+            <button class="btn-g bg-success" onclick="requestPublishSelected()" id="btnPublish">
+                <i class="fa-solid fa-bullhorn"></i> Publish
             </button>
         </div>
 
@@ -254,7 +251,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <th style="text-align:center;">Skor Akhir</th>
                         <th>Hasil</th>
                         <th>Proses</th>
-                        <th style="text-align:right;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -309,9 +305,7 @@ input:checked + .slider:before { transform:translateX(20px); }
                                         <i class="fa-solid {{ $hk=='DITERIMA' ? 'fa-circle-check' : 'fa-circle-xmark' }}" style="font-size:.5rem;"></i>
                                         {{ $hk }}
                                     </span>
-                                    @if($hs->is_manual_override)
-                                        <span class="badge-m b-override" style="margin-left:2px;" title="Diubah oleh {{ $hs->overridden_by }}"><i class="fa-solid fa-pen" style="font-size:.45rem;"></i> Override</span>
-                                    @endif
+
                                 @else <span class="badge-m" style="background:#f8fafc;color:#cbd5e1;border:1px solid #e2e8f0;">MENUNGGU</span> @endif
                             </td>
                             <td>
@@ -319,18 +313,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                                     <i class="fa-solid {{ $sp=='Sudah Dipublish'?'fa-check-double':($sp=='Perlu Review'?'fa-triangle-exclamation':($sp=='Sudah Dihitung'?'fa-calculator':'fa-hourglass-start')) }}" style="font-size:.5rem;"></i>
                                     {{ $sp }}
                                 </span>
-                            </td>
-                            <td style="text-align:right;">
-                                <div style="display:flex; gap:.3rem; justify-content:flex-end;">
-                                    <button class="btn-action" title="Detail & Review" onclick="showDetail({{ $p->id }})"><i class="fa-solid fa-magnifying-glass-chart"></i></button>
-                                    <button class="btn-action" title="Hitung Ulang" onclick="requestPreviewSingle({{ $p->id }})"><i class="fa-solid fa-rotate-right"></i></button>
-                                    @if($hs && !$hs->is_finalisasi && $sp !== 'Perlu Review')
-                                        <button class="btn-action" title="Publish" onclick="handlePublishSingle({{ $p->id }})" style="color:var(--success);"><i class="fa-solid fa-bullhorn"></i></button>
-                                    @endif
-                                    @if($hs && $hs->is_finalisasi)
-                                        <a href="{{ route('admin.penempatan.pdf', $p->id) }}" class="btn-action" title="PDF" style="color:#ef4444;"><i class="fa-solid fa-file-pdf"></i></a>
-                                    @endif
-                                </div>
                             </td>
                         </tr>
                     @empty
@@ -383,7 +365,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                         <th>Rumus Perhitungan</th>
                         <th style="text-align:center;">Skor Akhir</th>
                         <th>Status</th>
-                        <th>Catatan</th>
                     </tr>
                 </thead>
                 <tbody id="previewRows">
@@ -434,11 +415,11 @@ input:checked + .slider:before { transform:translateX(20px); }
             <span style="font-size:.78rem; font-weight:700; color:#c2410c;">Siswa ini ditandai PERLU REVIEW. Silakan validasi data atau gunakan override manual.</span>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+        <div style="margin-bottom:1.5rem;">
             {{-- MODE A: HASIL SISTEM (Readonly) --}}
-            <div class="mode-section" id="sectionModeA">
+            <div class="mode-section active" id="sectionModeA">
                 <div class="mode-header">
-                    <span class="mode-title"><i class="fa-solid fa-robot"></i> MODE A — HASIL SISTEM</span>
+                    <span class="mode-title"><i class="fa-solid fa-robot"></i> HASIL SISTEM</span>
                     <span class="badge-m" style="background:#f1f5f9; color:var(--gray);">Read Only</span>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -460,34 +441,6 @@ input:checked + .slider:before { transform:translateX(20px); }
                     </div>
                 </div>
             </div>
-
-            {{-- MODE B: OVERRIDE MANUAL --}}
-            <div class="mode-section" id="sectionModeB">
-                <div class="mode-header">
-                    <span class="mode-title"><i class="fa-solid fa-user-gear"></i> MODE B — OVERRIDE MANUAL</span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggleOverride" onchange="toggleManualInputs()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-
-                    <div class="mode-field" style="grid-column: span 2;">
-                        <label class="mode-label">Status Manual</label>
-                        <select id="dbStatus" class="mode-input manual-field">
-                            <option value="DITERIMA">DITERIMA</option>
-                            <option value="TIDAK DITERIMA">TIDAK DITERIMA</option>
-                        </select>
-                    </div>
-                    <div class="mode-field" style="grid-column: span 2;">
-                        <label class="mode-label">Catatan Admin <span style="color:var(--danger);">*</span></label>
-                        <textarea id="dbCatatan" class="mode-input manual-field" rows="3" style="resize:none;" placeholder="Alasan perubahan data..."></textarea>
-                    </div>
-                </div>
-                <div id="overrideLogBox" style="margin-top:1rem; padding-top:1rem; border-top:1px dashed #e2e8f0; font-size:.65rem; color:var(--gray); display:none;">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Terakhir diubah: <span id="overrideLogInfo">-</span>
-                </div>
-            </div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -507,14 +460,53 @@ let previewMode = 'all';
 let previewIds = [];
 let currentDetailId = null;
 
-// ─── Checkbox Logic ───
+// ─── Checkbox Persistent Logic ───
+let persistentIds = JSON.parse(sessionStorage.getItem('penempatan_selected_ids') || '[]');
+
+function restoreSelection() {
+    document.querySelectorAll('.student-cb').forEach(cb => {
+        if (persistentIds.includes(cb.value)) cb.checked = true;
+    });
+    updateSelectAllState();
+}
+
+function updateSelectAllState() {
+    const allCbs = document.querySelectorAll('.student-cb');
+    if (allCbs.length === 0) return;
+    const allChecked = Array.from(allCbs).every(cb => cb.checked);
+    const selectAll = document.getElementById('selectAll');
+    if(selectAll) selectAll.checked = allChecked;
+}
+
 document.getElementById('selectAll').addEventListener('change', function() {
-    document.querySelectorAll('.student-cb').forEach(cb => cb.checked = this.checked);
+    const isChecked = this.checked;
+    document.querySelectorAll('.student-cb').forEach(cb => {
+        cb.checked = isChecked;
+        togglePersistentId(cb.value, isChecked);
+    });
 });
 
-function getSelectedIds() {
-    return Array.from(document.querySelectorAll('.student-cb:checked')).map(cb => cb.value);
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('student-cb')) {
+        togglePersistentId(e.target.value, e.target.checked);
+        updateSelectAllState();
+    }
+});
+
+function togglePersistentId(id, isChecked) {
+    if (isChecked) {
+        if (!persistentIds.includes(id)) persistentIds.push(id);
+    } else {
+        persistentIds = persistentIds.filter(pid => pid !== id);
+    }
+    sessionStorage.setItem('penempatan_selected_ids', JSON.stringify(persistentIds));
 }
+
+function getSelectedIds() {
+    return persistentIds;
+}
+
+restoreSelection();
 
 // ─── Preview Request ───
 function requestPreview(mode) {
@@ -544,25 +536,7 @@ function requestPreview(mode) {
     .catch(err => { toast('Gagal memuat preview: ' + err.message, 'error'); closePreview(); });
 }
 
-function requestPreviewSingle(id) {
-    previewMode = 'selected';
-    previewIds = [String(id)];
-    document.getElementById('previewModal').style.display = 'flex';
-    document.getElementById('previewRows').innerHTML = `<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--gray);"><div style="animation:pulse 1.5s infinite;">⏳</div></td></tr>`;
 
-    fetch('{{ route("admin.penempatan.preview") }}', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN': CSRF },
-        body: JSON.stringify({ mode: 'selected', selected_ids: [id] })
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.error) { toast(res.error, 'error'); closePreview(); return; }
-        previewData = res.data;
-        renderPreview(res.data);
-    })
-    .catch(err => { toast('Gagal memuat preview.', 'error'); closePreview(); });
-}
 
 function renderPreview(data) {
     document.getElementById('previewSubtitle').innerText = `${data.length} siswa akan dihitung`;
@@ -591,9 +565,6 @@ function renderPreview(data) {
             </td>
             <td style="text-align:center;font-weight:900;font-size:1rem;color:var(--dark);">${s.skor_akhir}</td>
             <td>${katBadge}</td>
-            <td>
-                <input type="text" class="catatan-input" data-id="${s.pendaftaran_id}" placeholder="Tambah catatan..." style="width:100%;padding:.35rem .5rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.7rem;outline:none;">
-            </td>
         </tr>`;
     });
     document.getElementById('previewRows').innerHTML = html;
@@ -607,15 +578,6 @@ function closePreview() {
 // ─── Save Calculation ───
 function submitCalculation() {
     if (previewData.length === 0) return;
-
-    // Collect any catatan inputs
-    const overrides = {};
-    document.querySelectorAll('.catatan-input').forEach(inp => {
-        const id = inp.dataset.id;
-        if (inp.value.trim()) {
-            overrides[id] = { catatan: inp.value.trim() };
-        }
-    });
 
     Swal.fire({
         title: `Simpan ${previewData.length} Hasil?`,
@@ -642,17 +604,7 @@ function submitCalculation() {
             form.appendChild(inp);
         });
 
-        // Append overrides
-        Object.keys(overrides).forEach(pid => {
-            Object.keys(overrides[pid]).forEach(key => {
-                const inp = document.createElement('input');
-                inp.type = 'hidden';
-                inp.name = `overrides[${pid}][${key}]`;
-                inp.value = overrides[pid][key];
-                form.appendChild(inp);
-            });
-        });
-
+        sessionStorage.removeItem('penempatan_selected_ids');
         document.body.appendChild(form);
         form.submit();
     });
@@ -690,40 +642,58 @@ function markReview() {
             form.appendChild(inp);
         });
 
+        sessionStorage.removeItem('penempatan_selected_ids');
         document.body.appendChild(form);
         form.submit();
     });
 }
 
 // ─── Publish ───
-function handlePublish(mode) {
-    Swal.fire({
-        title: 'Publish Semua Hasil?',
-        text: 'Setelah dipublish, hasil akan langsung terlihat oleh siswa.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Publish!',
-        confirmButtonColor: '#10b981'
-    }).then(result => {
-        if (!result.isConfirmed) return;
-        Swal.fire({ title:'Memproses...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
-        submitPublishForm(mode, []);
-    });
-}
+function requestPublishSelected() {
+    const ids = getSelectedIds();
+    if (ids.length === 0) {
+        toast('Pilih minimal satu siswa terlebih dahulu.', 'warning');
+        return;
+    }
 
-function handlePublishSingle(id) {
-    Swal.fire({
-        title: 'Publish Hasil Siswa Ini?',
-        text: 'Hasil akan segera tampil di dashboard siswa.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Publish',
-        confirmButtonColor: '#10b981'
-    }).then(result => {
-        if (!result.isConfirmed) return;
-        Swal.fire({ title:'Memproses...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
-        submitPublishForm('selected', [id]);
-    });
+    Swal.fire({ title:'Memuat...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+    
+    fetch('{{ route("admin.penempatan.preview") }}', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN': CSRF },
+        body: JSON.stringify({ mode: 'selected', selected_ids: ids })
+    })
+    .then(r => r.json())
+    .then(res => {
+        Swal.close();
+        if (res.error) { toast(res.error, 'error'); return; }
+        
+        let htmlList = `<div style="max-height:200px; overflow-y:auto; text-align:left; font-size:.85rem; background:#f8fafc; padding:10px; border-radius:10px;">`;
+        if(res.data.length > 0) {
+            htmlList += `<ul style="margin:0; padding-left:1.2rem; color:var(--dark);">`;
+            res.data.forEach(s => {
+                htmlList += `<li><b>${s.nama}</b> - ${s.jurusan}</li>`;
+            });
+            htmlList += `</ul>`;
+        }
+        htmlList += `</div>`;
+
+        Swal.fire({
+            title: `Publish ${res.data.length} Hasil?`,
+            html: `Berikut adalah daftar siswa yang akan dipublish:<br><br>${htmlList}<br><div style="margin-top:10px;">Setelah dipublish, hasil akan langsung terlihat di dashboard siswa.</div>`,
+            icon: 'warning',
+            width: '500px',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Publish Sekarang',
+            confirmButtonColor: '#10b981'
+        }).then(result => {
+            if (result.isConfirmed) {
+                Swal.fire({ title:'Memproses...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+                submitPublishForm('selected', ids);
+            }
+        });
+    })
+    .catch(err => { toast('Gagal memuat detail siswa.', 'error'); Swal.close(); });
 }
 
 function submitPublishForm(mode, ids) {
@@ -736,6 +706,7 @@ function submitPublishForm(mode, ids) {
         inp.type='hidden'; inp.name='selected_ids[]'; inp.value=id;
         form.appendChild(inp);
     });
+    sessionStorage.removeItem('penempatan_selected_ids');
     document.body.appendChild(form);
     form.submit();
 }
@@ -761,62 +732,18 @@ function showDetail(id) {
             document.getElementById('daSkor').value = h.skor_sistem;
             document.getElementById('daStatus').value = h.kategori_sistem ?? 'BELUM DIHITUNG';
 
-            // Mode B (Manual)
-            document.getElementById('toggleOverride').checked = h.is_override;
-
-            document.getElementById('dbStatus').value = h.kategori || 'TIDAK DITERIMA';
-            document.getElementById('dbCatatan').value = h.catatan || '';
-
-            // Banner & Badge logic
-            document.getElementById('reviewBadgeBanner').style.display = h.status_proses === 'Perlu Review' ? 'flex' : 'none';
-            
-            const sp = h.status_proses || (h.is_publish ? 'Sudah Dipublish' : 'Sudah Dihitung');
-            document.getElementById('dStatusProsesBadge').innerHTML = `<span class="badge-m ${sp==='Sudah Dipublish'?'b-publish':(sp==='Perlu Review'?'b-review':'b-proses')}">${sp}</span>`;
-
-            if (h.is_override) {
-                document.getElementById('overrideLogBox').style.display = 'block';
-                document.getElementById('overrideLogInfo').innerText = `${h.override_by} pada ${h.override_at}`;
-            } else {
-                document.getElementById('overrideLogBox').style.display = 'none';
-            }
-
-            toggleManualInputs();
             document.getElementById('detailModal').style.display = 'flex';
         });
-}
-
-function toggleManualInputs() {
-    const isOverride = document.getElementById('toggleOverride').checked;
-    const fields = document.querySelectorAll('.manual-field');
-    const secA = document.getElementById('sectionModeA');
-    const secB = document.getElementById('sectionModeB');
-
-    fields.forEach(f => f.disabled = !isOverride);
-    
-    if(isOverride) {
-        secB.classList.add('active');
-        secA.classList.remove('active');
-    } else {
-        secA.classList.add('active');
-        secB.classList.remove('active');
-    }
 }
 
 function saveFinalDecision() {
     if (!currentDetailId) return;
 
-    const isOverride = document.getElementById('toggleOverride').checked;
     const data = {
-        is_manual_override: isOverride,
-
-        kategori_manual: document.getElementById('dbStatus').value,
-        catatan: document.getElementById('dbCatatan').value
+        is_manual_override: false,
+        kategori_manual: document.getElementById('daStatus').value,
+        catatan: ''
     };
-
-    if (isOverride && !data.catatan.trim()) {
-        toast('Catatan admin wajib diisi untuk override manual.', 'error');
-        return;
-    }
 
     Swal.fire({ title:'Menyimpan Keputusan...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
 

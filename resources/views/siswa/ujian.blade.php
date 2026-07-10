@@ -22,8 +22,15 @@
                     <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#8b5cf6); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;">
                         {{ $index + 1 }}
                     </div>
-                    <div style="font-size:1.1rem; font-weight:600; color:var(--dark); line-height:1.6; padding-top:.2rem;">
-                        {{ $soal->teks_soal }}
+                    <div style="flex:1;">
+                        <div style="font-size:1.1rem; font-weight:600; color:var(--dark); line-height:1.6; padding-top:.2rem;">
+                            {{ $soal->teks_soal }}
+                        </div>
+                        @if($soal->gambar)
+                        <div style="margin-top:1rem; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0; max-width:fit-content; cursor:zoom-in;" onclick="window.open('{{ asset('storage/' . $soal->gambar) }}', '_blank')">
+                            <img src="{{ asset('storage/' . $soal->gambar) }}" alt="Gambar Soal" style="max-width:100%; max-height:400px; display:block;">
+                        </div>
+                        @endif
                     </div>
                 </div>
                 

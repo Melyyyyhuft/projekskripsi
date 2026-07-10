@@ -262,6 +262,10 @@
                     <input type="number" step="0.01" name="nilai_rapor" id="f_rapor_val" class="form-control" placeholder="Contoh: 90.00" max="100" min="0" required oninput="validateRapor(this)">
                     <div class="field-error" id="f_rapor_val_err"><i class="fa-solid fa-circle-exclamation"></i><span></span></div>
                     <p class="form-help">Maksimal <strong>100.</strong> Gunakan desimal (titik).</p>
+                    <div style="margin-top:.4rem; display:flex; align-items:center; justify-content:space-between; background:#eff6ff; padding:.45rem .6rem; border-radius:8px; border-left:3px solid #3b82f6;">
+                        <span style="font-size:.73rem; color:#1e40af; font-weight:700;"><i class="fa-solid fa-circle-info" style="margin-right:2px;"></i> Panduan Perhitungan Rapor</span>
+                        <button type="button" onclick="showRaporGuide()" style="padding:.2rem .6rem; border-radius:6px; background:white; color:#2563eb; font-size:.65rem; font-weight:800; border:1px solid #bfdbfe; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='white'">Lihat</button>
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -280,25 +284,25 @@
         <div class="alert-custom alert-warning">
             <strong><i class="fa-solid fa-triangle-exclamation"></i> Penting:</strong>
             <ul style="margin:.5rem 0 0 1.25rem;padding:0;">
-                <li>Ukuran maks. 2 MB per file.</li>
+                <li>Pastikan dokumen yang diunggah tidak buram dan dapat dibaca.</li>
                 <li>Gunakan "Lihat File" untuk memastikan berkas benar.</li>
             </ul>
         </div>
         <div class="upload-item">
             <div class="upload-header"><span class="upload-title">1. Scan SKL / Ijazah *</span><span class="badge badge-pending" id="badge-skl">Belum Dipilih</span></div>
-            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>PDF</strong></p>
+            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>PDF</strong>. Maksimal <strong>2 MB</strong>.</p>
             <input type="file" name="skl" class="form-control" accept=".pdf,application/pdf" required onchange="handleFile(this,'skl','SKL')">
             <div class="review-box" id="review-skl"><div id="thumb-skl"></div><div class="doc-info"><div class="review-name" id="name-skl"></div></div><button type="button" class="btn-lihat" onclick="bukaPreview('skl')">Lihat</button></div>
         </div>
         <div class="upload-item">
-            <div class="upload-header"><span class="upload-title">2. Scan Rapor *</span><span class="badge badge-pending" id="badge-rapor">Belum Dipilih</span></div>
-            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>PDF</strong></p>
+            <div class="upload-header"><span class="upload-title">2. Scan Rapor Semester 1-5 *</span><span class="badge badge-pending" id="badge-rapor">Belum Dipilih</span></div>
+            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>PDF</strong>. Maksimal <strong>5 MB</strong>.</p>
             <input type="file" name="rapor" class="form-control" accept=".pdf,application/pdf" required onchange="handleFile(this,'rapor','Rapor')">
             <div class="review-box" id="review-rapor"><div style="color:#ef4444;"><i class="fa-solid fa-file-pdf fa-xl"></i></div><div class="doc-info"><div class="review-name" id="name-rapor"></div></div><button type="button" class="btn-lihat" onclick="bukaPreview('rapor')">Lihat</button></div>
         </div>
         <div class="upload-item">
             <div class="upload-header"><span class="upload-title">3. Pas Foto *</span><span class="badge badge-pending" id="badge-pasfoto">Belum Dipilih</span></div>
-            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>JPG, JPEG, atau PNG</strong></p>
+            <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">* Wajib format <strong>JPG, JPEG, atau PNG</strong>. Maksimal <strong>2 MB</strong>.</p>
             <input type="file" name="pasfoto" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png" required onchange="handleFile(this,'pasfoto','Foto')">
             <div class="review-box" id="review-pasfoto"><div id="thumb-pasfoto"></div><div class="doc-info"><div class="review-name" id="name-pasfoto"></div></div><button type="button" class="btn-lihat" onclick="bukaPreview('pasfoto')">Lihat</button></div>
         </div>
@@ -307,11 +311,39 @@
         <h2 class="upload-section-title">4. Sertifikat (Opsional)</h2>
         <div id="cert-container">
             <div class="cert-entry" id="cert-0">
-                <div class="form-grid-2">
-                    <select name="sertifikat_jenis[]" class="form-control"><option value="">Jenis</option><option>Akademik</option><option>Olahraga</option><option>Seni</option><option>Tahfidz</option></select>
-                    <select name="sertifikat_tingkat[]" class="form-control"><option value="">Tingkat</option><option>Provinsi</option><option>Nasional</option><option>Internasional</option></select>
+                <div class="form-grid-2" style="margin-bottom:1rem;">
+                    <div>
+                        <label class="form-label">Jenis Prestasi</label>
+                        <select name="sertifikat_jenis[]" class="form-control">
+                            <option value="">-- Pilih Jenis --</option>
+                            <option>Akademik</option><option>Olahraga</option>
+                            <option>Seni</option><option>Organisasi</option><option>Tahfidz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Tingkat Prestasi</label>
+                        <select name="sertifikat_tingkat[]" class="form-control">
+                            <option value="">-- Pilih Tingkat --</option>
+                            <option>Kabupaten/Kota</option><option>Provinsi</option>
+                            <option>Nasional</option><option>Internasional</option>
+                        </select>
+                    </div>
                 </div>
-                <input type="file" name="sertifikat_file[]" class="form-control" onchange="handleCertFile(this,0)">
+                <div>
+                    <label class="form-label">File Sertifikat (PDF/JPG/PNG)</label>
+                    <p class="form-help" style="margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;">Maksimal <strong>2 MB</strong> per file.</p>
+                    <input type="file" name="sertifikat_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" onchange="handleCertFile(this,0)">
+                    <div class="review-box cert-review" id="cert-review-0" style="display:none;">
+                        <div class="cert-thumb-0" style="flex-shrink:0;"></div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="review-name cert-name-0"></div>
+                            <div style="font-size:.72rem;color:#10b981;font-weight:700;"><i class="fa-solid fa-check-circle"></i> Sertifikat siap diunggah</div>
+                        </div>
+                        <button type="button" class="btn-lihat" onclick="bukaCertPreview(0)">
+                            <i class="fa-solid fa-eye"></i> Lihat File
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <button type="button" class="btn-add-cert" onclick="addCert()"><i class="fa-solid fa-plus"></i> Tambah Prestasi</button>
@@ -555,7 +587,7 @@
                             <input type="file" name="{{ $b->jenis_berkas }}" id="input-select-{{ $b->jenis_berkas }}" 
                                 style="display:none;" accept="{{ $accept }}"
                                 onchange="showSelectedFile('{{ $b->jenis_berkas }}')">
-                            <label for="input-select-{{ $b->jenis_berkas }}" class="doc-btn reupload" style="cursor:pointer;">
+                            <label for="input-select-{{ $b->jenis_berkas }}" class="doc-btn reupload" style="cursor:pointer;" title="Maksimal ukuran file {{ $b->jenis_berkas == 'rapor' ? '5 MB' : '2 MB' }}">
                                 <i class="fa-solid fa-file-circle-plus"></i> Pilih File
                             </label>
                         @else
@@ -684,6 +716,18 @@ function showSelectedFile(type) {
             return;
         }
 
+        const maxSize = (type === 'rapor') ? 5 * 1024 * 1024 : 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            input.value = '';
+            Swal.fire({
+                icon: 'error',
+                title: 'Ukuran File Terlalu Besar',
+                text: 'Maksimal ukuran file untuk revisi ' + type.toUpperCase() + ' adalah ' + (type === 'rapor' ? '5 MB' : '2 MB') + '.',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
+
         revFilesStore[type] = file;
         name.textContent = file.name;
         status.style.display = 'flex';
@@ -756,6 +800,53 @@ document.getElementById('main-reupload-form')?.addEventListener('submit', functi
 const fileStore = {};
 const certFiles = {};
 
+function showRaporGuide() {
+    Swal.fire({
+        title: 'Cara Menghitung Rata-rata Nilai Rapor',
+        html: `
+        <div style="text-align:left; font-size:0.85rem; line-height:1.6; color:#334155;">
+            <p><strong>1. Hitung rata-rata seluruh mata pelajaran pada masing-masing semester.</strong></p>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:1rem;">
+                <em>Contoh Semester 1</em><br>
+                <table style="width:100%; border-collapse:collapse; margin-top:0.5rem; margin-bottom:0.75rem;">
+                    <tr style="border-bottom:1px solid #cbd5e1;">
+                        <th style="padding:0.3rem 0; text-align:left;">Mata Pelajaran</th><th style="padding:0.3rem 0; text-align:center;">Nilai</th>
+                    </tr>
+                    <tr><td style="padding:0.25rem 0;">Matematika</td><td style="padding:0.25rem 0; text-align:center;">84</td></tr>
+                    <tr><td style="padding:0.25rem 0;">Bahasa Indonesia</td><td style="padding:0.25rem 0; text-align:center;">86</td></tr>
+                    <tr><td style="padding:0.25rem 0;">Bahasa Inggris</td><td style="padding:0.25rem 0; text-align:center;">83</td></tr>
+                    <tr><td style="padding:0.25rem 0;">IPA</td><td style="padding:0.25rem 0; text-align:center;">87</td></tr>
+                    <tr><td style="padding:0.25rem 0; border-bottom:1px solid #cbd5e1;">IPS</td><td style="padding:0.25rem 0; text-align:center; border-bottom:1px solid #cbd5e1;">85</td></tr>
+                </table>
+                Jumlah nilai = 425<br>
+                Jumlah mata pelajaran = 5<br>
+                <strong>Rata-rata Semester 1 = 425 &divide; 5 = 85</strong>
+            </div>
+            <p>Lakukan perhitungan yang sama untuk Semester 2 sampai Semester 5.</p>
+            <br>
+            
+            <p><strong>2. Hitung rata-rata seluruh semester.</strong><br>
+            Misalnya diperoleh:<br>
+            Semester 1 = 85 | Semester 2 = 86 | Semester 3 = 84<br>
+            Semester 4 = 88 | Semester 5 = 87
+            <br><br>
+            (85 + 86 + 84 + 88 + 87) &divide; 5 = <strong>86,00</strong>
+            </p>
+            <p style="background:#eff6ff; padding:10px; border-radius:8px; border-left:4px solid #3b82f6; font-weight:700;">
+                Masukkan hasil tersebut ke kolom Rata-rata Nilai Rapor = 86.00
+            </p>
+            <p style="color:#dc2626; font-size:0.75rem; font-weight:700; background:#fef2f2; padding:8px; border-radius:6px; margin-top:1rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Catatan: Pastikan nilai yang diinput sesuai dengan scan rapor yang diunggah karena akan diverifikasi oleh admin.
+            </p>
+        </div>
+        `,
+        width: '560px',
+        confirmButtonText: 'Tutup',
+        confirmButtonColor: '#3b82f6',
+        showCloseButton: true
+    });
+}
+
 /* ── HANDLE MANDATORY FILES ── */
 function handleFile(input, type, label) {
     const file = input.files[0];
@@ -775,6 +866,18 @@ function handleFile(input, type, label) {
             icon: 'error',
             title: 'Format File Tidak Sesuai',
             text: type === 'pasfoto' ? 'Mohon unggah file dengan format JPG, JPEG, atau PNG (Tidak bisa All Files).' : 'Mohon unggah file dengan format PDF (Tidak bisa All Files).',
+            confirmButtonColor: '#ef4444'
+        });
+        return;
+    }
+
+    const maxSize = (type === 'rapor') ? 5 * 1024 * 1024 : 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+        input.value = '';
+        Swal.fire({
+            icon: 'error',
+            title: 'Ukuran File Terlalu Besar',
+            text: 'Maksimal ukuran file ' + label + ' adalah ' + (type === 'rapor' ? '5 MB' : '2 MB') + '.',
             confirmButtonColor: '#ef4444'
         });
         return;
@@ -815,6 +918,18 @@ function handleFile(input, type, label) {
 function handleCertFile(input, idx) {
     const file = input.files[0];
     if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+        input.value = '';
+        Swal.fire({
+            icon: 'error',
+            title: 'Ukuran File Terlalu Besar',
+            text: 'Maksimal ukuran sertifikat adalah 2 MB per file.',
+            confirmButtonColor: '#ef4444'
+        });
+        return;
+    }
+
     certFiles[idx] = file;
 
     document.querySelector(`.cert-name-${idx}`).textContent = file.name;
@@ -885,49 +1000,114 @@ let certCount = 1;
 function addCert() {
     const container = document.getElementById('cert-container');
     const idx = certCount++;
-    const div = document.createElement('div');
-    div.className = 'cert-entry';
-    div.id = `cert-${idx}`;
-    div.innerHTML = `
-        <button type="button" onclick="this.closest('.cert-entry').remove()"
-            style="position:absolute;top:14px;right:14px;background:#fee2e2;color:#ef4444;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;">
-            <i class="fa-solid fa-times"></i>
-        </button>
-        <div class="form-grid-2" style="margin-bottom:1rem;">
-            <div>
-                <label class="form-label">Jenis Prestasi</label>
-                <select name="sertifikat_jenis[]" class="form-control">
-                    <option value="">-- Pilih Jenis --</option>
-                    <option>Akademik</option><option>Olahraga</option>
-                    <option>Seni</option><option>Organisasi</option><option>Tahfidz</option>
-                </select>
-            </div>
-            <div>
-                <label class="form-label">Tingkat Prestasi</label>
-                <select name="sertifikat_tingkat[]" class="form-control">
-                    <option value="">-- Pilih Tingkat --</option>
-                    <option>Kabupaten/Kota</option><option>Provinsi</option>
-                    <option>Nasional</option><option>Internasional</option>
-                </select>
-            </div>
-        </div>
-        <div>
-            <label class="form-label">File Sertifikat (PDF/JPG/PNG)</label>
-            <input type="file" name="sertifikat_file[]" class="form-control"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onchange="handleCertFile(this,${idx})">
-            <div class="review-box cert-review" id="cert-review-${idx}" style="display:none;">
-                <div class="cert-thumb-${idx}" style="flex-shrink:0;"></div>
-                <div style="flex:1;min-width:0;">
-                    <div class="review-name cert-name-${idx}"></div>
-                    <div style="font-size:.72rem;color:#10b981;font-weight:700;"><i class="fa-solid fa-check-circle"></i> Sertifikat siap diunggah</div>
-                </div>
-                <button type="button" class="btn-lihat" onclick="bukaCertPreview(${idx})">
-                    <i class="fa-solid fa-eye"></i> Lihat File
-                </button>
-            </div>
-        </div>`;
-    container.appendChild(div);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cert-entry';
+    wrapper.id = 'cert-' + idx;
+    wrapper.style.position = 'relative';
+
+    // Tombol hapus
+    const btnHapus = document.createElement('button');
+    btnHapus.type = 'button';
+    btnHapus.innerHTML = '<i class="fa-solid fa-times"></i>';
+    btnHapus.style.cssText = 'position:absolute;top:14px;right:14px;background:#fee2e2;color:#ef4444;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;';
+    btnHapus.onclick = function() { this.closest('.cert-entry').remove(); };
+    wrapper.appendChild(btnHapus);
+
+    // Grid 2 kolom
+    const grid = document.createElement('div');
+    grid.className = 'form-grid-2';
+    grid.style.marginBottom = '1rem';
+
+    // Jenis Prestasi
+    const divJenis = document.createElement('div');
+    const lblJenis = document.createElement('label');
+    lblJenis.className = 'form-label';
+    lblJenis.textContent = 'Jenis Prestasi';
+    const selJenis = document.createElement('select');
+    selJenis.name = 'sertifikat_jenis[]';
+    selJenis.className = 'form-control';
+    [['', '-- Pilih Jenis --'], ['Akademik','Akademik'], ['Olahraga','Olahraga'], ['Seni','Seni'], ['Organisasi','Organisasi'], ['Tahfidz','Tahfidz']].forEach(function(o) {
+        const opt = document.createElement('option');
+        opt.value = o[0]; opt.textContent = o[1];
+        selJenis.appendChild(opt);
+    });
+    divJenis.appendChild(lblJenis);
+    divJenis.appendChild(selJenis);
+    grid.appendChild(divJenis);
+
+    // Tingkat Prestasi
+    const divTingkat = document.createElement('div');
+    const lblTingkat = document.createElement('label');
+    lblTingkat.className = 'form-label';
+    lblTingkat.textContent = 'Tingkat Prestasi';
+    const selTingkat = document.createElement('select');
+    selTingkat.name = 'sertifikat_tingkat[]';
+    selTingkat.className = 'form-control';
+    [['', '-- Pilih Tingkat --'], ['Kabupaten/Kota','Kabupaten/Kota'], ['Provinsi','Provinsi'], ['Nasional','Nasional'], ['Internasional','Internasional']].forEach(function(o) {
+        const opt = document.createElement('option');
+        opt.value = o[0]; opt.textContent = o[1];
+        selTingkat.appendChild(opt);
+    });
+    divTingkat.appendChild(lblTingkat);
+    divTingkat.appendChild(selTingkat);
+    grid.appendChild(divTingkat);
+    wrapper.appendChild(grid);
+
+    // File section
+    const divFile = document.createElement('div');
+
+    const lblFile = document.createElement('label');
+    lblFile.className = 'form-label';
+    lblFile.textContent = 'File Sertifikat (PDF/JPG/PNG)';
+    divFile.appendChild(lblFile);
+
+    const pHelp = document.createElement('p');
+    pHelp.className = 'form-help';
+    pHelp.style.cssText = 'margin-top:-0.5rem; margin-bottom:0.75rem; color:#dc2626;';
+    pHelp.innerHTML = 'Maksimal <strong>2 MB</strong> per file.';
+    divFile.appendChild(pHelp);
+
+    const inputFile = document.createElement('input');
+    inputFile.type = 'file';
+    inputFile.name = 'sertifikat_file[]';
+    inputFile.className = 'form-control';
+    inputFile.accept = '.pdf,.jpg,.jpeg,.png';
+    inputFile.onchange = function() { handleCertFile(this, idx); };
+    divFile.appendChild(inputFile);
+
+    // Review box
+    const reviewBox = document.createElement('div');
+    reviewBox.className = 'review-box cert-review';
+    reviewBox.id = 'cert-review-' + idx;
+    reviewBox.style.display = 'none';
+
+    const thumbDiv = document.createElement('div');
+    thumbDiv.className = 'cert-thumb-' + idx;
+    thumbDiv.style.flexShrink = '0';
+    reviewBox.appendChild(thumbDiv);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.style.cssText = 'flex:1;min-width:0;';
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'review-name cert-name-' + idx;
+    const statusDiv = document.createElement('div');
+    statusDiv.style.cssText = 'font-size:.72rem;color:#10b981;font-weight:700;';
+    statusDiv.innerHTML = '<i class="fa-solid fa-check-circle"></i> Sertifikat siap diunggah';
+    infoDiv.appendChild(nameDiv);
+    infoDiv.appendChild(statusDiv);
+    reviewBox.appendChild(infoDiv);
+
+    const btnLihat = document.createElement('button');
+    btnLihat.type = 'button';
+    btnLihat.className = 'btn-lihat';
+    btnLihat.innerHTML = '<i class="fa-solid fa-eye"></i> Lihat File';
+    btnLihat.onclick = function() { bukaCertPreview(idx); };
+    reviewBox.appendChild(btnLihat);
+
+    divFile.appendChild(reviewBox);
+    wrapper.appendChild(divFile);
+    container.appendChild(wrapper);
 }
 
 /* ────────────────────────────
