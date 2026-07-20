@@ -207,6 +207,6 @@ class UjianController extends Controller
             $pendaftaran->calculateSelectionResult();
         }
 
-        return redirect()->route('siswa.dashboard')->with('success', 'Ujian selesai! Skor Anda telah disimpan dan Anda siap masuk ke tahap seleksi perangkingan.');
+        return redirect()->route('siswa.dashboard')->with('success', 'Ujian selesai! Skor Anda telah disimpan dan Anda siap masuk ke tahap seleksi.');
     }
 }
