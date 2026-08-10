@@ -240,7 +240,7 @@
         <div class="glass-card" style="flex: 1; min-width: 250px; text-align: center; display: flex; flex-direction: column; align-items: center;">
             <div style="width: 60px; height: 60px; background: #eff6ff; color: #1d4ed8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem; border: 2px solid #dbeafe;">1</div>
             <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Registrasi Akun</h3>
-            <p style="color: #64748b; font-size: 0.9rem;">Buat akun siswa menggunakan NISN dan email yang aktif.</p>
+            <p style="color: #64748b; font-size: 0.9rem;">Buat akun siswa menggunakan Nama dan email yang aktif.</p>
         </div>
         <!-- Step 2 -->
         <div class="glass-card" style="flex: 1; min-width: 250px; text-align: center; display: flex; flex-direction: column; align-items: center;">

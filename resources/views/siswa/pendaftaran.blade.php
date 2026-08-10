@@ -674,19 +674,7 @@
     </div>
 </div>
 
-{{-- ── Footer bar ── --}}
-@if($hasRevisi)
-<div class="sum-footer">
-    <div class="sum-footer-text">
-        <i class="fa-solid fa-circle-info" style="color:#f59e0b;font-size:1rem;"></i>
-        <span><strong>Perhatian!</strong> Silakan upload ulang dokumen yang ditandai "Perlu Revisi".</span>
-    </div>
-    <div class="sum-footer-deadline">
-        <span>Batas Waktu Revisi</span>
-        <strong>30 Mei 2026</strong>
-    </div>
-</div>
-@endif
+
 
 <script>
 const revFilesStore = {};

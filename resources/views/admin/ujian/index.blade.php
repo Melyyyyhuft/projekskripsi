@@ -131,14 +131,38 @@
             {{-- Card Body --}}
             <div style="padding: 1rem 1.25rem; flex: 1; background: white;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.25rem;">
-                    <div style="background: #f8fafc; padding: 0.6rem; border-radius: 10px; text-align: center; border: 1px solid #f1f5f9;">
-                        <span style="display: block; font-size: 0.55rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Acak Soal</span>
-                        <span style="font-weight: 800; color: #1e293b; font-size: 0.8rem;">{{ $u->acak_soal ? 'ON' : 'OFF' }}</span>
+                    {{-- Acak Soal --}}
+                    @if($u->acak_soal)
+                    <div style="background: #f0fdf4; padding: 0.6rem; border-radius: 10px; text-align: center; border: 1px solid #bbf7d0;">
+                        <span style="display: block; font-size: 0.55rem; color: #15803d; font-weight: 800; text-transform: uppercase; margin-bottom:0.2rem;">Acak Soal</span>
+                        <span style="display:inline-flex; align-items:center; gap:3px; font-weight: 800; color: #16a34a; font-size: 0.75rem;">
+                            <i class="fa-solid fa-shuffle" style="font-size:0.65rem;"></i> ON
+                        </span>
                     </div>
-                    <div style="background: #f8fafc; padding: 0.6rem; border-radius: 10px; text-align: center; border: 1px solid #f1f5f9;">
-                        <span style="display: block; font-size: 0.55rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Acak Urutan</span>
-                        <span style="font-weight: 800; color: #1e293b; font-size: 0.8rem;">{{ $u->acak_jawaban ? 'ON' : 'OFF' }}</span>
+                    @else
+                    <div style="background: #f8fafc; padding: 0.6rem; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0;">
+                        <span style="display: block; font-size: 0.55rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom:0.2rem;">Acak Soal</span>
+                        <span style="display:inline-flex; align-items:center; gap:3px; font-weight: 800; color: #cbd5e1; font-size: 0.75rem;">
+                            <i class="fa-solid fa-lock" style="font-size:0.6rem;"></i> OFF
+                        </span>
                     </div>
+                    @endif
+                    {{-- Acak Urutan --}}
+                    @if($u->acak_jawaban)
+                    <div style="background: #f0fdf4; padding: 0.6rem; border-radius: 10px; text-align: center; border: 1px solid #bbf7d0;">
+                        <span style="display: block; font-size: 0.55rem; color: #15803d; font-weight: 800; text-transform: uppercase; margin-bottom:0.2rem;">Acak Urutan</span>
+                        <span style="display:inline-flex; align-items:center; gap:3px; font-weight: 800; color: #16a34a; font-size: 0.75rem;">
+                            <i class="fa-solid fa-shuffle" style="font-size:0.65rem;"></i> ON
+                        </span>
+                    </div>
+                    @else
+                    <div style="background: #f8fafc; padding: 0.6rem; border-radius: 10px; text-align: center; border: 1px solid #e2e8f0;">
+                        <span style="display: block; font-size: 0.55rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom:0.2rem;">Acak Urutan</span>
+                        <span style="display:inline-flex; align-items:center; gap:3px; font-weight: 800; color: #cbd5e1; font-size: 0.75rem;">
+                            <i class="fa-solid fa-lock" style="font-size:0.6rem;"></i> OFF
+                        </span>
+                    </div>
+                    @endif
                 </div>
 
                 <div style="display: flex; gap: 0.4rem; margin-top: 0.25rem;">

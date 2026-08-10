@@ -63,14 +63,27 @@
 
     <div style="background:white;border-radius:14px;padding:1.25rem;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.04);">
         <div style="font-size:.72rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;">Status & Acak</div>
-        <div style="display:flex;flex-wrap:wrap;gap:.35rem;">
-            @if($ujian->is_tutup)
-                <span style="background:#fee2e2;color:#dc2626;padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700;">🔒 Ditutup</span>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem; align-items:center;">
+            {{-- Acak Soal --}}
+            @if($ujian->acak_soal)
+                <span style="background:#f0fdf4;color:#16a34a;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:700;border:1px solid #bbf7d0;display:inline-flex;align-items:center;gap:3px;">
+                    <i class="fa-solid fa-shuffle" style="font-size:.6rem;"></i> Soal
+                </span>
             @else
-                <span style="background:#d1fae5;color:#059669;padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700;">✅ Aktif</span>
+                <span style="background:#f8fafc;color:#cbd5e1;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:700;border:1px solid #e2e8f0;display:inline-flex;align-items:center;gap:3px;">
+                    <i class="fa-solid fa-lock" style="font-size:.6rem;"></i> Soal
+                </span>
             @endif
-            @if($ujian->acak_soal) <span style="background:#eef2ff;color:#4f46e5;padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:600;">🔀 Soal</span> @endif
-            @if($ujian->acak_jawaban) <span style="background:#eef2ff;color:#4f46e5;padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:600;">🔀 Jwbn</span> @endif
+            {{-- Acak Jawaban --}}
+            @if($ujian->acak_jawaban)
+                <span style="background:#f0fdf4;color:#16a34a;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:700;border:1px solid #bbf7d0;display:inline-flex;align-items:center;gap:3px;">
+                    <i class="fa-solid fa-shuffle" style="font-size:.6rem;"></i> Jwbn
+                </span>
+            @else
+                <span style="background:#f8fafc;color:#cbd5e1;padding:.2rem .6rem;border-radius:999px;font-size:.72rem;font-weight:700;border:1px solid #e2e8f0;display:inline-flex;align-items:center;gap:3px;">
+                    <i class="fa-solid fa-lock" style="font-size:.6rem;"></i> Jwbn
+                </span>
+            @endif
         </div>
     </div>
 </div>

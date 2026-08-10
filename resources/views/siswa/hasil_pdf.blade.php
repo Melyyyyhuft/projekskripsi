@@ -130,8 +130,7 @@
 
             <div class="sign-section">
                 <div class="sign-title">Ditetapkan di Kota Tangerang,<br>{{ now()->translatedFormat('d F Y') }}</div>
-                <div class="sign-name">DR. KEPALA SEKOLAH, M.PD</div>
-                <div class="sign-nip">NIP. 19800101 200501 1 001</div>
+                <div class="sign-name">DR. Kholid Mawardi, S.Km., M.A, G.r</div>
             </div>
             <div class="clear"></div>
         </div>
