@@ -35,6 +35,8 @@ class AuthController extends Controller
             $request->session()->regenerate();
             if (Auth::user()->role == 'admin') {
                 return redirect()->intended('/admin/dashboard');
+            } elseif (Auth::user()->role == 'kepala_sekolah') {
+                return redirect()->intended('/kepala-sekolah/laporan');
             }
             return redirect()->intended('/siswa/dashboard');
         }

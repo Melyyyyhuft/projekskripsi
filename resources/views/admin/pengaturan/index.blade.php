@@ -70,6 +70,13 @@
                         💡 <b>Catatan:</b> Jika tanggal hari ini melewati tanggal tutup, pendaftaran akan otomatis terdeteksi ditutup oleh sistem meskipun status di sini "Buka".
                     </small>
                 </div>
+                <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                    <label class="form-label">Link WhatsApp Grup PPDB</label>
+                    <input type="text" name="link_wa" class="form-control" value="{{ $settings['link_wa'] ?? 'https://chat.whatsapp.com/KTiXSZ6WZgkCYWrMwwobML?s=cl&p=a&ilr=4' }}" placeholder="https://chat.whatsapp.com/...">
+                    <small style="color:#64748b; font-size:0.75rem; margin-top:0.5rem; display:block;">
+                        💬 Link WhatsApp Grup ini akan ditampilkan pada halaman pengumuman bagi siswa yang <b>Diterima</b> untuk langsung bergabung ke grup PPDB.
+                    </small>
+                </div>
             </div>
             <div style="display:flex;justify-content:flex-end;">
                 <button type="submit" class="btn-primary" style="padding:.75rem 2rem;">💾 Simpan Pengaturan Umum</button>

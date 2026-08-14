@@ -87,22 +87,53 @@
     .stat-lbl { font-size: 0.68rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; margin-bottom: 0.25rem; }
     .stat-val { font-size: 1.1rem; font-weight: 900; }
 
+    .hero-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1.25rem;
+    }
+
     .btn-download {
         display: inline-flex;
         align-items: center;
         gap: 0.6rem;
         background: white;
         color: #059669;
-        padding: 0.7rem 1.75rem;
+        padding: 0.75rem 1.75rem;
         border-radius: 14px;
         font-weight: 900;
         font-size: 0.9rem;
         text-decoration: none;
-        margin-top: 1rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
-    .btn-download:hover { transform: scale(1.04); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25); color: #064e3b; }
+    .btn-download:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25); color: #064e3b; }
+
+    .btn-whatsapp-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: #25D366;
+        color: white;
+        padding: 0.75rem 1.75rem;
+        border-radius: 14px;
+        font-weight: 900;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .btn-whatsapp-hero:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 28px rgba(37, 211, 102, 0.5); color: white; background: #20ba5a; }
+
+    .action-steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
 
     .action-step {
         background: white;
@@ -114,10 +145,11 @@
         transition: transform 0.3s ease;
         border: 1px solid #f1f5f9;
     }
-    .action-step:hover { transform: translateX(10px); border-color: #e2e8f0; }
+    .action-step:hover { transform: translateX(5px); border-color: #e2e8f0; }
     .step-icon {
         width: 54px; height: 54px; border-radius: 16px; background: #f8fafc;
         display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        flex-shrink: 0;
     }
 </style>
 
@@ -141,6 +173,10 @@
             $isAccepted = $hasil->kategori_kelulusan === 'DITERIMA';
             $isNoCBT = $hasil->kategori_kelulusan === 'TIDAK HADIR CBT';
             $heroClass = $isAccepted ? 'bg-accepted' : ($isNoCBT ? 'bg-rejected' : 'bg-rejected');
+
+            // Resolusi Link WhatsApp Grup PPDB
+            $defaultWaGroup = 'https://chat.whatsapp.com/KTiXSZ6WZgkCYWrMwwobML?s=cl&p=a&ilr=4';
+            $waLink = !empty($settings['link_wa']) ? $settings['link_wa'] : $defaultWaGroup;
         @endphp
 
         <div class="hero-container {{ $heroClass }}">
@@ -177,29 +213,45 @@
                 </div>
             </div>
 
-
-
             @if($isAccepted)
-                <a href="{{ route('siswa.hasil.download') }}" class="btn-download">
-                    <i class="fa-solid fa-file-pdf"></i> Download Surat Kelulusan (PDF)
-                </a>
+                <div class="hero-actions">
+                    <a href="{{ route('siswa.hasil.download') }}" class="btn-download">
+                        <i class="fa-solid fa-file-pdf"></i> Download Surat Kelulusan (PDF)
+                    </a>
+                    <a href="{{ $waLink }}" target="_blank" class="btn-whatsapp-hero">
+                        <i class="fa-brands fa-whatsapp" style="font-size: 1.15rem;"></i> Link WhatsApp Grup PPDB
+                    </a>
+                </div>
             @endif
         </div>
 
         @if($isAccepted)
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="action-steps-grid">
                 <div class="action-step">
-                    <div class="step-icon" style="color:var(--primary);"><i class="fa-solid fa-print"></i></div>
+                    <div class="step-icon" style="color:var(--primary); background: #eff6ff;"><i class="fa-solid fa-print"></i></div>
                     <div>
-                        <h4 style="margin:0 0 0.5rem; font-weight:900; color:var(--dark);">Cetak Bukti</h4>
+                        <h4 style="margin:0 0 0.5rem; font-weight:900; color:var(--dark);">1. Cetak Bukti</h4>
                         <p style="margin:0; font-size:0.85rem; color:var(--gray); line-height:1.6;">Gunakan file PDF yang telah didownload sebagai bukti otentik kelulusan pendaftaran.</p>
                     </div>
                 </div>
                 <div class="action-step">
-                    <div class="step-icon" style="color:var(--warning);"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="step-icon" style="color:var(--warning); background: #fffbeb;"><i class="fa-solid fa-calendar-check"></i></div>
                     <div>
-                        <h4 style="margin:0 0 0.5rem; font-weight:900; color:var(--dark);">Daftar Ulang</h4>
-                        <p style="margin:0; font-size:0.85rem; color:var(--gray); line-height:1.6;">Segera lakukan proses daftar ulang ke sekolah sesuai periode yang ditentukan.</p>
+                        <h4 style="margin:0 0 0.5rem; font-weight:900; color:var(--dark);">2. Daftar Ulang</h4>
+                        <p style="margin:0; font-size:0.85rem; color:var(--gray); line-height:1.6;">Segera lakukan proses daftar ulang ke sekolah sesuai periode dan ketentuan yang ditetapkan.</p>
+                    </div>
+                </div>
+                <div class="action-step" style="border: 1.5px solid #86efac; background: linear-gradient(180deg, #ffffff, #f0fdf4); position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:12px; right:12px; font-size:0.68rem; font-weight:800; background:#22c55e; color:white; padding:0.2rem 0.6rem; border-radius:999px; letter-spacing:0.05em;">
+                        INFO RESMI
+                    </div>
+                    <div class="step-icon" style="color:#16a34a; background: #dcfce7;"><i class="fa-brands fa-whatsapp"></i></div>
+                    <div style="flex:1;">
+                        <h4 style="margin:0 0 0.5rem; font-weight:900; color:var(--dark);">3. Link WhatsApp Grup PPDB</h4>
+                        <p style="margin:0 0 0.85rem; font-size:0.85rem; color:var(--gray); line-height:1.6;">Bergabung dengan grup WhatsApp resmi PPDB untuk koordinasi berkas & info pembagian kelas.</p>
+                        <a href="{{ $waLink }}" target="_blank" style="display:inline-flex; align-items:center; gap:0.45rem; background:#16a34a; color:white; padding:0.45rem 1rem; border-radius:10px; font-size:0.8rem; font-weight:700; text-decoration:none; transition:all 0.2s ease; box-shadow:0 2px 8px rgba(22,163,74,0.3);">
+                            <i class="fa-brands fa-whatsapp"></i> Gabung Grup Sekarang
+                        </a>
                     </div>
                 </div>
             </div>

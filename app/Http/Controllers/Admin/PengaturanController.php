@@ -32,6 +32,9 @@ class PengaturanController extends Controller
         Pengaturan::updateOrCreate(['key' => 'status_ppdb'], ['value' => $request->status_ppdb]);
         Pengaturan::updateOrCreate(['key' => 'tgl_buka'], ['value' => $request->tgl_buka]);
         Pengaturan::updateOrCreate(['key' => 'tgl_tutup'], ['value' => $request->tgl_tutup]);
+        if ($request->has('link_wa')) {
+            Pengaturan::updateOrCreate(['key' => 'link_wa'], ['value' => $request->link_wa]);
+        }
 
         return back()->with('success', 'Pengaturan Umum berhasil diperbarui!');
     }

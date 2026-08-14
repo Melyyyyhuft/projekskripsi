@@ -108,6 +108,13 @@ Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     Route::put('/profile/photo', [\App\Http\Controllers\Siswa\ProfileController::class, 'updatePhoto'])->name('siswa.profile.photo');
 });
 
+// Kepala Sekolah Routes
+Route::middleware(['auth', 'is.kepala_sekolah'])->prefix('kepala-sekolah')->group(function () {
+    Route::get('/laporan', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'index'])->name('kepala_sekolah.laporan');
+    Route::get('/profile', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'profile'])->name('kepala_sekolah.profile');
+    Route::put('/profile/password', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'updatePassword'])->name('kepala_sekolah.profile.password');
+});
+
 // Halaman Tentang Kami
 Route::get('/tentang-kami', function () {
     return view('tentang-kami');

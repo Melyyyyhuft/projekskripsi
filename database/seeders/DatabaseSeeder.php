@@ -21,6 +21,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
+        // Kepala Sekolah User
+        \App\Models\User::factory()->create([
+            'name' => 'DR. Kholid Mawardi, M.Pd (Kepala Sekolah)',
+            'email' => 'kepsek@ppdb.com',
+            'password' => bcrypt('password'),
+            'role' => 'kepala_sekolah',
+        ]);
+
         // Default Jurusan
         \App\Models\Jurusan::create(['nama' => 'Rekayasa Perangkat Lunak', 'kuota' => 100]);
         \App\Models\Jurusan::create(['nama' => 'Teknik Komputer dan Jaringan', 'kuota' => 100]);
