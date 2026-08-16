@@ -192,6 +192,16 @@
                 <i class="fa-solid fa-award"></i>
                 <span>Hasil Seleksi</span>
             </a>
+            @php
+                $sidebarPendaftaran = \App\Models\Pendaftaran::with('hasilSeleksi')->where('user_id', Auth::id())->first();
+                $isDiterimaSidebar = $sidebarPendaftaran && $sidebarPendaftaran->isDiterima();
+            @endphp
+            @if($isDiterimaSidebar)
+            <a href="{{ route('siswa.pembayaran') }}" class="sidebar-item {{ request()->is('siswa/pembayaran-daftar-ulang*') ? 'active' : '' }}">
+                <i class="fa-solid fa-receipt"></i>
+                <span>Pembayaran Daftar Ulang</span>
+            </a>
+            @endif
 
             <div class="sidebar-divider"></div>
             <div class="sidebar-nav-label">Akun</div>

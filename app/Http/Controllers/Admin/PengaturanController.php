@@ -19,10 +19,11 @@ class PengaturanController extends Controller
     public function updateUmum(Request $request)
     {
         $request->validate([
-            'tahun_ajaran' => 'required|string|max:50',
-            'tgl_buka'     => 'required|date',
-            'tgl_tutup'    => 'required|date|after_or_equal:tgl_buka',
-            'status_ppdb'  => 'required|in:buka,tutup',
+            'tahun_ajaran'       => 'required|string|max:50',
+            'tgl_buka'           => 'required|date',
+            'tgl_tutup'          => 'required|date|after_or_equal:tgl_buka',
+            'status_ppdb'        => 'required|in:buka,tutup',
+            'biaya_daftar_ulang' => 'nullable|numeric|min:0',
         ]);
 
         // Forced school name
@@ -34,6 +35,11 @@ class PengaturanController extends Controller
         Pengaturan::updateOrCreate(['key' => 'tgl_tutup'], ['value' => $request->tgl_tutup]);
         if ($request->has('link_wa')) {
             Pengaturan::updateOrCreate(['key' => 'link_wa'], ['value' => $request->link_wa]);
+        }
+        if ($request->filled('biaya_daftar_ulang')) {
+            Pengaturan::updateOrCreate(['key' => 'biaya_daftar_ulang'], ['value' => $request->biaya_daftar_ulang]);
+        } elseif ($request->has('biaya_daftar_ulang')) {
+            Pengaturan::where('key', 'biaya_daftar_ulang')->delete();
         }
 
         return back()->with('success', 'Pengaturan Umum berhasil diperbarui!');

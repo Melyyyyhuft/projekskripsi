@@ -71,6 +71,13 @@
                     </small>
                 </div>
                 <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
+                    <label class="form-label">Biaya Daftar Ulang (Rp)</label>
+                    <input type="number" name="biaya_daftar_ulang" class="form-control" value="{{ $settings['biaya_daftar_ulang'] ?? '' }}" placeholder="Contoh: 2000000" min="0">
+                    <small style="color:#64748b; font-size:0.75rem; margin-top:0.5rem; display:block;">
+                        💳 Nominal biaya daftar ulang resmi untuk calon siswa yang dinyatakan <b>Diterima</b>. Kosongkan jika belum ditentukan.
+                    </small>
+                </div>
+                <div class="form-group" style="margin-bottom:0; grid-column: span 2;">
                     <label class="form-label">Link WhatsApp Grup PPDB</label>
                     <input type="text" name="link_wa" class="form-control" value="{{ $settings['link_wa'] ?? 'https://chat.whatsapp.com/KTiXSZ6WZgkCYWrMwwobML?s=cl&p=a&ilr=4' }}" placeholder="https://chat.whatsapp.com/...">
                     <small style="color:#64748b; font-size:0.75rem; margin-top:0.5rem; display:block;">

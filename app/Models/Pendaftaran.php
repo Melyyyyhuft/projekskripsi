@@ -41,6 +41,26 @@ class Pendaftaran extends Model
         return $this->hasOne(HasilUjian::class, 'user_id', 'user_id');
     }
 
+    public function pembayaranDaftarUlang() {
+        return $this->hasOne(PembayaranDaftarUlang::class, 'pendaftaran_id');
+    }
+
+    /**
+     * Memeriksa apakah calon siswa telah berstatus diterima/lulus seleksi
+     */
+    public function isDiterima(): bool
+    {
+        if ($this->status === 'diterima') {
+            return true;
+        }
+
+        return (bool) (
+            $this->hasilSeleksi &&
+            $this->hasilSeleksi->is_finalisasi &&
+            $this->hasilSeleksi->kategori_kelulusan === 'DITERIMA'
+        );
+    }
+
     /**
      * Calculate and sync selection result for this registration.
      */

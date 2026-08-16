@@ -101,6 +101,11 @@ Route::middleware(['auth', 'is.siswa'])->prefix('siswa')->group(function () {
     Route::get('/hasil', [\App\Http\Controllers\Siswa\HasilController::class, 'index'])->name('siswa.hasil');
     Route::get('/hasil/download', [\App\Http\Controllers\Siswa\HasilController::class, 'downloadSurat'])->name('siswa.hasil.download');
 
+    // Pembayaran Daftar Ulang (Khusus Siswa Diterima)
+Route::get('/pembayaran-daftar-ulang', [\App\Http\Controllers\Siswa\PembayaranDaftarUlangController::class, 'index'])->name('siswa.pembayaran');
+
+Route::post('/pembayaran-daftar-ulang/bayar', [\App\Http\Controllers\Siswa\PembayaranDaftarUlangController::class, 'bayar'])->name('siswa.pembayaran.bayar');
+
     // Profil (New Comprehensive)
     Route::get('/profile', [\App\Http\Controllers\Siswa\ProfileController::class, 'index'])->name('siswa.profile');
     Route::put('/profile/update', [\App\Http\Controllers\Siswa\ProfileController::class, 'update'])->name('siswa.profile.update');
