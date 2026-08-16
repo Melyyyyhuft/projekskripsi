@@ -115,27 +115,48 @@ Route::middleware(['auth', 'is.kepala_sekolah'])->prefix('kepala-sekolah')->grou
     Route::put('/profile/password', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'updatePassword'])->name('kepala_sekolah.profile.password');
 });
 
-// Halaman Tentang Kami
-Route::get('/tentang-kami', function () {
-    return view('tentang-kami');
-});
+// =========================================
+// Public PPDB Multi-Page Routes
+// =========================================
+Route::get('/periode', function () {
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.periode', compact('settings', 'isPPDBOpen'));
+})->name('public.periode');
 
-// Halaman Jurusan
+Route::get('/persyaratan', function () {
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.persyaratan', compact('settings', 'isPPDBOpen'));
+})->name('public.persyaratan');
+
 Route::get('/jurusan', function () {
-    return view('jurusan');
-});
+    $jurusans    = \App\Models\Jurusan::all();
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.jurusan', compact('jurusans', 'settings', 'isPPDBOpen'));
+})->name('public.jurusan');
 
-// PPDB - Daftar
-Route::get('/ppdb/daftar', function () {
-    return view('ppdb.daftar');
-});
+Route::get('/biaya-pembayaran', function () {
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.biaya_pembayaran', compact('settings', 'isPPDBOpen'));
+})->name('public.biaya');
 
-// PPDB - Ujian Online
-Route::get('/ppdb/ujian-online', function () {
-    return view('ppdb.ujian-online');
-});
+Route::get('/alur-ppdb', function () {
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.alur_ppdb', compact('settings', 'isPPDBOpen'));
+})->name('public.alur');
 
-// PPDB - Hasil Seleksi
-Route::get('/ppdb/hasil-seleksi', function () {
-    return view('ppdb.hasil-seleksi');
-});
+Route::get('/faq', function () {
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.faq', compact('settings', 'isPPDBOpen'));
+})->name('public.faq');
+
+Route::get('/kontak', function () {
+    $settings    = \App\Models\Pengaturan::pluck('value', 'key')->all();
+    $isPPDBOpen  = \App\Models\Pengaturan::isOpen();
+    return view('public.kontak', compact('settings', 'isPPDBOpen'));
+})->name('public.kontak');
