@@ -75,8 +75,8 @@
     .btn-outline-ghost:hover { background:#f8fafc; border-color:#cbd5e1; color:#1d4ed8; transform:translateY(-2px); }
     .hero-period-badge {
         display:inline-flex; align-items:center; gap:0.6rem;
-        background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
-        padding:0.6rem 1rem; font-size:0.83rem; color:#475569; font-weight:600;
+        font-size:0.88rem; color:#475569; font-weight:600;
+        margin-top: 0.5rem;
     }
     /* ======= SECTION SHARED ======= */
     .pg-section { padding:5rem 2rem; }
@@ -108,13 +108,6 @@
     <div class="hero-container">
         <div class="hero-left animate-slide-up">
 
-            {{-- Status Badge --}}
-            <div class="hero-status-badge {{ $isPPDBOpen ? 'badge-open' : 'badge-closed' }}">
-                <span class="status-dot {{ $isPPDBOpen ? 'dot-open' : 'dot-closed' }}"></span>
-                PPDB {{ $tahunAjaran }} —
-                <strong>{{ $isPPDBOpen ? 'PENDAFTARAN DIBUKA' : 'PENDAFTARAN DITUTUP' }}</strong>
-            </div>
-
             <h1 class="hero-title-p">
                 Langkah Awal<br>Meraih Masa Depan<br>
                 <span class="hero-title-script">Bersama SMK Mitra Bintaro</span>
@@ -134,21 +127,83 @@
                         <i class="fa-solid fa-lock"></i> Pendaftaran Ditutup
                     </button>
                 @endif
-                <a href="{{ route('public.periode') }}" class="btn-outline-ghost">
-                    <i class="fa-solid fa-calendar-days" style="color:#1d4ed8;"></i> Lihat Jadwal PPDB
-                </a>
             </div>
 
             {{-- Periode Info Mini --}}
             <div class="hero-period-badge">
                 <i class="fa-solid fa-clock" style="color:#1d4ed8;"></i>
                 <span>Periode: <strong>{{ $formatBuka }}</strong> s.d. <strong>{{ $formatTutup }}</strong></span>
-                <a href="{{ route('public.periode') }}" style="color:#1d4ed8;font-size:0.78rem;margin-left:.35rem;">Selengkapnya →</a>
             </div>
         </div>
 
         <div class="hero-right">
             <img src="{{ asset('images/hero_school.png') }}" alt="SMK Mitra Bintaro" class="hero-img">
+        </div>
+    </div>
+</section>
+
+{{-- ==================== PROFIL SEKOLAH ==================== --}}
+<section id="tentang" class="pg-section" style="background:#ffffff;">
+    <div class="pg-inner">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:3.5rem; align-items:center;">
+            {{-- Teks Kiri --}}
+            <div>
+                <span class="pg-tag"><i class="fa-solid fa-school"></i> Tentang Kami</span>
+                <h2 class="pg-h2">Profil Sekolah</h2>
+                <p class="pg-desc" style="margin-bottom:1.5rem;">
+                    SMK Mitra Bintaro adalah institusi pendidikan vokasi terdepan yang berkomitmen menghasilkan lulusan terbaik di bidang teknologi dan kreatif. Didukung dengan fasilitas yang super lengkap dan tenaga pendidik profesional.
+                </p>
+                <p class="pg-desc" style="margin-bottom:2rem;">
+                    Berdiri dengan visi mewujudkan generasi cerdas, berkarakter, dan berdaya saing global — kami hadir sebagai mitra terpercaya orang tua dan siswa dalam menapaki jenjang pendidikan menengah kejuruan yang berkualitas.
+                </p>
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+                    <div style="text-align:center;">
+                        <div style="font-size:1.9rem; font-weight:900; color:#1d4ed8; font-family:'Outfit',sans-serif;">400+</div>
+                        <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:0.2rem;">Siswa Aktif</div>
+                    </div>
+                    <div style="width:1px; background:#e2e8f0;"></div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.9rem; font-weight:900; color:#059669; font-family:'Outfit',sans-serif;">4</div>
+                        <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:0.2rem;">Program Keahlian</div>
+                    </div>
+                    <div style="width:1px; background:#e2e8f0;"></div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.9rem; font-weight:900; color:#d97706; font-family:'Outfit',sans-serif;">A</div>
+                        <div style="font-size:0.8rem; color:#64748b; font-weight:600; margin-top:0.2rem;">Akreditasi</div>
+                    </div>
+                </div>
+            </div>
+            {{-- Card Kanan --}}
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div class="pg-card" style="text-align:center; padding:1.5rem 1rem;">
+                    <div style="width:48px;height:48px;background:#eff6ff;color:#1d4ed8;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto 0.85rem;">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <div style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:0.3rem;">Fasilitas Modern</div>
+                    <div style="font-size:0.78rem;color:#64748b;line-height:1.5;">Laboratorium, ruang kelas ber-AC, dan wifi kampus.</div>
+                </div>
+                <div class="pg-card" style="text-align:center; padding:1.5rem 1rem;">
+                    <div style="width:48px;height:48px;background:#ecfdf5;color:#059669;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto 0.85rem;">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <div style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:0.3rem;">Pengajar Berpengalaman</div>
+                    <div style="font-size:0.78rem;color:#64748b;line-height:1.5;">Tenaga pendidik profesional dan bersertifikat.</div>
+                </div>
+                <div class="pg-card" style="text-align:center; padding:1.5rem 1rem;">
+                    <div style="width:48px;height:48px;background:#fef3c7;color:#d97706;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto 0.85rem;">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:0.3rem;">Prestasi Unggulan</div>
+                    <div style="font-size:0.78rem;color:#64748b;line-height:1.5;">Juara di berbagai kompetisi tingkat kota dan nasional.</div>
+                </div>
+                <div class="pg-card" style="text-align:center; padding:1.5rem 1rem;">
+                    <div style="width:48px;height:48px;background:#fdf4ff;color:#9333ea;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto 0.85rem;">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <div style="font-size:0.9rem;font-weight:800;color:#0f172a;margin-bottom:0.3rem;">Mitra Industri</div>
+                    <div style="font-size:0.78rem;color:#64748b;line-height:1.5;">Kerjasama dengan perusahaan untuk PKL & rekrutmen.</div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

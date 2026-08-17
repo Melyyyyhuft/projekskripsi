@@ -118,11 +118,8 @@
 
         <div class="nav-links-center">
             <a href="{{ url('/') }}" class="nav-link-p" data-path="/">Beranda</a>
-            <a href="{{ route('public.periode') }}" class="nav-link-p" data-path="/periode">Periode</a>
             <a href="{{ route('public.persyaratan') }}" class="nav-link-p" data-path="/persyaratan">Persyaratan</a>
-            <a href="{{ route('public.jurusan') }}" class="nav-link-p" data-path="/jurusan">Jurusan & Kuota</a>
             <a href="{{ route('public.biaya') }}" class="nav-link-p" data-path="/biaya-pembayaran">Biaya & Pembayaran</a>
-            <a href="{{ route('public.alur') }}" class="nav-link-p" data-path="/alur-ppdb">Alur PPDB</a>
             <a href="{{ route('public.faq') }}" class="nav-link-p" data-path="/faq">FAQ</a>
             <a href="{{ route('public.kontak') }}" class="nav-link-p" data-path="/kontak">Kontak</a>
         </div>
@@ -136,9 +133,6 @@
                 <a href="{{ url('/login') }}" class="btn-masuk" style="background:transparent;color:#1e293b;border:1.5px solid #e2e8f0;box-shadow:none;">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk
                 </a>
-                <a href="{{ url('/register') }}" class="btn-masuk">
-                    <i class="fa-solid fa-user-plus"></i> Daftar
-                </a>
             @endauth
 
             <button type="button" class="mobile-nav-toggle" id="mobileToggle" aria-label="Toggle navigation">
@@ -150,16 +144,12 @@
     <!-- Mobile Drawer Menu -->
     <div class="mobile-menu-drawer" id="mobileDrawer">
         <a href="{{ url('/') }}" data-path="/"><span>Beranda</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
-        <a href="{{ route('public.periode') }}" data-path="/periode"><span>Periode PPDB</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
         <a href="{{ route('public.persyaratan') }}" data-path="/persyaratan"><span>Persyaratan</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
-        <a href="{{ route('public.jurusan') }}" data-path="/jurusan"><span>Jurusan & Kuota</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
         <a href="{{ route('public.biaya') }}" data-path="/biaya-pembayaran"><span>Biaya & Pembayaran</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
-        <a href="{{ route('public.alur') }}" data-path="/alur-ppdb"><span>Alur PPDB</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
         <a href="{{ route('public.faq') }}" data-path="/faq"><span>FAQ (Tanya Jawab)</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
         <a href="{{ route('public.kontak') }}" data-path="/kontak"><span>Kontak & Lokasi</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
         @guest
         <a href="{{ url('/login') }}"><span>Masuk</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
-        <a href="{{ url('/register') }}" style="color:#1d4ed8;font-weight:800;"><span>Daftar Sekarang</span> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i></a>
         @endguest
     </div>
 

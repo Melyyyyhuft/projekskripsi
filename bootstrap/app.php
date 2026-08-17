@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'is.siswa' => \App\Http\Middleware\IsSiswa::class,
             'is.kepala_sekolah' => \App\Http\Middleware\IsKepalaSekolah::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/notification',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

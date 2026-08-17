@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
 
         // Kepala Sekolah User
         \App\Models\User::factory()->create([
-            'name' => 'DR. Kholid Mawardi, M.Pd (Kepala Sekolah)',
+            'name' => 'DR. Kholid Mawardi, S.Km., M.A, G.r (Kepala Sekolah)',
             'email' => 'kepsek@ppdb.com',
             'password' => bcrypt('password'),
             'role' => 'kepala_sekolah',

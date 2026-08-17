@@ -113,9 +113,19 @@ Route::post('/pembayaran-daftar-ulang/bayar', [\App\Http\Controllers\Siswa\Pemba
     Route::put('/profile/photo', [\App\Http\Controllers\Siswa\ProfileController::class, 'updatePhoto'])->name('siswa.profile.photo');
 });
 
+// ===============================
+// MIDTRANS NOTIFICATION
+// ===============================
+Route::post('/midtrans/notification', [
+    \App\Http\Controllers\MidtransNotificationController::class,
+    'handle'
+])->name('midtrans.notification');
+
 // Kepala Sekolah Routes
 Route::middleware(['auth', 'is.kepala_sekolah'])->prefix('kepala-sekolah')->group(function () {
     Route::get('/laporan', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'index'])->name('kepala_sekolah.laporan');
+    Route::get('/laporan/pdf', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'exportPdf'])->name('kepala_sekolah.laporan.pdf');
+    Route::get('/laporan/excel', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'exportExcel'])->name('kepala_sekolah.laporan.excel');
     Route::get('/profile', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'profile'])->name('kepala_sekolah.profile');
     Route::put('/profile/password', [\App\Http\Controllers\KepalaSekolah\LaporanController::class, 'updatePassword'])->name('kepala_sekolah.profile.password');
 });

@@ -17,3 +17,6 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+hash-midtrans.php
+test-midtrans.php
+.env
